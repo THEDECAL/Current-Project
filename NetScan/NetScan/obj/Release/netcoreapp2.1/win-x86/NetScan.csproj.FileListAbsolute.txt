@@ -1,0 +1,16 @@
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\win-x86\hostpolicy.dll
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\win-x86\hostfxr.dll
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\win-x86\NetScan.exe
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\win-x86\NetScan.deps.json
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\win-x86\NetScan.runtimeconfig.json
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\win-x86\NetScan.runtimeconfig.dev.json
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\win-x86\NetScan.dll
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\win-x86\NetScan.pdb
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\win-x86\NetScan.csprojAssemblyReference.cache
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\win-x86\NetScan.Properties.Resources.resources
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\win-x86\NetScan.csproj.GenerateResource.cache
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\win-x86\NetScan.csproj.CoreCompileInputs.cache
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\win-x86\NetScan.AssemblyInfoInputs.cache
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\win-x86\NetScan.AssemblyInfo.cs
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\win-x86\NetScan.dll
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\win-x86\NetScan.pdb

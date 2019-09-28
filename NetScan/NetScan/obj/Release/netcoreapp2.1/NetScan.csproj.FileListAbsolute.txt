@@ -1,0 +1,13 @@
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\NetScan.deps.json
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\NetScan.runtimeconfig.json
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\NetScan.runtimeconfig.dev.json
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\NetScan.dll
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\bin\Release\netcoreapp2.1\NetScan.pdb
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\NetScan.csprojAssemblyReference.cache
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\NetScan.Properties.Resources.resources
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\NetScan.csproj.GenerateResource.cache
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\NetScan.csproj.CoreCompileInputs.cache
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\NetScan.AssemblyInfoInputs.cache
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\NetScan.AssemblyInfo.cs
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\NetScan.dll
+E:\Документы\Visual Studio 2017\Projects\CSharp\ConsoleApplications\NetScan\NetScan\obj\Release\netcoreapp2.1\NetScan.pdb
