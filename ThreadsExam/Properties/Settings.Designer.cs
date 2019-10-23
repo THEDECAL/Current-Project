@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ShipsOnWayToPier.Properties
+namespace ThreadsExam.Properties
 {
 
 
