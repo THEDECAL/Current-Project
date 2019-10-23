@@ -11,6 +11,7 @@ obj
 *.exe
 *.zip
 *.rar
+*.bck
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
