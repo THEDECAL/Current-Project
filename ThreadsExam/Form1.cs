@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -6,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,20 +16,31 @@ namespace ThreadsExam
 {
     public partial class Form1 : Form
     {
+        const int MAX_SEARCH_THREADS = 200;
+        //static Semaphore _searchSemafore = new Semaphore(MAX_SEARCH_THREADS, MAX_SEARCH_THREADS);
         bool _isPause = false;
+        bool IsPause
+        {
+            get => _isPause;
+            set
+            {
+                _isPause = value;
+                btnPause.Invoke(new Action(() => btnPause.Text = (_isPause) ? "Возобновить" : "Приостановить"));
+            }
+        }
+        const string FOLDER_NAME_TO_SAVE = "Saved Files";
         readonly char[] TRIM_SYMBOLS = { ' ', '\t' };
-        string _pathToLog = "";
+        readonly string[] FILE_EXT_FOR_SEARCH = { "cs", "txt"};
+        //string pathToSaveContainsFile = Directory.GetCurrentDirectory();
+        //string _pathToLog = "";
         Mutex _logMutex = new Mutex();
-        List<Thread> _threadPool = new List<Thread>();
-        Mutex _threadPoolMutex = new Mutex();
+        static readonly List<Thread> _threadPool = new List<Thread>();
+        static readonly Mutex _threadPoolMutex = new Mutex();
         public Form1()
         {
             InitializeComponent();
 
             tbCurrentPath.Text = Directory.GetCurrentDirectory();
-            //pbProgress.Minimum = 0;
-            //pbProgress.Maximum = 100;
-            //pbProgress.Value = 0;
             initDisks();
         }
         private void initDisks()
@@ -136,6 +149,13 @@ namespace ThreadsExam
                     ClearResult();
                     LockUnlockButtons();
 
+                    //Записываем путь для сохранения файлов во избежания использования метода Invoke
+                    //pathToSaveContainsFile = tbCurrentPath.Text;
+
+                    //Проверяем наличие папки для сохранения если нет, то создаём её
+                    if(!Directory.Exists(tbCurrentPath.Text + @"\" + FOLDER_NAME_TO_SAVE))
+                        Directory.CreateDirectory(tbCurrentPath.Text + @"\" + FOLDER_NAME_TO_SAVE);
+
                     //Делаем один массив из дисков и путей поиска
                     var allListToSearch = new List<string>();
                     foreach (var item in lbDisks.SelectedItems)
@@ -143,27 +163,24 @@ namespace ThreadsExam
                     foreach (var item in lbFolders.Items)
                         allListToSearch.Add(item.ToString());
 
-                    //Выясняем кол-во подпапок для установки границы прогрессбара
-                    //Task.Run(() =>
-                    //{
-                    //    var dirCount = 0;
-                    //    foreach (var item in allListToSearch)
-                    //    {
-                    //        var dirs = Directory.GetDirectories(item, "*", SearchOption.AllDirectories);
-                    //        dirCount += dirs.Count();
-                    //    }
-                    //    pbProgress.Maximum = dirCount;
-                    //}).Wait();
+                    pbProgress.BeginInvoke(new Action(() => pbProgress.Maximum = allListToSearch.Count + 1));
+                    ChangeCounterOnLabel(lblViewFoldersCount, lbFolders.Items.Count);
 
                     //Запускаем потоки для поиска
-                    pbProgress.Maximum = allListToSearch.Count + 1;
                     foreach (var item in allListToSearch)
                     {
-                        pbProgress.Value += 1;
-                        var searchThread = new Thread(new ThreadStart(() => Search(item)));
-                        _threadPoolMutex.WaitOne();
-                        _threadPool.Add(searchThread);
-                        _threadPoolMutex.ReleaseMutex();
+                        var searchThread = new Thread(new ThreadStart(() =>
+                        {
+                            var currSearchThread = Thread.CurrentThread;
+                            AddThreadToPool(currSearchThread);
+
+                            SearchFileAndFolders(item);
+
+                            pbProgress.BeginInvoke(new Action(() => pbProgress.Value += 1));
+
+                            DelThreadInPool(currSearchThread);
+                        }));
+                        searchThread.Name = $"searchThread_{item}";
                         searchThread.Start();
                     }
                 }
@@ -171,46 +188,117 @@ namespace ThreadsExam
             }
             else MessageBox.Show("Не добавлено ни одного слова для поиска.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
-        private void Search(string path)
+        /// <summary>
+        /// Поиск файлов и папок
+        /// </summary>
+        /// <param name="path"></param>
+        private void SearchFileAndFolders(string path)
         {
-            var searchThread = new Thread(new ThreadStart(() =>
+            try
+            {
+                var directories = Directory.GetDirectories(path);
+                List<string> files = new List<string>();
+
+                foreach (var ext in FILE_EXT_FOR_SEARCH)
+                    files.AddRange(Directory.GetFiles(path, $"*.{ext}"));
+
+                foreach (var filePath in files)
+                {
+                    try
+                    {
+                        if (SearchAndSaveContains(filePath))
+                            ChangeCounterOnLabel(lblFilesCount);
+                    }
+                    catch (UnauthorizedAccessException) { }
+                }
+
+                if (directories.Count() != 0)
+                {
+                    ChangeCounterOnLabel(lblViewFoldersCount, directories.Count());
+
+                    foreach (var dirPath in directories)
+                        SearchFileAndFolders(dirPath);
+
+                    pbProgress.BeginInvoke(new Action(() =>
+                    {
+                        pbProgress.Maximum += directories.Count();
+                        pbProgress.Value += directories.Count();
+                    }));
+                }
+            }
+            catch (UnauthorizedAccessException) { }
+        }
+        /// <summary>
+        /// Поиск совпадений в файле
+        /// </summary>
+        /// <param name="files"></param>
+        private bool SearchAndSaveContains(string filePath)
+        {
+            var fileText = File.ReadAllLines(filePath);
+            var isContain = false;
+
+
+            for (int i = 0; i < fileText.Count(); i++)
+            {
+                var str = fileText[i];
+                foreach (var word in lbWords.Items)
+                {
+                    Regex reg = new Regex(@"\b" + word + @"\b", RegexOptions.Multiline);
+                    if (reg.IsMatch(str))
+                    {
+                        fileText[i] = reg.Replace(str, "*******");
+                        ChangeCounterOnLabel(lblFindCount);
+                        isContain = true;
+                    }
+                }
+            }
+
+            if (isContain)
+            {
+                int numberFileContains = int.Parse(lblFilesCount.Text);
+                var fileName = Path.GetFileName(filePath);
+                string pathToSave = tbCurrentPath.Text;
+                pathToSave += @"\" + FOLDER_NAME_TO_SAVE + @"\" + ++numberFileContains + '_' + fileName;
+
+                File.WriteAllLines(pathToSave, fileText);
+            }
+
+            return isContain;
+        }
+        /// <summary>
+        /// Добавляет поток в пул
+        /// </summary>
+        /// <param name="thread">Принимает объект потока</param>
+        private void AddThreadToPool(Thread thread)
+        {
+            lock (_threadPoolMutex)
             {
                 try
                 {
-                    var files = Directory.GetFiles(path, "*.txt");
-                    var directories = new List<string>(Directory.GetDirectories(path));//.Where(d => !d.Contains("$")).ToList();
-
-                    var changePBThread = new Thread(new ThreadStart(() =>
-                    {
-                        Thread.Sleep(1000);
-                        pbProgress.Invoke(new Action(() =>
-                        {
-                            pbProgress.Maximum += directories.Count();
-                            pbProgress.Value += 1;
-                        }));
-                    }));
                     _threadPoolMutex.WaitOne();
-                    _threadPool.Add(changePBThread);
-                    changePBThread.Start();
-                    _threadPoolMutex.ReleaseMutex();
-
-                    //if (files.Count() > 0)
-                    //{
-
-                    //}
-
-                    if (directories.Count() > 0)
-                    {
-                        foreach (var item in directories)
-                            Search(item);
-                    }
+                    _threadPool.Add(thread);
                 }
-                catch (UnauthorizedAccessException) { }
-            }));
-            _threadPoolMutex.WaitOne();
-            _threadPool.Add(searchThread);
-            searchThread.Start();
-            _threadPoolMutex.ReleaseMutex();
+                catch (AbandonedMutexException) { }
+                finally { _threadPoolMutex.ReleaseMutex(); }
+            }
+        }
+        /// <summary>
+        /// Удаляет поток из пула
+        /// </summary>
+        /// <param name="thread">Принимает объект потока</param>
+        private void DelThreadInPool(Thread thread)
+        {
+            lock (_threadPoolMutex)
+            {
+                try
+                {
+                    _threadPoolMutex.WaitOne();
+                    thread.Abort();
+                    _threadPool.Remove(thread);
+                }
+                catch (AbandonedMutexException) { }
+                finally { _threadPoolMutex.ReleaseMutex(); }
+            }
         }
         /// <summary>
         /// Чистка результатов поиска
@@ -220,6 +308,7 @@ namespace ThreadsExam
             lbFindFiles.Items.Clear();
             lblFilesCount.Text = "0";
             lblFindCount.Text = "0";
+            lblViewFoldersCount.Text = "0";
             pbProgress.Value = 0;
         }
         /// <summary>
@@ -236,36 +325,78 @@ namespace ThreadsExam
             btnSelectPath.Enabled = !btnSelectPath.Enabled;
             btnPause.Enabled = !btnPause.Enabled;
             btnStop.Enabled = !btnStop.Enabled;
+            lbDisks.Enabled = !lbDisks.Enabled;
+            lbWords.Enabled = !lbWords.Enabled;
+            lbFolders.Enabled = !lbFolders.Enabled;
+        }
+        /// <summary>
+        /// Остановка всех потоков из пула
+        /// </summary>
+        private void StopThreads()
+        {
+            lock (_threadPoolMutex)
+            {
+                try
+                {
+                    _threadPoolMutex.WaitOne();
+                    foreach (var item in _threadPool)
+                        if(item.ThreadState != (ThreadState.Suspended | ThreadState.AbortRequested))
+                            item.Abort();
+                    _threadPool.Clear();
+                }
+                catch (AbandonedMutexException) { }
+                finally { _threadPoolMutex.ReleaseMutex(); }
+            }
+        }
+        /// <summary>
+        /// Приоставновка всех потоков из пула
+        /// </summary>
+        private void SuspendThreads()
+        {
+            lock (_threadPoolMutex)
+            {
+                try
+                {
+                    _threadPoolMutex.WaitOne();
+                    foreach (var item in _threadPool)
+                    {
+                        if (item.ThreadState == ThreadState.Suspended)
+                            item.Resume();
+                        else if (item.ThreadState != ThreadState.Stopped &&
+                            item.ThreadState != ThreadState.Suspended)
+                            item.Suspend();
+                    }
+                }
+                catch (AbandonedMutexException) { }
+                finally { _threadPoolMutex.ReleaseMutex(); }
+            }
+        }
+        /// <summary>
+        /// Изменяет счётчик на метке
+        /// </summary>
+        /// <param name="lbl">Объект метки</param>
+        /// <param name="count">Инкремент</param>
+        private void ChangeCounterOnLabel(Label lbl, int count = 1)
+        {
+            lbl.BeginInvoke(new Action(() =>
+            {
+                var currCount = int.Parse(lbl.Text);
+                lbl.Text = (currCount + count).ToString();
+            }));
         }
         private void btnStop_Click(object sender, EventArgs e)
         {
-            _threadPoolMutex.WaitOne();
-
-            foreach (var item in _threadPool)
-                if(item.ThreadState == ThreadState.Running)
-                    item.Abort();
-
+            var task = Task.Run(() => StopThreads());
+            task.Wait();
             ClearResult();
             LockUnlockButtons();
-
-            _threadPoolMutex.ReleaseMutex();
         }
         private void btnPause_Click(object sender, EventArgs e)
         {
-            _isPause = !_isPause;
-            btnPause.Invoke(new Action(() => btnPause.Text = (_isPause) ? "Возобновить" : "Приостановить"));
-
-            _threadPoolMutex.WaitOne();
-
-            foreach (var item in _threadPool)
-            {
-                if (item.ThreadState == ThreadState.Running)
-                    item.Suspend();
-                else if (item.ThreadState == ThreadState.Suspended)
-                    item.Resume();
-            }
-
-            _threadPoolMutex.ReleaseMutex();
+            var task = Task.Run(() => SuspendThreads());
+            task.Wait();
+            IsPause = !IsPause;
         }
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e) => StopThreads();
     }
 }

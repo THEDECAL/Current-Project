@@ -56,6 +56,8 @@
             this.lbWords = new System.Windows.Forms.ListBox();
             this.btnAddWord = new System.Windows.Forms.Button();
             this.tbWord = new System.Windows.Forms.TextBox();
+            this.lblTextViewFoldersCount = new System.Windows.Forms.Label();
+            this.lblViewFoldersCount = new System.Windows.Forms.Label();
             this.gbMain.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -235,6 +237,8 @@
             // 
             // gbFindResult
             // 
+            this.gbFindResult.Controls.Add(this.lblViewFoldersCount);
+            this.gbFindResult.Controls.Add(this.lblTextViewFoldersCount);
             this.gbFindResult.Controls.Add(this.lblFilesCount);
             this.gbFindResult.Controls.Add(this.lblFindCount);
             this.gbFindResult.Controls.Add(this.lblTextFilesCount);
@@ -251,7 +255,7 @@
             // 
             this.lblFilesCount.AutoSize = true;
             this.lblFilesCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFilesCount.Location = new System.Drawing.Point(210, 275);
+            this.lblFilesCount.Location = new System.Drawing.Point(109, 275);
             this.lblFilesCount.Name = "lblFilesCount";
             this.lblFilesCount.Size = new System.Drawing.Size(30, 31);
             this.lblFilesCount.TabIndex = 4;
@@ -261,7 +265,7 @@
             // 
             this.lblFindCount.AutoSize = true;
             this.lblFindCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFindCount.Location = new System.Drawing.Point(47, 275);
+            this.lblFindCount.Location = new System.Drawing.Point(6, 275);
             this.lblFindCount.Name = "lblFindCount";
             this.lblFindCount.Size = new System.Drawing.Size(30, 31);
             this.lblFindCount.TabIndex = 3;
@@ -270,7 +274,7 @@
             // lblTextFilesCount
             // 
             this.lblTextFilesCount.AutoSize = true;
-            this.lblTextFilesCount.Location = new System.Drawing.Point(189, 253);
+            this.lblTextFilesCount.Location = new System.Drawing.Point(112, 253);
             this.lblTextFilesCount.Name = "lblTextFilesCount";
             this.lblTextFilesCount.Size = new System.Drawing.Size(51, 13);
             this.lblTextFilesCount.TabIndex = 2;
@@ -352,6 +356,25 @@
             this.tbWord.Size = new System.Drawing.Size(121, 20);
             this.tbWord.TabIndex = 1;
             // 
+            // lblTextViewFoldersCount
+            // 
+            this.lblTextViewFoldersCount.AutoSize = true;
+            this.lblTextViewFoldersCount.Location = new System.Drawing.Point(178, 253);
+            this.lblTextViewFoldersCount.Name = "lblTextViewFoldersCount";
+            this.lblTextViewFoldersCount.Size = new System.Drawing.Size(112, 13);
+            this.lblTextViewFoldersCount.TabIndex = 5;
+            this.lblTextViewFoldersCount.Text = "Просмотрено папок:";
+            // 
+            // lblViewFoldersCount
+            // 
+            this.lblViewFoldersCount.AutoSize = true;
+            this.lblViewFoldersCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblViewFoldersCount.Location = new System.Drawing.Point(175, 275);
+            this.lblViewFoldersCount.Name = "lblViewFoldersCount";
+            this.lblViewFoldersCount.Size = new System.Drawing.Size(30, 31);
+            this.lblViewFoldersCount.TabIndex = 6;
+            this.lblViewFoldersCount.Text = "0";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -361,7 +384,8 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "Form1";
             this.ShowIcon = false;
-            this.Text = "Поиск слов в файлах";
+            this.Text = "Поиск совпадений";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.gbMain.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
@@ -407,6 +431,8 @@
         private System.Windows.Forms.Label lblTextFindCount;
         private System.Windows.Forms.Label lblFilesCount;
         private System.Windows.Forms.Label lblFindCount;
+        private System.Windows.Forms.Label lblViewFoldersCount;
+        private System.Windows.Forms.Label lblTextViewFoldersCount;
     }
 }
 
