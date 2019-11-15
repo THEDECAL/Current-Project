@@ -65,6 +65,10 @@ namespace OnlinePoker.Models
     public class RegisterViewModel
     {
         [Required]
+        [Display(Name = "Имя в игре")]
+        public string NickName { get; set; }
+
+        [Required]
         [EmailAddress]
         [Display(Name = "Адрес электронной почты")]
         public string Email { get; set; }

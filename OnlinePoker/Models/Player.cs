@@ -22,7 +22,13 @@ namespace OnlinePoker.Models
     public class Player
     {
         List<Card> _cards = new List<Card>();
-        public string PlayerName { get; set; }
+        public string UserId { get; private set; }
+        public string PlayerName { get; private set; }
+        public Player(string userId, string playerName)
+        {
+            UserId = userId;
+            PlayerName = playerName;
+        }
         public int Tokens { get; set; }
         /// <summary>
         /// Метод получения карты игроком
