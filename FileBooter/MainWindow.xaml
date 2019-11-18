@@ -1,0 +1,52 @@
+﻿<Controls:MetroWindow x:Class="FileBooter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FileBooter"
+        mc:Ignorable="d"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        Title="FileBooter" Height="450" Width="800">
+    <Grid>
+        <GroupBox Header="Список загрузок">
+            <DataGrid>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Имя файла"/>
+                    <DataGridTemplateColumn Header="Прогресс">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ProgressBar Minimum="1" Maximum="100"></ProgressBar>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Действия">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="btnStop" Width="20px" Height="20px" Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}">
+                                        <iconPacks:PackIconMaterial Kind="EmoticonCool" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button x:Name="btnPauseResume" Width="20px" Height="20px" Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}">
+                                        <iconPacks:PackIconMaterial Kind="EmoticonCool" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button x:Name="btnDelete" Width="20px" Height="20px" Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}">
+                                        <iconPacks:PackIconMaterial Kind="EmoticonCool" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button x:Name="btnMove" Width="20px" Height="20px" Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}">
+                                        <iconPacks:PackIconMaterial Kind="EmoticonCool" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+    </Grid>
+</Controls:MetroWindow>
