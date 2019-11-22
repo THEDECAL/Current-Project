@@ -6,28 +6,49 @@ using System.Threading.Tasks;
 
 namespace FileBooter.Models
 {
-    abstract class DownloadState
+    public abstract class DownloadState
     {
         private readonly DownloadFile _downloadFile;
         public DownloadState(DownloadFile downloadFile)
         {
             _downloadFile = downloadFile;
         }
-        public void Stop() => _downloadFile.State = new StopedState(_downloadFile);
-        public void Pause() => _downloadFile.State = new PausedState(_downloadFile);
-        public void Resume() => _downloadFile.State = new RunningState(_downloadFile);
+        public void Stopped() => _downloadFile.State = new StopedState(_downloadFile);
+        public void Paused() => _downloadFile.State = new PausedState(_downloadFile);
+        public void Running() => _downloadFile.State = new RunningState(_downloadFile);
+        public void Complete() => _downloadFile.State = new CompleteState(_downloadFile);
+        public void InQueue() => _downloadFile.State = new InQueueState(_downloadFile);
+        public void Error() => _downloadFile.State = new ErrorState(_downloadFile);
     }
 
-    class PausedState : DownloadState
+    public class InQueueState : DownloadState
+    {
+        public InQueueState(DownloadFile downloadFile) : base(downloadFile) { }
+        public override string ToString() => "В очереди";
+    }
+    public class PausedState : DownloadState
     {
         public PausedState(DownloadFile downloadFile) : base(downloadFile) { }
+        public override string ToString() => "Приостановлен";
     }
-    class RunningState : DownloadState
+    public class RunningState : DownloadState
     {
         public RunningState(DownloadFile downloadFile) : base(downloadFile) { }
+        public override string ToString() => "Загружается";
     }
-    class StopedState : DownloadState
+    public class CompleteState : DownloadState
+    {
+        public CompleteState(DownloadFile downloadFile) : base(downloadFile) { }
+        public override string ToString() => "Загружен";
+    }
+    public class StopedState : DownloadState
     {
         public StopedState(DownloadFile downloadFile) : base(downloadFile) { }
+        public override string ToString() => "Остановлен";
+    }
+    public class ErrorState : DownloadState
+    {
+        public ErrorState(DownloadFile downloadFile) : base(downloadFile) { }
+        public override string ToString() => "Ошибка";
     }
 }
