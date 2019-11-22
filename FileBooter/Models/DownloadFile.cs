@@ -162,6 +162,7 @@ namespace FileBooter.Models
                 if (_downloadThread.ThreadState == ThreadState.Running)
                 {
                     _downloadThread.Abort();
+                    Thread.Sleep(500);
 
                     var tmpFileName = Path.Combine(PathToSave, FileName + TEMP_EXT);
                     if (File.Exists(tmpFileName))

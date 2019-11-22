@@ -58,11 +58,11 @@ namespace FileBooter.Models
         {
             if (_instance != null)
             {
+                DownloadFile.SetQueueLength(settings.QueueLength);
+
                 _instance.QueueLength = settings.QueueLength;
                 _instance.PathToSave = settings.PathToSave;
                 _instance.IsStartDownloadingAfterAdding = settings.IsStartDownloadingAfterAdding;
-
-                DownloadFile.SetQueueLength(settings.QueueLength);
             }
             else throw new NullReferenceException();
         }
