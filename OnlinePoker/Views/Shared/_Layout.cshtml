@@ -1,59 +1,64 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - Онлайн-Покер</title>
-    @Styles.Render("~/Content/css")
-    @Scripts.Render("~/bundles/modernizr")
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - OnlinePoker</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-dark border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand text-light" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/poker-icon.png" width="32" height="32" alt="..."/>
+                    OnlinePoker
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
-                @Html.ActionLink("Онлайн-Покер", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <partial name="_LoginPartial" />
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">Главная</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-light" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Новая игра
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="2">2 игрока</a>
+                                <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="4">4 игрока</a>
+                                <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="6">6 игрока</a>
+                                <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="8">8 игрока</a>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-controller="Game" asp-action="CurrentGames">Текущие игры</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                            <span class="glyphicon glyphicon-star-empty"></span>
-                            <span class="caret"></span>
-                            Новая игра
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a href="@Url.Action("NewGame", "Game", new { playerCount = 2 })">на 2-х игроков</a></li>
-                            <li><a href="@Url.Action("NewGame", "Game", new { playerCount = 4 })">на 4-х игроков</a></li>
-                            <li><a href="@Url.Action("NewGame", "Game", new { playerCount = 6 })">на 6 игроков</a></li>
-                            <li><a href="@Url.Action("NewGame", "Game", new { playerCount = 8 })">на 8 игроков</a></li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="@Url.Action("CurrentGames", "Game")">
-                            <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
-                            Текущие игры
-                        </a>
-                    </li>
-                </ul>
-                @Html.Partial("_LoginPartial")
-            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2019 - OnlinePoker - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
-    </div>
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - Онлайн-Покер ASP.NET</p>
-        </footer>
-    </div>
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
-    @RenderSection("scripts", required: false)
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

@@ -1,42 +1,45 @@
-﻿using OnlinePoker.Models;
-using OnlinePoker.Hubs;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using OnlinePoker.Hubs;
 
 namespace OnlinePoker.Controllers
 {
     public class GameController : Controller
     {
         [Authorize]
-        public ActionResult NewGame(int playerCount = 2)
+        [HttpGet]
+        public IActionResult NewGame(int amountPlayers)
         {
-            //Разкомментировать по оканчании разработки
-            //try
-            //{
-                var game = new Game(playerCount);
-                GameHub.Games.Add(game);
+            try
+            {
+                var game = new Models.Game(amountPlayers);
+                PokerHub.Games.Add(game);
 
-                return View(game.Id as object);
-            //}
-            //catch (Exception)
-            //{
-            //    return View("Error");
-            //}
+                return RedirectToAction("StartGame", "Game", new { Id = game.Id });
+            }
+            catch (Exception) { return View("Error"); }
         }
-        public ActionResult CurrentGames()
-        {            
-            //Разкомментировать по оканчании разработки
-            //try
-            //{
-                return View(GameHub.Games);
-            //}
-            //catch (Exception)
-            //{
-            //    return View("Error");
-            //}
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult StartGame(string Id)
+        {
+            if (Id != null && Id != "")
+            {
+                var game = PokerHub.Games.FirstOrDefault(g => g.Id == Id);
+
+                return View(Id as Object);
+            }
+
+            return View("Error");
         }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult CurrentGames() => View(PokerHub.Games);
     }
 }
