@@ -5,6 +5,7 @@ using OnlinePoker.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OnlinePoker.Hubs
@@ -27,7 +28,8 @@ namespace OnlinePoker.Hubs
         public override Task OnDisconnectedAsync(Exception exception)
         {
             var game = Games.FirstOrDefault(g => g.Players.Exists(p => p.UserId == Context.UserIdentifier));
-            game.DelConnection(Context.UserIdentifier, Context.ConnectionId);
+            if(game != null)
+                game.DelConnection(Context.UserIdentifier, Context.ConnectionId);
 
             return base.OnDisconnectedAsync(exception);
         }
@@ -44,23 +46,20 @@ namespace OnlinePoker.Hubs
                     var game = Games.FirstOrDefault(g => g.Id == gameId);
                     if (game != null)
                     {
-                        //Если в игре есть место для игрока
-                        if (game.IsPlacePlayer)
-                        {
-                            var userConns = game.GetConnections(Context.UserIdentifier);
-
-                            game.AddConnection(Context.UserIdentifier, Context.ConnectionId);
-                            Clients.Clients(userConns).SendAsync("Wait").Wait();
-                            Clients.Clients(game.Connections).SendAsync("AddPlayer", game.GetPlayersNickNames()).Wait();
-
-                            //Если все игроки подключены начинаем игру
-                            if (!game.IsPlacePlayer)
-                                StartGame(game);
-                        }
-
                         //Если пользователь уже был в игре переподключаем его
                         if (game.IsUserExists(Context.UserIdentifier))
                             ReconnectToGame(game);
+                        //Если в игре есть место для игрока
+                        else if (game.IsPlacePlayer)
+                        {
+                            game.AddConnection(Context.UserIdentifier, Context.ConnectionId);
+
+                            var userConns = game.GetConnections(Context.UserIdentifier);
+                            Clients.Clients(userConns).SendAsync("Wait").Wait();
+                            Clients.Clients(game.Connections).SendAsync("AddPlayer", game.GetPlayersNickNames()).Wait();
+                        }
+
+                        StartGame(game);
                     }
                 }
                 catch (Exception ex) { }
@@ -75,11 +74,23 @@ namespace OnlinePoker.Hubs
         {
             if (game != null)
             {
+                game.AddConnection(Context.UserIdentifier, Context.ConnectionId);
                 var userConns = game.GetConnections(Context.UserIdentifier);
                 if (game.IsStarted)
                 {
+                    var cardVersion = "v1/";
+                    var playerNum = 0;
+                    var cards = game.Players.Select(p =>
+                    {
+                        playerNum = game.Players.IndexOf(p) + 1;
+                        return (p.UserId == Context.UserIdentifier)
+                           ? p.Cards.Select(c => cardVersion + c.GetNumericString()).ToList()
+                           : Game.GetEmptyCards(cardVersion);
+                    });
+
                     Clients.Clients(userConns).SendAsync("CloseWait").Wait();
                     Clients.Clients(userConns).SendAsync("AddPlayer", game.GetPlayersNickNames()).Wait();
+                    Clients.Clients(userConns).SendAsync("CardDistribution", cards, playerNum).Wait();
                 }
                 else
                 {
@@ -93,18 +104,30 @@ namespace OnlinePoker.Hubs
         /// Запуск начала игры
         /// </summary>
         /// <param name="game">Объект игры</param>
-        protected async void StartGame(Game game)
+        protected void StartGame(Game game)
         {
             if (game != null)
             {
-                await Task.Run(() =>
+                //Начинать игру если все игроки подключены и игра ещё не разу не стартовала
+                if (!game.IsPlacePlayer && !game.IsStarted)
                 {
                     game.CardDistribution();
                     Clients.Clients(game.Connections).SendAsync("CloseWait").Wait();
-                });
+
+                    game.Players.ForEach(p =>
+                    {
+                        var currPlayerNumber = game.Players.IndexOf(p) + 1;
+                        var userConns = game.GetConnections(p.UserId);
+                        var cardVersion = "v1/";
+                        var cards = game.Players.Select(pp => (currPlayerNumber == game.Players.IndexOf(pp) + 1)
+                            ? p.Cards.Select(c => cardVersion + c.GetNumericString()).ToList()
+                            : Game.GetEmptyCards(cardVersion));
+
+                        Clients.Clients(userConns).SendAsync("CardDistribution", cards, currPlayerNumber).Wait();
+                    });
+                }
             }
-            else throw new NullReferenceException();
+            else throw new NullReferenceException(); 
         }
     }
 }
- 

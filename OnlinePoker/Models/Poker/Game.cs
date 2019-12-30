@@ -7,8 +7,8 @@ namespace OnlinePoker.Models
 {
     public class Game
     {
-        private const int MAX_PLAYERS = 8;
-        private const int CARDS_FOR_DIST = 5;
+        public const int MAX_PLAYERS = 8;
+        public const int CARDS_FOR_DIST = 5;
         private  Deck _deck = new Deck();
         //Словарь подключений к игре, где key = id аккаунта, value = список id подключений
         private readonly Dictionary<string, List<string>> _playersConnections = new Dictionary<string, List<string>>();
@@ -19,7 +19,7 @@ namespace OnlinePoker.Models
         public bool IsStarted { get; private set; }
         public int PlayersCapacity { get; private set; }
         public bool IsPlacePlayer { get => !(Players.Count == PlayersCapacity); }
-        public int Bank { get; set; }
+        public int Bank { get; private set; }
 
         public Game(int playerCapacity)
         {
@@ -28,6 +28,11 @@ namespace OnlinePoker.Models
             else throw new ArgumentOutOfRangeException($"Недопустимое количество игроков (=<{playerCapacity}).");
         }
 
+        /// <summary>
+        /// Получить пустые карты (список нолей, что соответсвует картинке рубашки карты)
+        /// </summary>
+        /// <returns>Возвращает список строк</returns>
+        static public List<string> GetEmptyCards(string cardVersion) => new int[CARDS_FOR_DIST].Select(c => cardVersion + c.ToString()).ToList();
         /// <summary>
         /// Добавление соединения и игрока по id аккаунта
         /// </summary>

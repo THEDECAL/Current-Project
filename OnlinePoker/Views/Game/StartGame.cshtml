@@ -5,32 +5,83 @@
 <div id="poker-table" class="poker-table">
     <input type="hidden" id="game-id" value="@Model" />
     <table>
-        <tr><td colspan="3" id="player2"></td></tr>
         <tr>
-            <td style="left: 100px" id="player5"></td>
-            <td></td>
-            <td style="left: -100px" id="player7"></td>
-        </tr>
-        <tr>
-            <td style="left: -70px" id="player3">
-            </td>
-            <td>
-                <div class="bank">
-                    <img src="~/images/poker-chips.png" width="100" />
-                    <span id="bank-count">0</span>
+            <td colspan="3">
+                <div class="player" id="player2">
+                    <div class="player-title"></div>
+                    <div class="player-cards"></div>
+                    <div></div>
                 </div>
             </td>
-            <td style="left: 70px" id="player4"></td>
         </tr>
         <tr>
-            <td style="left: 100px" id="player6"></td>
+            <td style="left: 100px">
+                <div class="player" id="player5">
+                    <div class="player-title"></div>
+                    <div class="player-cards"></div>
+                    <div></div>
+                </div>
+            </td>
             <td></td>
-            <td style="left: -100px" id="player8"></td>
+            <td style="left: -100px">
+                <div class="player" id="player7">
+                    <div class="player-title"></div>
+                    <div class="player-cards"></div>
+                    <div></div>
+                </div>
+            </td>
         </tr>
-        <tr><td colspan="3" id="player1"></td></tr>
+        <tr>
+            <td style="left: -70px">
+                <div class="player" id="player3">
+                    <div class="player-title"></div>
+                    <div class="player-cards"></div>
+                    <div></div>
+                </div>
+            </td>
+            <td>
+                <div id="table-center" class="table-center">
+                    @*<img src="~/images/poker-chips.png" width="100" />*@
+                    <span id="bank-count"></span>
+                </div>
+            </td>
+            <td style="left: 70px">
+                <div class="player" id="player4">
+                    <div class="player-title"></div>
+                    <div class="player-cards"></div>
+                    <div></div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="left: 100px">
+                <div class="player" id="player6">
+                    <div class="player-title"></div>
+                    <div class="player-cards"></div>
+                    <div></div>
+                </div>
+            </td>
+            <td></td>
+            <td style="left: -100px" ">
+                <div class="player" id="player8">
+                    <div class="player-title"></div>
+                    <div class="player-cards"></div>
+                    <div></div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <div class="player" id="player1">
+                    <div class="player-title"></div>
+                    <div class="player-cards"></div>
+                    <div></div>
+                </div>
+            </td>
+        </tr>
     </table>
 </div>
 
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/lib/signalr/dist/browser/signalr.js"></script>
-<script src="~/js/poker.js"></script>
+<script src="/lib/jquery/dist/jquery.min.js"></script>
+<script src="/lib/signalr/dist/browser/signalr.min.js"></script>
+<script src="/js/poker.js"></script>

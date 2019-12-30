@@ -49,7 +49,7 @@ namespace OnlinePoker.Models
         /// Метод получения карт игрока
         /// </summary>
         /// <returns></returns>
-        public ReadOnlyCollection<Card> GetCards() => Cards.AsReadOnly();
+        //public ReadOnlyCollection<Card> GetCards() => Cards.AsReadOnly();
         /// <summary>
         /// Метод получения комбинации из текущих карт
         /// </summary>

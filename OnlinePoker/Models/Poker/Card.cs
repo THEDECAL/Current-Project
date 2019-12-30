@@ -20,15 +20,20 @@ namespace OnlinePoker.Models
         }
 
         /// <summary>
-        /// Метод получения строкового представления ранга карты (число или первая буква)
+        /// Получить числовой формат карты в формате: {номер_ранга}_{номер_масти} (Пример: 1_4 для двойки чирва)
         /// </summary>
-        /// <returns>Возвращает строку ранга карты</returns>
+        /// <returns>Возвращает строку</returns>
+        public string GetNumericString() => ((int)Rank).ToString() + '_' + ((int)Suit).ToString();
+        /// <summary>
+        /// Выдаёт строковое представление ранга карты (число или первая буква)
+        /// </summary>
+        /// <returns>Возвращает строку ранга карты (Например J или 10)</returns>
         public string GetRankString() => $"{(Rank < Rank.Jack ? $"{(int)Rank}" : $"{Rank.ToString()[0]}")}";
         /// <summary>
-        /// Преобразовывает карту в строку
+        /// Преобразовывает карту в строку в формате {Ранг}-{Масть} (Пример: J-Hearts, 10-Spades)
         /// </summary>
         /// <returns>
-        /// Возвращает строку {Ранг}-{Масть} (Пример: J-Hearts, 10-Spades)
+        /// Возвращает строку
         /// </returns>
         public override string ToString() => $"{GetRankString()}-{Suit.ToString()}";
     }

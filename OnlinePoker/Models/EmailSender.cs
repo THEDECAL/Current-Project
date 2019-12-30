@@ -37,7 +37,11 @@ namespace OnlinePoker.Models
                 msg.Body = htmlMessage;
                 msg.IsBodyHtml = true;
 
-                await Task.Run(() => _smtpClient.Send(msg));
+                try
+                {
+                    await Task.Run(() => _smtpClient.Send(msg));
+                }
+                catch (Exception) { }
             }
             else throw new NullReferenceException();
         }
