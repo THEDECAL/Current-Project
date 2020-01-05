@@ -90,7 +90,7 @@ namespace OnlinePoker.Models
         /// <summary>
         /// Раздача карт игрокам
         /// </summary>
-        public void CardDistribution()
+        public void CardDist()
         {
             IsStarted = true;
             for (int i = 0; i < CARDS_FOR_DIST; i++)

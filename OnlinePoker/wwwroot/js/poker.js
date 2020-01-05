@@ -4,16 +4,16 @@
     tableCenter: $("#table-center")
 }
 const MAX_PLAYERS = 8;
-//var cardSelectedzIndex = 0;
-var isRunCardAnimation = false;
+const throwTimeAnimation = 700;
+var crds = {};
 
 const hubConnection = new signalR.HubConnectionBuilder().withUrl("/PokerHub").build();
 hubConnection.serverTimeoutInMilliseconds = 1000 * 180 * 10;
 hubConnection.start();
 
 //Клиентсике методы для запуска на стороне хаба
-hubConnection.on("Wait", () => { wait(); });
-hubConnection.on("CloseWait", () => { closeWait(); });
+hubConnection.on("WaitWindow", () => { waitWindow(); });
+hubConnection.on("CloseWaitWindow", () => { closeWaitWindow(); });
 hubConnection.on("AddPlayer",  (nickName) => {
     if (Array.isArray(nickName)) {
         for (var i in nickName) {
@@ -22,20 +22,16 @@ hubConnection.on("AddPlayer",  (nickName) => {
     }
     else { addPlayer(nickName); }
 });
-hubConnection.on("CardDistribution", (cards) => {
+hubConnection.on("CardDist", (cards) => {
     addDeck();
-
-    if (Array.isArray(cards)) {
-        for (var i in cards) {
-            if (Array.isArray(cards[i])) {
-                for (var j in cards[i]) {
-                    //console.log("card: " + i); console.log(cards[i]);
-                    addCard(cards[i][j] + ".png", parseInt(Number(i) + Number(1)));
-                }
-            }
-        }
-    }
-})
+    cardDist(cards, 0);
+    addChips();
+});
+hubConnection.on("QuickCardDist", (cards) => {
+    addDeck();
+    quickCardDist(cards);
+    addChips();
+});
 
 setTimeout(function () { 
     //Подключение к игре
@@ -43,7 +39,7 @@ setTimeout(function () {
 }, 1000);
 
 //Открытие анимации ожидания
-function wait() {
+function waitWindow() {
     let title = "Ожидание подключения соперников...";
     let img = "<img src='/images/loading.svg' alt='...' class='card-img'>";
     let waitWindow = document.createElement("div");
@@ -63,7 +59,47 @@ function wait() {
 }
 
 //Закрытие анимации ожидания
-function closeWait() { $("#wait-window").remove(); }
+function closeWaitWindow() { $("#wait-window").remove(); }
+
+//Раздача карт с анимацией
+function cardDist(cards, playerCount) {
+    crds = cards;
+    var playerNum = parseInt(Number(playerCount) + Number(1));
+    var playerCards = cards[playerCount];
+
+    setTimeout(() => {
+        var cardCount = 0;
+        throwCard(playerNum);
+        var timerIdCards = setInterval(() => {
+            var imgName = playerCards[cardCount] + ".png";
+            if (cardCount < playerCards.length - 1) { throwCard(playerNum); }
+            addCard(imgName, playerNum);
+
+            if (++cardCount == playerCards.length) {
+                clearInterval(timerIdCards);
+                cardCount = 0;
+            }
+        }, throwTimeAnimation);
+
+        if (++playerCount != cards.length) {
+            setTimeout(() => {
+                cardDist(cards, playerCount)
+            }, throwTimeAnimation * playerCards.length);
+        }
+    });
+}
+
+//Раздача карт без анимации
+function quickCardDist(cards) {
+    for (var i in cards) {
+        var playerNum = parseInt(Number(i) + Number(1));
+        var playerCards = cards[i];
+
+        for (var j in playerCards) {
+            addCard(playerCards[j] + ".png", playerNum);
+        }
+    }
+}
 
 //Добавление имени игрока на стол
 function addPlayer(nickName, playerNumber) {
@@ -76,10 +112,23 @@ function addPlayer(nickName, playerNumber) {
 
 //Анимация броска карты
 function throwCard(playerNumber) {
+    var cardPoint = $("#table-center .game-card").offset();
+    var playerPoint = $(`#player${playerNumber}`).offset();
+    var top = Math.round(playerPoint.top - cardPoint.top);
+    var left = Math.round(playerPoint.left - cardPoint.left + 40);
+
     $("#table-center .game-card")[0].lastChild.animate([
-        { transform: "rotate(0deg)", bottom: "0px" },
-        { transform: "rotate(180deg)", bottom: "200px" }],
-        { duration: 700 });
+        {
+            transform: "rotate(0deg)",
+            top: "0px",
+            left: "0px"
+        },
+        {
+            transform: "rotate(180deg)",
+            top: `${top}px`,
+            left: `${left}px`
+        }],
+        { duration: throwTimeAnimation });
 }
 
 //Добавление карты на стол
@@ -93,8 +142,8 @@ function addCard(imgName, playerNumber) {
         var offset = (cardNumber == 1) ? 0 : `${currOffset + (-35)}`;
 
         var style = `style="
-            left: ${offset}px;
-            z-index: ${cardNumber};"`;
+        left: ${offset}px;
+        z-index: ${cardNumber};"`;
 
         var el = $(`<div class="game-card" ${style}></div>`);
         var img = $(`<img src="/images/cards/${imgName}", alt="...">`);
@@ -136,4 +185,11 @@ function addDeck() {
     var card2 = $("<img src='/images/cards/v1/0.png' alt='...' style='z-index: 7'>");
     div.append(card1); div.append(card2);
     GUI.tableCenter.prepend(div);
+}
+
+//Добавление картинки фишек и счётчка ставок
+function addChips() {
+    GUI.tableCenter.empty();
+    GUI.tableCenter.append("<img src='/images/poker-chips.png' alt='...' height=80>");
+    GUI.tableCenter.append("<span id='bank-count'>0</span>");
 }

@@ -25,14 +25,14 @@
     border: 1px solid #f9fd53;
     border-radius: 40%;
     width: 900px;
-    height: 500px;
+    /*height: 500px;*/
     background-image: url("/images/poker-table.jpg");
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
     box-shadow: 1px 5px 15px lightgrey;
-    z-index: 0;
-    user-select: none;
+    /*z-index: 0;*/
+    /*user-select: none;*/
 }
 
     .poker-table table {
@@ -70,6 +70,7 @@
 .player-cards {
     user-select: none;
     display: flex;
+    justify-content: flex-start;
 }
 
 .game-card {
@@ -94,10 +95,12 @@
 }
 
     .table-center span {
-        font-size: 12px;
+        font-size: 10px;
         font-weight: bold;
         border-radius: 10px;
         text-align: center;
+        width: 50%;
+        margin: 0 auto;
         background-color: rgba(255,255,255,0.8);
     }
     .table-center img {

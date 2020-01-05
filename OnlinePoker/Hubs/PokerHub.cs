@@ -55,7 +55,7 @@ namespace OnlinePoker.Hubs
                             game.AddConnection(Context.UserIdentifier, Context.ConnectionId);
 
                             var userConns = game.GetConnections(Context.UserIdentifier);
-                            Clients.Clients(userConns).SendAsync("Wait").Wait();
+                            Clients.Clients(userConns).SendAsync("WaitWindow").Wait();
                             Clients.Clients(game.Connections).SendAsync("AddPlayer", game.GetPlayersNickNames()).Wait();
                         }
 
@@ -88,13 +88,13 @@ namespace OnlinePoker.Hubs
                            : Game.GetEmptyCards(cardVersion);
                     });
 
-                    Clients.Clients(userConns).SendAsync("CloseWait").Wait();
+                    Clients.Clients(userConns).SendAsync("CloseWaitWindow").Wait();
                     Clients.Clients(userConns).SendAsync("AddPlayer", game.GetPlayersNickNames()).Wait();
-                    Clients.Clients(userConns).SendAsync("CardDistribution", cards, playerNum).Wait();
+                    Clients.Clients(userConns).SendAsync("QuickCardDist", cards).Wait();
                 }
                 else
                 {
-                    Clients.Clients(userConns).SendAsync("Wait").Wait();
+                    Clients.Clients(userConns).SendAsync("WaitWindow").Wait();
                     Clients.Clients(userConns).SendAsync("AddPlayer", game.GetPlayersNickNames()).Wait();
                 }
             }
@@ -111,8 +111,8 @@ namespace OnlinePoker.Hubs
                 //Начинать игру если все игроки подключены и игра ещё не разу не стартовала
                 if (!game.IsPlacePlayer && !game.IsStarted)
                 {
-                    game.CardDistribution();
-                    Clients.Clients(game.Connections).SendAsync("CloseWait").Wait();
+                    game.CardDist();
+                    Clients.Clients(game.Connections).SendAsync("CloseWaitWindow").Wait();
 
                     game.Players.ForEach(p =>
                     {
@@ -123,7 +123,7 @@ namespace OnlinePoker.Hubs
                             ? p.Cards.Select(c => cardVersion + c.GetNumericString()).ToList()
                             : Game.GetEmptyCards(cardVersion));
 
-                        Clients.Clients(userConns).SendAsync("CardDistribution", cards, currPlayerNumber).Wait();
+                        Clients.Clients(userConns).SendAsync("CardDist", cards).Wait();
                     });
                 }
             }
