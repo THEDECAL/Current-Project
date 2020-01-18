@@ -1,27 +1,34 @@
-﻿{
+{
   "iisSettings": {
-    "windowsAuthentication": false, 
-    "anonymousAuthentication": true, 
+    "windowsAuthentication": false,
+    "anonymousAuthentication": false,
+    "iis": {
+      "applicationUrl": "http://localhost/OnlinePoker",
+      "sslPort": 0
+    },
     "iisExpress": {
-      "applicationUrl": "http://localhost:64738",
+      "applicationUrl": "http://localhost:44318",
       "sslPort": 44318
     }
   },
   "profiles": {
     "IIS Express": {
-      "commandName": "IISExpress",
+      "commandName": "IIS",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "ancmHostingModel": "InProcess",
+      "use64Bit": true
     },
     "OnlinePoker": {
-      "commandName": "Project",
+      "commandName": "IIS",
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "ancmHostingModel": "OutOfProcess",
+      "applicationUrl": "ttp://localhost:8888"
     }
   }
 }

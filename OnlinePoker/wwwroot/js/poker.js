@@ -1,43 +1,61 @@
-﻿const GUI = {
+﻿const MAX_PLAYERS = 8;
+const CNT_RETRY_CONN = 3;
+const THROW_TIME_ANIM = 700;
+var crds = {};
+COMB_NAMES = [
+    "Высшая карта",
+    "Пара",
+    "Две пары",
+    "Сет",
+    "Стрит",
+    "Флэш",
+    "Фул-Хаус",
+    "Карэ",
+    "Стрит-Флэш",
+    "Роял-Флэш"];
+const GUI = {
     bank: $("#bank-count"),
     gameId: $("#game-id").val(),
-    tableCenter: $("#table-center")
+    tableCenter: $("#table-center"),
+    combination: $("#combination"),
+    plActions: $("#player-actions")
 }
-const MAX_PLAYERS = 8;
-const throwTimeAnimation = 700;
-var crds = {};
 
-const hubConnection = new signalR.HubConnectionBuilder().withUrl("/PokerHub").build();
-hubConnection.serverTimeoutInMilliseconds = 1000 * 180 * 10;
-hubConnection.start();
+//Настройка и пожключение к хабу
+const hubConnection = new signalR.HubConnectionBuilder()
+    .withUrl("/PokerHub")
+    .configureLogging(signalR.LogLevel.Warning)
+    .build();
+hubConnection.serverTimeoutInMilliseconds = 1000 * 180 * 20;
+hubConnection.start().then(connectToGame());
 
-//Клиентсике методы для запуска на стороне хаба
-hubConnection.on("WaitWindow", () => { waitWindow(); });
-hubConnection.on("CloseWaitWindow", () => { closeWaitWindow(); });
-hubConnection.on("AddPlayer",  (nickName) => {
-    if (Array.isArray(nickName)) {
-        for (var i in nickName) {
-            addPlayer(nickName[i], parseInt(Number(i) + Number(1)))
-        }
+//Объявление клиентских методов
+hubConnection.on("WaitWindow", waitWindow);
+hubConnection.on("CloseWaitWindow", closeWaitWindow);
+hubConnection.on("AddPlayer", (nickNamesArr) => {
+    for (var i in nickNamesArr) {
+        addPlayer(nickNamesArr[i], parseInt(Number(i) + Number(1)))
     }
-    else { addPlayer(nickName); }
 });
-hubConnection.on("CardDist", (cards) => {
-    addDeck();
-    cardDist(cards, 0);
-    addChips();
+hubConnection.on("CardDist", (plCardsArr) => cardDist(plCardsArr));
+hubConnection.on("QuickCardDist", (plCardsArr) => {
+    quickCardDist(plCardsArr)
 });
-hubConnection.on("QuickCardDist", (cards) => {
-    addDeck();
-    quickCardDist(cards);
-    addChips();
-});
+hubConnection.on("AddCombName", (combNum) => addCombName(combNum));
 
-setTimeout(function () { 
-    //Подключение к игре
-    hubConnection.invoke("ConnectToGame", GUI.gameId);
-}, 1000);
-
+//Подключение к хабу
+function connectToGame(cntRetry = 0, isSending = false) {
+    if (++cntRetry <= CNT_RETRY_CONN) {
+        setTimeout(() => {
+            if (hubConnection.state === "Connected" && !isSending) {
+                hubConnection.invoke("ConnectToGame", GUI.gameId).then(connectToGame(cntRetry, true));
+            }
+            else if (hubConnection.state === "Disconnected") {
+                hubConnection.start().then(connectToGame(cntRetry, false));
+            }
+        }, 500 * cntRetry);
+    }
+}
 //Открытие анимации ожидания
 function waitWindow() {
     let title = "Ожидание подключения соперников...";
@@ -57,84 +75,104 @@ function waitWindow() {
       </div>
     </div>`);
 }
-
 //Закрытие анимации ожидания
 function closeWaitWindow() { $("#wait-window").remove(); }
-
+//Добавление поля названия комбинации
+function addCombName(combNum) {
+    GUI.combination.empty();
+    GUI.combination.append(`<div class="combination">${COMB_NAMES[combNum]}</div>`);
+}
 //Раздача карт с анимацией
-function cardDist(cards, playerCount) {
-    crds = cards;
-    var playerNum = parseInt(Number(playerCount) + Number(1));
-    var playerCards = cards[playerCount];
+function cardDist(plCardsArr, plNum = Number(plCardsArr.length)++) {
+    crds = plCardsArr;
+    //if (plNum === undefined) {
+        addDeck();
+        //Number(plCardsArr.length) + Number(1);plNum = Number(plCardsArr.length) + Number(1);
+    //}
+
+    if (plNum > 1) {
+        var plIndex = Number(--plNum) - Number(1);
+        var cards = plCardsArr[plIndex];
+
+        setTimeout(() => {
+            var cardIndex = 0;
+            throwCard(plNum);
+
+            var cardTimerId = setInterval(() => {
+                var imgName = cards[cardIndex] + ".png";
+                if (cardIndex < cards.length - 1) {
+                    throwCard(plNum);
+                    cardIndex++;
+                }
+                else {
+                    clearInterval(cardTimerId);
+                    cardIndex = 0;
+                }
+                addCard(imgName, plNum);
+
+            }, THROW_TIME_ANIM);
+
+            if (plNum > 0) {
+                setTimeout(() => {
+                    cardDist(plCardsArr, plNum)
+                }, THROW_TIME_ANIM * cards.length);
+            }
+        }); 
+    }
+    else { addChips(); }
+}
+//Раздача карт без анимации
+function quickCardDist(plCardsArr) {
+    crds = plCardsArr;
+    setTimeout(addDeck, 50);
 
     setTimeout(() => {
-        var cardCount = 0;
-        throwCard(playerNum);
-        var timerIdCards = setInterval(() => {
-            var imgName = playerCards[cardCount] + ".png";
-            if (cardCount < playerCards.length - 1) { throwCard(playerNum); }
-            addCard(imgName, playerNum);
+        for (var i in plCardsArr) {
+            var plNum = parseInt(Number(i) + Number(1));
+            var cards = cards[i];
 
-            if (++cardCount == playerCards.length) {
-                clearInterval(timerIdCards);
-                cardCount = 0;
-            }
-        }, throwTimeAnimation);
-
-        if (++playerCount != cards.length) {
-            setTimeout(() => {
-                cardDist(cards, playerCount)
-            }, throwTimeAnimation * playerCards.length);
+            for (var j in cards) { addCard(cards[j] + ".png", plNum); }
         }
-    });
+    }, 100); 
+
+    setTimeout(addChips, 150);
 }
-
-//Раздача карт без анимации
-function quickCardDist(cards) {
-    for (var i in cards) {
-        var playerNum = parseInt(Number(i) + Number(1));
-        var playerCards = cards[i];
-
-        for (var j in playerCards) {
-            addCard(playerCards[j] + ".png", playerNum);
-        }
-    }
-}
-
 //Добавление имени игрока на стол
-function addPlayer(nickName, playerNumber) {
-    if (nickName != undefined && playerNumber >= 1 && playerNumber <= 8) {
-        var el = $(`#player${playerNumber} .player-title`);
-        el.empty(); el.append(nickName).hide();
+function addPlayer(nickName, plNum) {
+    //if (nickName !== undefined && plNum >= 1 && plNum <= 8) {
+        var el = $(`#player${plNum} .player-title`);
+        el.empty();
+        el.append(nickName).hide();
         el.fadeIn(2500);
-    }
+    //}
 }
-
 //Анимация броска карты
-function throwCard(playerNumber) {
-    var cardPoint = $("#table-center .game-card").offset();
-    var playerPoint = $(`#player${playerNumber}`).offset();
-    var top = Math.round(playerPoint.top - cardPoint.top);
-    var left = Math.round(playerPoint.left - cardPoint.left + 40);
+function throwCard(plNum) {
+    //if (plNum > 0 && plNum <= MAX_PLAYERS) {
+        //console.log(plNum);
+        var cardPoint = $("#table-center .game-card").offset();
+        var playerPoint = $(`#player${plNum}`).offset();
+        var top = Math.round(playerPoint.top - cardPoint.top);
+        var left = Math.round(playerPoint.left - cardPoint.left + 40);
 
-    $("#table-center .game-card")[0].lastChild.animate([
-        {
-            transform: "rotate(0deg)",
-            top: "0px",
-            left: "0px"
-        },
-        {
-            transform: "rotate(180deg)",
-            top: `${top}px`,
-            left: `${left}px`
-        }],
-        { duration: throwTimeAnimation });
+        $("#table-center .game-card")[0].lastChild.animate([
+            {
+                transform: "rotate(0deg)",
+                top: "0px",
+                left: "0px"
+            },
+            {
+                transform: "rotate(180deg)",
+                top: `${top}px`,
+                left: `${left}px`
+            }],
+            { duration: THROW_TIME_ANIM });
+    //}
 }
-
 //Добавление карты на стол
-function addCard(imgName, playerNumber) {
-    if (imgName != undefined && playerNumber >= 1 && playerNumber <= 8) {
-        var playerEl = $(`#player${playerNumber} .player-cards`);
+function addCard(imgName, plNum) {
+    //if (imgName != undefined && plNum >= 1 && plNum <= 8) {
+        var playerEl = $(`#player${plNum} .player-cards`);
         var childCount = playerEl[0].childElementCount;
         var cardNumber = parseInt(childCount + 1);
         var currOffset = (childCount === 0) ? 0 : playerEl[0].childNodes[parseInt(childCount - 1)].style.left;
@@ -149,44 +187,44 @@ function addCard(imgName, playerNumber) {
         var img = $(`<img src="/images/cards/${imgName}", alt="...">`);
         el.append(img);
         playerEl.append(el);
-        img.mouseenter((e) => {
-            if (!e.target.src.includes("0.png")) {
-                var el = e.target;
-                el.animate(
-                    [{
-                        bottom: "0px"
-                    }, {
-                        bottom: "35px"
-                    }],
-                    { duration: 500 });
-                e.target.style.bottom = "35px";
-            }
-        });
-        img.mouseleave((e) => {
-            if (!e.target.src.includes("0.png")) {
-                var el = e.target;
-                el.animate(
-                    [{
-                        bottom: "35px"
-                    }, {
-                        bottom: "0px"
-                    }],
-                    { duration: 500 });
-                e.target.style.bottom = "0px";
-            }
-        });
-    }
+        img.mouseenter((e) => { setTimeout(() => {
+                if (!e.target.src.includes("0.png")) {
+                    var el = e.target;
+                    el.animate(
+                        [{
+                            bottom: "0px"
+                        }, {
+                            bottom: "35px"
+                        }],
+                        { duration: 500 });
+                    e.target.style.bottom = "35px";
+                }
+        }, 100);});
+        img.mouseleave((e) => { setTimeout(() => {
+                if (!e.target.src.includes("0.png")) {
+                    var el = e.target;
+                    el.animate(
+                        [{
+                            bottom: "35px"
+                        }, {
+                            bottom: "0px"
+                        }],
+                        { duration: 500 });
+                    e.target.style.bottom = "0px";
+                }
+        }, 100);});
+    //}
 }
-
 //Выкладывание колоды на стол
 function addDeck() {
     var div = $("<div class='game-card'></div>");
     var card1 = $("<img src='/images/cards/v1/0.png' alt='...' style='position: absolute'>");
     var card2 = $("<img src='/images/cards/v1/0.png' alt='...' style='z-index: 7'>");
+
+    GUI.tableCenter.empty();
     div.append(card1); div.append(card2);
     GUI.tableCenter.prepend(div);
 }
-
 //Добавление картинки фишек и счётчка ставок
 function addChips() {
     GUI.tableCenter.empty();

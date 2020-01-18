@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
-using OnlinePoker.Data;
+﻿using Microsoft.AspNetCore.SignalR;
 using OnlinePoker.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,12 +16,7 @@ namespace OnlinePoker.Hubs
     {
         static private List<Game> _games;
         static public List<Game> Games { get => _games = _games ?? new List<Game>(); }
-        //private readonly UserManager<User> _userManager;
-
-        //public PokerHub(UserManager<User> userManager)
-        //{
-        //    _userManager = userManager;
-        //}
+        static public readonly int THROW_TIME_ANIM = 700;
 
         public override Task OnConnectedAsync() => base.OnConnectedAsync();
         public override Task OnDisconnectedAsync(Exception exception)
@@ -79,10 +73,10 @@ namespace OnlinePoker.Hubs
                 if (game.IsStarted)
                 {
                     var cardVersion = "v1/";
-                    var playerNum = 0;
+                    var plNum = 0;
                     var cards = game.Players.Select(p =>
                     {
-                        playerNum = game.Players.IndexOf(p) + 1;
+                        plNum = game.Players.IndexOf(p) + 1;
                         return (p.UserId == Context.UserIdentifier)
                            ? p.Cards.Select(c => cardVersion + c.GetNumericString()).ToList()
                            : Game.GetEmptyCards(cardVersion);
@@ -90,7 +84,8 @@ namespace OnlinePoker.Hubs
 
                     Clients.Clients(userConns).SendAsync("CloseWaitWindow").Wait();
                     Clients.Clients(userConns).SendAsync("AddPlayer", game.GetPlayersNickNames()).Wait();
-                    Clients.Clients(userConns).SendAsync("QuickCardDist", cards).Wait();
+                    //Clients.Clients(userConns).SendAsync("QuickCardDist", cards).Wait();
+                    Clients.Clients(userConns).SendAsync("CardDist", cards).Wait();
                 }
                 else
                 {
@@ -116,15 +111,29 @@ namespace OnlinePoker.Hubs
 
                     game.Players.ForEach(p =>
                     {
-                        var currPlayerNumber = game.Players.IndexOf(p) + 1;
+                        var currPlNum = game.Players.IndexOf(p) + 1;
                         var userConns = game.GetConnections(p.UserId);
                         var cardVersion = "v1/";
-                        var cards = game.Players.Select(pp => (currPlayerNumber == game.Players.IndexOf(pp) + 1)
+                        var cards = game.Players.Select(pp => (currPlNum == game.Players.IndexOf(pp) + 1)
                             ? p.Cards.Select(c => cardVersion + c.GetNumericString()).ToList()
                             : Game.GetEmptyCards(cardVersion));
 
                         Clients.Clients(userConns).SendAsync("CardDist", cards).Wait();
+
+                        int waitTime = game.PlayersCapacity * THROW_TIME_ANIM * Game.CARDS_FOR_DIST;
+                        
+                        //Task.Run(() =>
+                        //{
+                        //    Thread.Sleep(waitTime);
+                        //    Clients.Clients(userConns).SendAsync("AddCombName", currPlNum);
+                        //});
+                        var timer = new Timer((o) =>
+                        {
+                            var call = Clients.Clients(userConns).SendAsync("AddCombName", currPlNum).ToString();
+                            Debug.Write($"call: {call} LINE:{new StackFrame().GetFileLineNumber()}");
+                        }, null, waitTime, -1);
                     });
+
                 }
             }
             else throw new NullReferenceException(); 

@@ -6,28 +6,28 @@
     <input type="hidden" id="game-id" value="@Model" />
     <table>
         <tr>
-            <td colspan="3">
+            <td></td>
+            <td>
                 <div class="player" id="player2">
                     <div class="player-title"></div>
                     <div class="player-cards"></div>
-                    <div></div>
                 </div>
             </td>
+            <td></td>
         </tr>
         <tr>
             <td style="left: 100px">
                 <div class="player" id="player5">
                     <div class="player-title"></div>
                     <div class="player-cards"></div>
-                    <div></div>
+
                 </div>
             </td>
-            <td></td>
+            <td id="combination"></td>
             <td style="left: -100px">
                 <div class="player" id="player7">
                     <div class="player-title"></div>
                     <div class="player-cards"></div>
-                    <div></div>
                 </div>
             </td>
         </tr>
@@ -36,15 +36,17 @@
                 <div class="player" id="player3">
                     <div class="player-title"></div>
                     <div class="player-cards"></div>
-                    <div></div>
+
                 </div>
             </td>
-            <td><div id="table-center" class="table-center"></div></td>
+            <td>
+                <div id="table-center" class="table-center"> </div>
+            </td>
             <td style="left: 70px">
                 <div class="player" id="player4">
                     <div class="player-title"></div>
                     <div class="player-cards"></div>
-                    <div></div>
+
                 </div>
             </td>
         </tr>
@@ -53,30 +55,32 @@
                 <div class="player" id="player6">
                     <div class="player-title"></div>
                     <div class="player-cards"></div>
-                    <div></div>
+
                 </div>
             </td>
-            <td></td>
+            <td id="player-actions"></td>
             <td style="left: -100px" ">
                 <div class="player" id="player8">
                     <div class="player-title"></div>
                     <div class="player-cards"></div>
-                    <div></div>
+
                 </div>
             </td>
         </tr>
         <tr>
-            <td colspan="3">
+            <td></td>
+            <td>
                 <div class="player" id="player1">
                     <div class="player-title"></div>
                     <div class="player-cards"></div>
-                    <div></div>
+
                 </div>
             </td>
+            <td></td>
         </tr>
     </table>
 </div>
 
 <script src="/lib/jquery/dist/jquery.min.js"></script>
-<script src="/lib/signalr/dist/browser/signalr.min.js"></script>
+<script src="~/lib/signalr/dist/browser/signalr.js"></script>
 <script src="/js/poker.js"></script>
