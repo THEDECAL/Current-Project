@@ -26,9 +26,7 @@ const hubConnection = new signalR.HubConnectionBuilder()
     .withUrl("/PokerHub")
     .configureLogging(signalR.LogLevel.Warning)
     .build();
-hubConnection.serverTimeoutInMilliseconds = 1000 * 180 * 20;
-hubConnection.start().then(connectToGame());
-
+hubConnection.serverTimeoutInMilliseconds = 1000 * 180 * 50;
 //Объявление клиентских методов
 hubConnection.on("WaitWindow", waitWindow);
 hubConnection.on("CloseWaitWindow", closeWaitWindow);
@@ -38,17 +36,17 @@ hubConnection.on("AddPlayer", (nickNamesArr) => {
     }
 });
 hubConnection.on("CardDist", (plCardsArr) => cardDist(plCardsArr));
-hubConnection.on("QuickCardDist", (plCardsArr) => {
-    quickCardDist(plCardsArr)
-});
-hubConnection.on("AddCombName", (combNum) => addCombName(combNum));
+hubConnection.on("QuickCardDist", (plCardsArr) => quickCardDist(plCardsArr));
+hubConnection.on("AddCombName", (combNum) => { console.log("AddCombName"); addCombName(combNum); });
+//Подключение к хабу
+hubConnection.start(setTimeout(connectToGame));//.then(connectToGame());
 
 //Подключение к хабу
 function connectToGame(cntRetry = 0, isSending = false) {
     if (++cntRetry <= CNT_RETRY_CONN) {
         setTimeout(() => {
             if (hubConnection.state === "Connected" && !isSending) {
-                hubConnection.invoke("ConnectToGame", GUI.gameId).then(connectToGame(cntRetry, true));
+                hubConnection.send("ConnectToGame", GUI.gameId).then(connectToGame(cntRetry, true));
             }
             else if (hubConnection.state === "Disconnected") {
                 hubConnection.start().then(connectToGame(cntRetry, false));
@@ -83,12 +81,12 @@ function addCombName(combNum) {
     GUI.combination.append(`<div class="combination">${COMB_NAMES[combNum]}</div>`);
 }
 //Раздача карт с анимацией
-function cardDist(plCardsArr, plNum = Number(plCardsArr.length)++) {
+function cardDist(plCardsArr, plNum) {
     crds = plCardsArr;
-    //if (plNum === undefined) {
+    if (plNum === undefined) {
         addDeck();
-        //Number(plCardsArr.length) + Number(1);plNum = Number(plCardsArr.length) + Number(1);
-    //}
+        plNum = Number(plCardsArr.length) + Number(1);
+    }
 
     if (plNum > 1) {
         var plIndex = Number(--plNum) - Number(1);

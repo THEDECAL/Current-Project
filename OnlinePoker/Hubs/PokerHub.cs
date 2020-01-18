@@ -107,7 +107,7 @@ namespace OnlinePoker.Hubs
                 if (!game.IsPlacePlayer && !game.IsStarted)
                 {
                     game.CardDist();
-                    Clients.Clients(game.Connections).SendAsync("CloseWaitWindow").Wait();
+                    Clients.Clients(game.Connections).SendAsync("CloseWaitWindow");//.Wait();
 
                     game.Players.ForEach(p =>
                     {
@@ -118,20 +118,22 @@ namespace OnlinePoker.Hubs
                             ? p.Cards.Select(c => cardVersion + c.GetNumericString()).ToList()
                             : Game.GetEmptyCards(cardVersion));
 
-                        Clients.Clients(userConns).SendAsync("CardDist", cards).Wait();
+                        Clients.Clients(userConns).SendAsync("CardDist", cards);//.Wait();
+                        //Clients.Clients(userConns).SendAsync("AddCombName", p.GetCombination());
 
                         int waitTime = game.PlayersCapacity * THROW_TIME_ANIM * Game.CARDS_FOR_DIST;
-                        
-                        //Task.Run(() =>
-                        //{
-                        //    Thread.Sleep(waitTime);
-                        //    Clients.Clients(userConns).SendAsync("AddCombName", currPlNum);
-                        //});
-                        var timer = new Timer((o) =>
+                        var task = new Task(() =>
                         {
-                            var call = Clients.Clients(userConns).SendAsync("AddCombName", currPlNum).ToString();
-                            Debug.Write($"call: {call} LINE:{new StackFrame().GetFileLineNumber()}");
-                        }, null, waitTime, -1);
+                            Thread.Sleep(waitTime);
+                            Clients.Clients(userConns).SendAsync("AddCombName", p.GetCombination()).Wait();
+                        });
+                        task.Start(); //task.Wait();
+
+                        //var timer = new Timer((o) =>
+                        //{
+                        //    var call = Clients.Clients(userConns).SendAsync("AddCombName", currPlNum).ToString();
+                        //    Debug.Write($"call: {call} LINE:{new StackFrame().GetFileLineNumber()}");
+                        //}, null, waitTime, -1);
                     });
 
                 }
