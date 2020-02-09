@@ -33,32 +33,69 @@ namespace OnlinePoker.Hubs
         /// <param name="gameId">Иидентификатор игры</param>
         public void ConnectToGame(string gameId)
         {
-            if (gameId != null)
+            try
             {
-                try
+                var game = Games.FirstOrDefault(g => g.Id == gameId);
+
+                if (game != null)
                 {
-                    var game = Games.FirstOrDefault(g => g.Id == gameId);
-                    if (game != null)
+                    //Если пользователь уже был в игре переподключаем его
+                    if (game.IsUserExists(Context.UserIdentifier))
+                        ReconnectToGame(game);
+                    //Если в игре есть место для игрока
+                    else if (game.IsPlacePlayer)
                     {
-                        //Если пользователь уже был в игре переподключаем его
-                        if (game.IsUserExists(Context.UserIdentifier))
-                            ReconnectToGame(game);
-                        //Если в игре есть место для игрока
-                        else if (game.IsPlacePlayer)
+                        var user = Data.DBCRUD.GetUserById(Context.UserIdentifier).Result;
+
+                        if (user.CoinsAmount >= Game.STARTING_BET)
                         {
                             game.AddConnection(Context.UserIdentifier, Context.ConnectionId);
 
                             var userConns = game.GetConnections(Context.UserIdentifier);
-                            Clients.Clients(userConns).SendAsync("WaitWindow").Wait();
-                            Clients.Clients(game.Connections).SendAsync("AddPlayer", game.GetPlayersNickNames()).Wait();
+                            Clients.Clients(userConns).SendAsync("WaitWindow");
+                            Clients.Clients(game.Connections).SendAsync("AddPlayer", game.GetPlayersNickNames());
                         }
-
-                        StartGame(game);
                     }
+
+                    StartGame(game);
                 }
-                catch (Exception ex) { }
+                else throw new NullReferenceException();
             }
-            else throw new NullReferenceException();
+            catch (Exception ex) { }
+        }
+        /// <summary>
+        /// Выполнение ставки игрока
+        /// </summary>
+        /// <param name="amountBet">Сумма ставки</param>
+        /// <param name="gameId">Идентификатор игры</param>
+        public void Bet(int? amountBet, string gameId)
+        {
+            var game = Games.FirstOrDefault(g => g.Id == gameId);
+
+            if (game != null && amountBet != null)
+            {
+                var user = game.Players.FirstOrDefault(p => p.UserId == Context.ConnectionId);
+                lock(game)
+                {
+                    user.Coins -= amountBet.Value;
+                    game.Bank += amountBet.Value;
+                }
+
+                Clients.Clients(game.Connections).SendAsync("AddCoinsToBank", game.Bank);
+            }
+        }
+        /// <summary>
+        /// Завершения партии
+        /// </summary>
+        /// <param name="gameId">Идентификатор игры</param>
+        public void GameOver(string gameId)
+        {
+            var game = Games.FirstOrDefault(g => g.Id == gameId);
+
+            if (game != null)
+            {
+
+            }
         }
         /// <summary>
         /// Переподключение игрока к игре
@@ -72,20 +109,25 @@ namespace OnlinePoker.Hubs
                 var userConns = game.GetConnections(Context.UserIdentifier);
                 if (game.IsStarted)
                 {
+                    var user = game.Players.FirstOrDefault(p => p.UserId == Context.UserIdentifier);
+
+                    Clients.Clients(userConns).SendAsync("CloseWaitWindow");
+                    Clients.Clients(userConns).SendAsync("AddPlayer", game.GetPlayersNickNames());
+                    Clients.Clients(userConns).SendAsync("AddCoinsToBank", game.Bank);
+                    Clients.Clients(userConns).SendAsync("AddCombName", user.GetCombination());
+
                     var cardVersion = "v1/";
                     var plNum = 0;
                     var cards = game.Players.Select(p =>
                     {
                         plNum = game.Players.IndexOf(p) + 1;
+
                         return (p.UserId == Context.UserIdentifier)
-                           ? p.Cards.Select(c => cardVersion + c.GetNumericString()).ToList()
-                           : Game.GetEmptyCards(cardVersion);
+                                ? p.Cards.Select(c => cardVersion + c.GetNumericString()).ToList()
+                                : Game.GetEmptyCards(cardVersion);
                     });
 
-                    Clients.Clients(userConns).SendAsync("CloseWaitWindow").Wait();
-                    Clients.Clients(userConns).SendAsync("AddPlayer", game.GetPlayersNickNames()).Wait();
-                    //Clients.Clients(userConns).SendAsync("QuickCardDist", cards).Wait();
-                    Clients.Clients(userConns).SendAsync("CardDist", cards).Wait();
+                    Clients.Clients(userConns).SendAsync("QuickCardDist", cards);
                 }
                 else
                 {
@@ -106,8 +148,10 @@ namespace OnlinePoker.Hubs
                 //Начинать игру если все игроки подключены и игра ещё не разу не стартовала
                 if (!game.IsPlacePlayer && !game.IsStarted)
                 {
+                    game.Bet();
                     game.CardDist();
-                    Clients.Clients(game.Connections).SendAsync("CloseWaitWindow");//.Wait();
+                    Clients.Clients(game.Connections).SendAsync("CloseWaitWindow");
+                    Clients.Clients(game.Connections).SendAsync("AddCoinsToBank", game.Bank);
 
                     game.Players.ForEach(p =>
                     {
@@ -118,24 +162,9 @@ namespace OnlinePoker.Hubs
                             ? p.Cards.Select(c => cardVersion + c.GetNumericString()).ToList()
                             : Game.GetEmptyCards(cardVersion));
 
-                        Clients.Clients(userConns).SendAsync("CardDist", cards);//.Wait();
-                        //Clients.Clients(userConns).SendAsync("AddCombName", p.GetCombination());
-
-                        int waitTime = game.PlayersCapacity * THROW_TIME_ANIM * Game.CARDS_FOR_DIST;
-                        var task = new Task(() =>
-                        {
-                            Thread.Sleep(waitTime);
-                            Clients.Clients(userConns).SendAsync("AddCombName", p.GetCombination()).Wait();
-                        });
-                        task.Start(); //task.Wait();
-
-                        //var timer = new Timer((o) =>
-                        //{
-                        //    var call = Clients.Clients(userConns).SendAsync("AddCombName", currPlNum).ToString();
-                        //    Debug.Write($"call: {call} LINE:{new StackFrame().GetFileLineNumber()}");
-                        //}, null, waitTime, -1);
+                        Clients.Clients(userConns).SendAsync("CardDist", cards);
+                        Clients.Clients(userConns).SendAsync("AddCombName", p.GetCombination());
                     });
-
                 }
             }
             else throw new NullReferenceException(); 

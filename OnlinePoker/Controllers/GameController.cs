@@ -28,7 +28,7 @@ namespace OnlinePoker.Controllers
         [HttpGet]
         public IActionResult StartGame(string Id)
         {
-            if (Id != null && Id != "")
+            if (Id != null && Id.Trim().Length != 0)
             {
                 var game = PokerHub.Games.FirstOrDefault(g => g.Id == Id);
 
@@ -41,5 +41,11 @@ namespace OnlinePoker.Controllers
         [Authorize]
         [HttpGet]
         public IActionResult CurrentGames() => View(PokerHub.Games);
+
+        [HttpGet]
+        public IActionResult Rules() => View();
+
+        [HttpGet]
+        public IActionResult Combinations() => View();
     }
 }

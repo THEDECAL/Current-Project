@@ -16,7 +16,7 @@ namespace OnlinePoker.Data
             return await Task.Run(() =>
             {
                 using (var ctx = Ctx)
-                    return Ctx.Users.FirstOrDefault(u => u.Id == id);
+                    return ctx.Users.FirstOrDefault(u => u.Id == id);
             });
         }
     }

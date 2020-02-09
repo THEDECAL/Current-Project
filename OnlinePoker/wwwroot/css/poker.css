@@ -8,7 +8,7 @@
 
     .wait-window > div {
         position: fixed;
-        left: 40%;
+        left: 30%;
         right: 40%;
         top: 40%;
         bottom: 40%;
@@ -32,8 +32,8 @@
     background-position: center;
     background-size: cover;
     box-shadow: 1px 5px 15px lightgrey;
-    position: relative;
-    left: 10%;
+    //position: relative;
+    margin: 0 auto;
 }
 
     .poker-table table {
@@ -89,6 +89,7 @@
     text-align: center;
     padding: 10px;
     border: 4px dotted lightgray;
+    user-select: none;
 }
 
 .game-card {
@@ -105,21 +106,29 @@
         box-shadow: 1px 0px 3px black;
     }
 
-.table-center {
+.bank {
     width: 100%;
     display: flex;
     flex-direction: column;
 }
 
-    .table-center span {
-        font-size: 10px;
+    .bank span {
+        font-size: 16px;
         font-weight: bold;
         border-radius: 10px;
         text-align: center;
-        width: 50%;
         margin: 0 auto;
-        background-color: rgba(255,255,255,0.8);
+        background-color: lightgreen;
+        border: 4px dotted lightgray;
+        padding: 0 15px;
+        opacity: 0.7;
+        user-select: none;
     }
-    .table-center img {
+    .bank img {
         margin: 0 auto;
     }
+
+.alerts {
+    max-height: 150px;
+    position: absolute;
+}

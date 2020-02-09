@@ -34,12 +34,18 @@
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="2">2 игрока</a>
                                 <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="4">4 игрока</a>
-                                <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="6">6 игрока</a>
-                                <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="8">8 игрока</a>
+                                <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="6">6 игроков</a>
+                                <a class="dropdown-item" asp-controller="Game" asp-action="NewGame" asp-route-amountplayers="8">8 игроков</a>
                             </div>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="Game" asp-action="CurrentGames">Текущие игры</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-controller="Game" asp-action="Rules">Правила</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-controller="Game" asp-action="Combinations">Комбинации</a>
                         </li>
                     </ul>
                 </div>
@@ -47,11 +53,11 @@
         </nav>
     </header>
 
-    <div>
+    <div class="container my-5">
         <main role="main" class="align-content-center m-5">
             @RenderBody()
         </main>
-    /</div>
+    </div>
 
     <footer class="border-top footer text-muted">
         <div class="container">

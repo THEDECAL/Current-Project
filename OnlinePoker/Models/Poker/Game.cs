@@ -9,6 +9,7 @@ namespace OnlinePoker.Models
     {
         public const int MAX_PLAYERS = 8;
         public const int CARDS_FOR_DIST = 5;
+        public const int STARTING_BET = 10;
         private  Deck _deck = new Deck();
         //Словарь подключений к игре, где key = id аккаунта, value = список id подключений
         private readonly Dictionary<string, List<string>> _playersConnections = new Dictionary<string, List<string>>();
@@ -19,7 +20,9 @@ namespace OnlinePoker.Models
         public bool IsStarted { get; private set; }
         public int PlayersCapacity { get; private set; }
         public bool IsPlacePlayer { get => !(Players.Count == PlayersCapacity); }
-        public int Bank { get; private set; }
+        public int Bank { get; set; }
+
+        event Action GameOverAction;
 
         public Game(int playerCapacity)
         {
@@ -27,7 +30,6 @@ namespace OnlinePoker.Models
                 PlayersCapacity = playerCapacity;
             else throw new ArgumentOutOfRangeException($"Недопустимое количество игроков (=<{playerCapacity}).");
         }
-
         /// <summary>
         /// Получить пустые карты (список нолей, что соответсвует картинке рубашки карты)
         /// </summary>
@@ -113,5 +115,18 @@ namespace OnlinePoker.Models
         /// </summary>
         /// <returns>Возвращает список ников игроков</returns>
         public List<string> GetPlayersNickNames() => Players.Select(p => p.NickName).ToList();
+        /// <summary>
+        /// Получение стартовой ставки со всех игроков
+        /// </summary>
+        public void Bet() {
+            Players.ForEach(p => {
+                if (p.Coins >= STARTING_BET)
+                {
+                    p.Coins -= STARTING_BET;
+                    this.Bank += STARTING_BET;
+                }
+                else throw new ArgumentException("Не достаточно монет");
+            });
+        }
     }
 }

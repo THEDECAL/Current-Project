@@ -24,17 +24,20 @@ namespace OnlinePoker.Models
         public List<Card> Cards { get; } = new List<Card>();
         public string UserId { get; private set; }
         public string NickName { get; private set; }
+        public int Coins { get; set; }
+        public bool IsGameOver { get; set; } = false;
 
         public Player(string userId)
         {
             if (userId != null)
             {
+                var user = Data.DBCRUD.GetUserById(userId).Result;
                 UserId = userId;
-                NickName = Data.DBCRUD.GetUserById(userId).Result.NickName;
+                NickName = user.NickName;
+                Coins = user.CoinsAmount;
             }
             else throw new NullReferenceException();
         }
-
         /// <summary>
         /// Метод получения первой самой старшей карты среди карт
         /// </summary>

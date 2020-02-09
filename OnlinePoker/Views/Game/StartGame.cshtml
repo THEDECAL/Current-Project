@@ -2,6 +2,14 @@
 
 <link rel="stylesheet" href="~/css/poker.css" />
 
+<div id="alerts" class="alerts my-5">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>THE DECAL!</strong>&nbsp;Подключился к игре
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+</div>
 <div id="poker-table" class="poker-table">
     <input type="hidden" id="game-id" value="@Model" />
     <table>
@@ -23,7 +31,9 @@
 
                 </div>
             </td>
-            <td id="combination"></td>
+            <td>
+                <div id="combination" style="display: none" class="combination"></div>
+            </td>
             <td style="left: -100px">
                 <div class="player" id="player7">
                     <div class="player-title"></div>
@@ -40,7 +50,16 @@
                 </div>
             </td>
             <td>
-                <div id="table-center" class="table-center"> </div>
+                <div>
+                    <div class='game-card' id="deck" style="display: none">
+                        <img src='/images/cards/v1/0.png' alt='...' style='position: absolute'>
+                        <img src='/images/cards/v1/0.png' alt='...' style='z-index: 7'>
+                    </div>
+                    <div id="bank" class="bank" style="display: none">
+                        <img src='/images/poker-chips.png' alt='...' height=80>
+                        <span id='bank-count'>0</span>
+                    </div>
+                </div>
             </td>
             <td style="left: 70px">
                 <div class="player" id="player4">
@@ -58,7 +77,16 @@
 
                 </div>
             </td>
-            <td id="player-actions"></td>
+            <td>
+                <div class="combination" id="player-actions" style="margin: 0 65px; display: none">
+                    <div style="height: 22px;" class="input-group">
+                        <input id="amount-bet" type="number" class="form-control" min="1" max="1000" value="10" style="height: 28px;">
+                        <div class="input-group-append" style="height: 28px;">
+                            <button class="btn btn-success btn-sm" type="button">Поставить</button>
+                        </div>
+                    </div><button type="button" class="btn btn-danger btn-sm" aria-pressed="false" style="width: 100%;">Завершить игру</button>
+                </div>
+            </td>
             <td style="left: -100px">
                 <div class="player" id="player8">
                     <div class="player-title"></div>
