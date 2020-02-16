@@ -10,7 +10,7 @@ namespace OnlinePoker.Models
         public const int MAX_PLAYERS = 8;
         public const int CARDS_FOR_DIST = 5;
         public const int STARTING_BET = 10;
-        private  Deck _deck = new Deck();
+        private readonly Deck _deck = new Deck();
         //Словарь подключений к игре, где key = id аккаунта, value = список id подключений
         private readonly Dictionary<string, List<string>> _playersConnections = new Dictionary<string, List<string>>();
 
@@ -22,7 +22,7 @@ namespace OnlinePoker.Models
         public bool IsPlacePlayer { get => !(Players.Count == PlayersCapacity); }
         public int Bank { get; set; }
 
-        event Action GameOverAction;
+        //event Action GameOverAction;
 
         public Game(int playerCapacity)
         {
@@ -99,11 +99,20 @@ namespace OnlinePoker.Models
                 Players.ForEach(p => p.TakeCard(_deck.GetCard()));
         }
         /// <summary>
-        /// Получение списка соеденений по id аккаунта
+        /// Получение списка соеденений по идентификатору аккаунта
         /// </summary>
-        /// <param name="player">Принимает объект игрока</param>
+        /// <param name="userId">Принимает идентификатор аккаунта</param>
         /// <returns>Возвращает список соединений</returns>
         public IReadOnlyList<string> GetConnections(string userId) => _playersConnections.GetValueOrDefault(userId);
+        /// <summary>
+        /// Получение всех соеденений кроме введённого идентификатора аккаунта
+        /// </summary>
+        /// <param name="userId">Принимает идентификатор аккаунта</param>
+        /// <returns>Возвращает список соединений</returns>
+        public IReadOnlyList<string> GetConnectionsExcept(string userId) =>
+            _playersConnections.Where(c => c.Key != userId).SelectMany(c => c.Value).ToList();
+            //.ToDictionary(k => k.Key, v => v.Value)
+            //.Values.SelectMany(c => c).ToList();
         /// <summary>
         /// Проверка существования игрока по id аккаунта
         /// </summary>
@@ -120,13 +129,18 @@ namespace OnlinePoker.Models
         /// </summary>
         public void Bet() {
             Players.ForEach(p => {
-                if (p.Coins >= STARTING_BET)
+                if (p.CoinsAmount >= STARTING_BET)
                 {
-                    p.Coins -= STARTING_BET;
+                    p.CoinsAmount -= STARTING_BET;
                     this.Bank += STARTING_BET;
                 }
                 else throw new ArgumentException("Не достаточно монет");
             });
         }
+        /// <summary>
+        /// Проверка окончания игры
+        /// </summary>
+        /// <param name="game">Принимает идентификатор игры</param>
+        public bool CheckAtGameOver() => Players.All(p => p.IsShowDown) || Players.Sum(p => (p.IsFold)?1:0) == Players.Count - 1;
     }
 }

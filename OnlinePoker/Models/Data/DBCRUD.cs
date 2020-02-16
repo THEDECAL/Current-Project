@@ -11,12 +11,12 @@ namespace OnlinePoker.Data
     {
         static private OnlinePokerContext Ctx { get => new OnlinePokerContext(new Microsoft.EntityFrameworkCore.DbContextOptions<OnlinePokerContext>()); }
 
-        static public async Task<User> GetUserById(string id)
+        static public async Task<User> GetAccountById(string id)
         {
             return await Task.Run(() =>
             {
-                using (var ctx = Ctx)
-                    return ctx.Users.FirstOrDefault(u => u.Id == id);
+                using var ctx = Ctx;
+                return ctx.Users.FirstOrDefault(u => u.Id == id);
             });
         }
     }

@@ -19,7 +19,7 @@ namespace OnlinePoker.Controllers
                 var game = new Models.Game(amountPlayers);
                 PokerHub.Games.Add(game);
 
-                return RedirectToAction("StartGame", "Game", new { Id = game.Id });
+                return RedirectToAction("StartGame", "Game", new { game.Id });
             }
             catch (Exception) { return View("Error"); }
         }

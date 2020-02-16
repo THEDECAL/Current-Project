@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -24,17 +25,27 @@ namespace OnlinePoker.Models
         public List<Card> Cards { get; } = new List<Card>();
         public string UserId { get; private set; }
         public string NickName { get; private set; }
-        public int Coins { get; set; }
-        public bool IsGameOver { get; set; } = false;
+        /// <summary>
+        /// Количество фишек
+        /// </summary>
+        public int CoinsAmount { get; set; }
+        /// <summary>
+        /// Отказался игрок от дальнейшей игры или нет
+        /// </summary>
+        public bool IsFold { get; set; } = false;
+        /// <summary>
+        /// Вскрывает игрок карты или нет
+        /// </summary>
+        public bool IsShowDown { get; set; } = false;
 
         public Player(string userId)
         {
             if (userId != null)
             {
-                var user = Data.DBCRUD.GetUserById(userId).Result;
+                var account = Data.DBCRUD.GetAccountById(userId).Result;
                 UserId = userId;
-                NickName = user.NickName;
-                Coins = user.CoinsAmount;
+                NickName = account.NickName;
+                CoinsAmount = account.CoinsAmount;
             }
             else throw new NullReferenceException();
         }
@@ -42,7 +53,7 @@ namespace OnlinePoker.Models
         /// Метод получения первой самой старшей карты среди карт
         /// </summary>
         /// <returns></returns>
-        private Card GetHighCard() => Cards.FirstOrDefault((cc) => cc.Rank == Cards.Max((c) => c.Rank));
+        //private Card GetHighCard() => Cards.FirstOrDefault((cc) => cc.Rank == Cards.Max((c) => c.Rank));
         /// <summary>
         /// Метод получения карты игроком
         /// </summary>

@@ -132,3 +132,7 @@
     max-height: 150px;
     position: absolute;
 }
+
+.alert {
+    margin-left: 10px;
+}

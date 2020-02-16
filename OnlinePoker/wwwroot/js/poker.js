@@ -19,31 +19,35 @@ const GUI = {
     DECK: $("#deck"),
     COMB_NAME: $("#combination"),
     ACTIONS: $("#player-actions"),
-    ALERTS: $("#alerts")
+    ALERTS: $("#alerts"),
+    MODALS: $("#modal-wins")
 }
 var currCombNum = null;
 var coinsInBank = null;
+var nickNamesArray = null;
 var crds = {};
 
 //Настройка и пожключение к хабу
 const hubConnection = new signalR.HubConnectionBuilder()
     .withUrl("/PokerHub")
+    .withAutomaticReconnect()
     .configureLogging(signalR.LogLevel.Warning)
     .build();
 
 hubConnection.serverTimeoutInMilliseconds = 7200000; //2 часа
 ////Объявление клиентских методов
 hubConnection.on("WaitWindow", waitWindow);
-hubConnection.on("CloseWaitWindow", closeWaitWindow);
-hubConnection.on("AddPlayer", (nickNamesArr) => {
-    for (var i in nickNamesArr) {
-        addPlayer(nickNamesArr[i], parseInt(Number(i) + Number(1)))
-    }
+hubConnection.on("CloseWaitWindow", () => { setTimeout(closeWaitWindow, 500); });
+hubConnection.on("AddPlayer", (nickNamesArr) => { nickNamesArray = nickNamesArr; });
+hubConnection.on("CardDist", (plCardsArr) => {
+    addPlayers(nickNamesArray);
+    cardDist(plCardsArr);
 });
-hubConnection.on("CardDist", (plCardsArr) => cardDist(plCardsArr));
 hubConnection.on("QuickCardDist", (plCardsArr) => quickCardDist(plCardsArr));
 hubConnection.on("AddCombName", (combNum) => { currCombNum = combNum; });
 hubConnection.on("AddCoinsToBank", (coinsAmount) => { coinsInBank = coinsAmount });
+hubConnection.on("AddAlert", (title, text, bsColor) => addAlert(title, text, bsColor));
+hubConnection.on("ShowOfferToBeShowdown", (playerNickName) => showOfferToBeShowdown(playerNickName));
 //Подключение к хабу
 hubConnection.start(setTimeout(connectToGame));
 
@@ -51,11 +55,21 @@ hubConnection.start(setTimeout(connectToGame));
 //Кнопка сделать ставку
 function btnBet() {
     const amountBet = $("#amount-bet").val();
-    hubConnection.send("Bet", amountBet, GUI.GAME_ID).then(console.log("btnBet run error"));
+    hubConnection.send("Bet", amountBet, GUI.GAME_ID).then(console.log(`Error running function ${btnBet.name}`));
 }
 //Кнопка завершить игру
-function btnGameOver() {
-    hubConnection.send("GameOver", GUI.GAME_ID).then(console.log("btnGameOver run error"));
+function btnFold() {
+    hubConnection.send("Fold", GUI.GAME_ID).then(console.log(`Error running function ${btnFold.name}`));
+}
+//Кнопка предложения вскрыть карты
+function btnShowdown() {
+    hubConnection.send("OfferToBeShowdown", GUI.GAME_ID).then(console.log(`Error running function ${btnShowdown.name}`));
+}
+//Отправка ответа на вопрос о вскрытии карт
+function btnYesOrNot(isAgree) {
+    $("#modalWindow").modal('hide');
+    GUI.MODALS.empty();
+    hubConnection.send("ShowdownAnswer", GUI.GAME_ID, isAgree).then(console.log(`Error running function ${btnYesOrNot.name}`));
 }
 
 //Подключение к хабу
@@ -74,24 +88,27 @@ function connectToGame(cntRetry = 0, isSending = false) {
 //Открытие анимации ожидания
 function waitWindow() {
     let title = "Ожидание подключения соперников...";
-    let img = "<img src='/images/loading.svg' alt='...' class='card-img'>";
-    let waitWindow = document.createElement("div");
-    waitWindow.setAttribute("id", "wait-window");
-    waitWindow.setAttribute("class", "wait-window");
-    $("main").prepend(waitWindow);
 
-    $("#wait-window").append(`
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">${img}</h5>
-      </div>
-      <div class="modal-body">
-        <p>${title}</p>
-      </div>
+    GUI.MODALS.empty();
+    GUI.MODALS.append(`<div class="modal fade" data-keyboard="false" data-backdrop="static" id="modalWindow" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="width: unset;margin: 0 auto;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalWindowTitle">${title}</h5>
+                </div>
+                <div class="modal-body">
+                    <center><img src="/images/loading.svg" /></center>
+                </div>
+            </div>
+        </div>
     </div>`);
+    $("#modalWindow").modal('show');
 }
 //Закрытие анимации ожидания
-function closeWaitWindow() { $("#wait-window").remove(); }
+function closeWaitWindow() {
+    $("#modalWindow").modal('hide');
+    GUI.MODALS.empty();
+}
 //Добавление поля названия комбинации
 function addCombName(combNum) {
     GUI.COMB_NAME.empty();
@@ -141,6 +158,7 @@ function cardDist(plCardsArr, plNum) {
         GUI.ACTIONS.show();
         addCombName(Number(currCombNum));
         addCoinsToBank(Number(coinsInBank));
+        
     }
 }
 //Раздача карт без анимации и показ названия комбинации
@@ -148,6 +166,7 @@ function quickCardDist(plCardsArr) {
     crds = plCardsArr;
     GUI.DECK.show();
 
+    addPlayers(nickNamesArray);
     for (var i in plCardsArr) {
             var plNum = parseInt(Number(i) + Number(1));
             var cards = plCardsArr[i];
@@ -158,17 +177,26 @@ function quickCardDist(plCardsArr) {
     GUI.DECK.hide();
     GUI.COMB_NAME.show();
     GUI.BANK.show();
-    setTimeout(addCombName(Number(currCombNum)), 1000);
+    addCombName(Number(currCombNum));
     addCoinsToBank(Number(coinsInBank));
     GUI.ACTIONS.show();
 }
 //Добавление имени игрока на стол
-function addPlayer(nickName, plNum) {
-    var el = $(`#player${plNum} .player-title`);
-    el.empty();
-    el.append(nickName).hide();
-    el.fadeIn(2500);
+function addPlayers(nickNamesArr) {
+    for (var i in nickNamesArr) {
+        //addPlayer(nickNamesArr[i], parseInt(Number(i) + Number(1)));
+        var el = $(`#player${parseInt(Number(i) + Number(1))} .player-title`);
+        el.empty();
+        el.append(nickNamesArr[i]);//.hide();
+        //el.fadeIn(2500);
+    }
 }
+//function addPlayer(nickName, plNum) {
+//    var el = $(`#player${plNum} .player-title`);
+//    el.empty();
+//    el.append(nickName).hide();
+//    el.fadeIn(2500);
+//}
 //Анимация броска карты
 function throwCard(plNum) {
     var cardPoint = GUI.DECK.offset();
@@ -240,12 +268,35 @@ function addCoinsToBank(coins) {
     BANK.append(Number(coins) + ' ' + "монет");
 }
 //Добавление уведомления
-function addAlert(title, text, color) {
-    var alert = $(`<div class="alert alert-${color} alert-dismissible fade show" role="alert">
+function addAlert(title, text, bsColor) {
+    var alert = $(`<div class="alert alert-${bsColor} alert-dismissible fade show" role="alert">
         <strong>${title}</strong>&emsp;${text}
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>`);
-    GUI.ALERTS.append(alert.hide().fadeIn());
+    GUI.ALERTS.prepend(alert.hide().fadeIn());
+}
+//Показ модального окна предложения вскрыть карты
+function showOfferToBeShowdown(playerNickName) {
+    let title = "Игрок " + playerNickName + " предлагает вскрыть карты";
+
+    GUI.MODALS.empty();
+    GUI.MODALS.append(`<div class="modal fade" data-keyboard="false" data-backdrop="static" id="modalWindow" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="width: unset;margin: 0 auto;">
+                <div class="modal-header">
+                    <center><h5 class="modal-title" id="modalWindowTitle">${title}</h5></center>
+                </div>
+              <div class="modal-body" style="margin: 0 auto;">
+                <p>Вы согласны вскрыть карты?</p>
+              </div>
+              <div class="modal-footer" style="margin: 0 auto;">
+                <button type="button" class="btn btn-success" data-dismiss="modal" onclick='btnYesOrNot(true)'>Да</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" onclick='btnYesOrNot(false)'>Нет</button>
+              </div>
+            </div>
+        </div>
+    </div>`);
+    $("#modalWindow").modal('show');
 }
