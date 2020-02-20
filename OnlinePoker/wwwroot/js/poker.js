@@ -46,8 +46,9 @@ hubConnection.on("CardDist", (plCardsArr) => {
 hubConnection.on("QuickCardDist", (plCardsArr) => quickCardDist(plCardsArr));
 hubConnection.on("AddCombName", (combNum) => { currCombNum = combNum; });
 hubConnection.on("AddCoinsToBank", (coinsAmount) => { coinsInBank = coinsAmount });
-hubConnection.on("AddAlert", (title, text, bsColor) => addAlert(title, text, bsColor));
+hubConnection.on("AddAlert", (title, text, bsColor) => setTimeout(addAlert(title, text, bsColor)), 500);
 hubConnection.on("ShowOfferToBeShowdown", (playerNickName) => showOfferToBeShowdown(playerNickName));
+hubConnection.on("ShowWindowGameOver", (playerNickName) => showWindowGameOver(playerNickName));
 //Подключение к хабу
 hubConnection.start(setTimeout(connectToGame));
 
@@ -55,21 +56,34 @@ hubConnection.start(setTimeout(connectToGame));
 //Кнопка сделать ставку
 function btnBet() {
     const amountBet = $("#amount-bet").val();
-    hubConnection.send("Bet", amountBet, GUI.GAME_ID).then(console.log(`Error running function ${btnBet.name}`));
+    hubConnection.send("Bet", amountBet, GUI.GAME_ID);//.then(console.log(`Error running function ${btnBet.name}`));
 }
 //Кнопка завершить игру
 function btnFold() {
-    hubConnection.send("Fold", GUI.GAME_ID).then(console.log(`Error running function ${btnFold.name}`));
+    hubConnection.send("Fold", GUI.GAME_ID);//.then(console.log(`Error running function ${btnFold.name}`));
 }
 //Кнопка предложения вскрыть карты
 function btnShowdown() {
-    hubConnection.send("OfferToBeShowdown", GUI.GAME_ID).then(console.log(`Error running function ${btnShowdown.name}`));
+    hubConnection.send("OfferToBeShowdown", GUI.GAME_ID);//.then(console.log(`Error running function ${btnShowdown.name}`));
 }
 //Отправка ответа на вопрос о вскрытии карт
-function btnYesOrNot(isAgree) {
+function btnShowdownAnswer(isAgree) {
     $("#modalWindow").modal('hide');
     GUI.MODALS.empty();
-    hubConnection.send("ShowdownAnswer", GUI.GAME_ID, isAgree).then(console.log(`Error running function ${btnYesOrNot.name}`));
+    hubConnection.send("ShowdownAnswer", GUI.GAME_ID, isAgree);//.then(console.log(`Error running function ${btnYesOrNot.name}`));
+}
+//Отправка ответа на вопрос о новой партии
+function btnNewParty(isAgree) {
+    $("#modalWindow").modal('hide');
+    GUI.MODALS.empty();
+
+    if (isAgree) {
+        clearTable();
+        hubConnection.send("NewParty", GUI.GAME_ID, isAgree);//.then(console.log(`Error running function ${btnYesOrNot.name}`));
+    }
+    else {
+        window.location.href = location.protocol + '//' + window.location.host;
+    }
 }
 
 //Подключение к хабу
@@ -202,7 +216,7 @@ function throwCard(plNum) {
     var cardPoint = GUI.DECK.offset();
     var playerPoint = $(`#player${plNum}`).offset();
     var top = Math.round(playerPoint.top - cardPoint.top);
-    var left = Math.round(playerPoint.left - cardPoint.left + 40);
+    var left = Math.round(playerPoint.left - cardPoint.left + 80);
 
     GUI.DECK[0].lastElementChild.animate([
         {
@@ -279,7 +293,7 @@ function addAlert(title, text, bsColor) {
 }
 //Показ модального окна предложения вскрыть карты
 function showOfferToBeShowdown(playerNickName) {
-    let title = "Игрок " + playerNickName + " предлагает вскрыть карты";
+    let title = "Игрок <strong>" + playerNickName + "</strong> предлагает вскрыть карты";
 
     GUI.MODALS.empty();
     GUI.MODALS.append(`<div class="modal fade" data-keyboard="false" data-backdrop="static" id="modalWindow" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -292,11 +306,46 @@ function showOfferToBeShowdown(playerNickName) {
                 <p>Вы согласны вскрыть карты?</p>
               </div>
               <div class="modal-footer" style="margin: 0 auto;">
-                <button type="button" class="btn btn-success" data-dismiss="modal" onclick='btnYesOrNot(true)'>Да</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal" onclick='btnYesOrNot(false)'>Нет</button>
+                <button type="button" class="btn btn-success" data-dismiss="modal" onclick='btnShowdownAnswer(true)'>Да</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" onclick='btnShowdownAnswer(false)'>Нет</button>
               </div>
             </div>
         </div>
     </div>`);
     $("#modalWindow").modal('show');
+}
+//Показ окна завершения игры и предложение начать новую партию
+function showWindowGameOver(playerNickName) {
+    let title = "Поздравляем <strong>" + playerNickName + "</strong> вы победили!";
+
+    GUI.MODALS.empty();
+    GUI.MODALS.append(`<div class="modal fade" data-keyboard="false" data-backdrop="static" id="modalWindow" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="width: unset;margin: 0 auto;">
+                <div class="modal-header">
+                    <center><h5 class="modal-title" id="modalWindowTitle">${title}</h5></center>
+                </div>
+              <div class="modal-body" style="margin: 0 auto;">
+                <p>Хотите начать новую партию?</p>
+              </div>
+              <div class="modal-footer" style="margin: 0 auto;">
+                <button type="button" class="btn btn-success" data-dismiss="modal" onclick='btnNewParty(true)'>Да</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" onclick='btnNewParty(false)'>Нет</button>
+              </div>
+            </div>
+        </div>
+    </div>`);
+    $("#modalWindow").modal('show');
+}
+//Очитска игрального стола
+function clearTable() {
+    GUI.ACTIONS.hide();
+    GUI.BANK.hide();
+    GUI.DECK.hide();
+    GUI.COMB_NAME.hide();
+
+    for (let i = 1; i <= MAX_PLAYERS; i++) {
+        $(`#player${i} .player-title`).empty();
+        $(`#player${i} .player-cards`).empty();
+    }
 }

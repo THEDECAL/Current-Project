@@ -1,33 +1,26 @@
 ﻿@model List<OnlinePoker.Models.Game>
 @{
     ViewBag.Title = "Текущие игры";
-    var x2 = Model.Where(g => g.Players.Count == 2);
-    var x4 = Model.Where(g => g.Players.Count == 4);
-    var x6 = Model.Where(g => g.Players.Count == 6);
-    var x8 = Model.Where(g => g.Players.Count == 8);
 }
 
 <h2>@ViewBag.Title</h2>
 
-<table border="1">
-    <tr>
-        <td>2x</td>
-        <td>4x</td>
-        <td>6x</td>
-        <td>8x</td>
-    </tr>
-    <tr>
-        <td>
-        </td>
-        <td>
-        </td>
-        <td>
-        </td>
-        <td>
-        </td>
-    </tr>
-</table>
-@foreach (var item in Model)
-{
-
-}
+<div class="card-columns">
+    @foreach (Game game in Model)
+    {
+        <div class="card" style="width: 18rem; margin: 10px;">
+            <div class="card-body">
+                <h5 class="card-title">Игра на @game.PlayersCapacity человека</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Текущие игроки:</h6>
+                @foreach (Player player in game.Players)
+                {
+                    <p class="card-text">@player.NickName</p>
+                }
+                @if (game.IsPlacePlayer)
+                {
+                    <a href="/Game/StartGame/@game.Id" class="card-link">Подключится</a>
+                }
+            </div>
+        </div>
+    }
+</div>

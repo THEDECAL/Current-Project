@@ -21,8 +21,10 @@ namespace OnlinePoker.Models
         public int PlayersCapacity { get; private set; }
         public bool IsPlacePlayer { get => !(Players.Count == PlayersCapacity); }
         public int Bank { get; set; }
-
-        //event Action GameOverAction;
+        /// <summary>
+        /// Победитель партии игры
+        /// </summary>
+        public Player Winner { get; private set; }
 
         public Game(int playerCapacity)
         {
@@ -141,6 +143,22 @@ namespace OnlinePoker.Models
         /// Проверка окончания игры
         /// </summary>
         /// <param name="game">Принимает идентификатор игры</param>
-        public bool CheckAtGameOver() => Players.All(p => p.IsShowDown) || Players.Sum(p => (p.IsFold)?1:0) == Players.Count - 1;
+        public bool CheckAtGameOver()
+        {
+            bool isGameOver = false;
+
+            if (Players.All(p => p.IsShowdown))
+            {
+                Winner = Players.OrderBy(p => (int)p.GetCombination()).LastOrDefault();
+                isGameOver = true;
+            }
+            else if (Players.Sum(p => (p.IsFold) ? 1 : 0) == Players.Count - 1)
+            {
+                Winner = Players.FirstOrDefault(p => !p.IsFold);
+                isGameOver = true;
+            }
+
+            return isGameOver;
+        }
     }
 }

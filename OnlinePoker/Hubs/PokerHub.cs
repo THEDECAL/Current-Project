@@ -4,6 +4,7 @@ using OnlinePoker.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,9 +16,8 @@ namespace OnlinePoker.Hubs
     /// </summary>
     public class PokerHub : Hub
     {
-        static private List<Game> _games;
-        static public List<Game> Games { get => _games ??= new List<Game>(); }
-        static public readonly int THROW_TIME_ANIM = 700;
+        static public List<Game> Games { get; } = new List<Game>();
+        public const int THROW_TIME_ANIM = 700;
         UserManager<User> _userManager;
 
         public PokerHub(UserManager<User> userManager)
@@ -146,7 +146,7 @@ namespace OnlinePoker.Hubs
             else throw new NullReferenceException();
         }
         /// <summary>
-        /// Выполнение ставки игрока
+        /// Ставка игрока
         /// </summary>
         /// <param name="amountBet">Сумма ставки</param>
         /// <param name="gameId">Идентификатор игры</param>
@@ -156,18 +156,20 @@ namespace OnlinePoker.Hubs
 
             if (game != null && amountBet != null)
             {
-                var player = GetCurrentPlayerOnGame(game);
                 lock (game)
                 {
-                    player.CoinsAmount -= amountBet.Value;
-                    game.Bank += amountBet.Value;
-                }
+                    var account = GetAccountById(Context.UserIdentifier);
+                    var userConnsExcept = game.GetConnectionsExcept(Context.ConnectionId);
 
-                Clients.Clients(game.Connections).SendAsync("AddCoinsToBank", game.Bank);
+                    GetCurrentPlayerOnGame(game).CoinsAmount -= amountBet.Value;
+                    game.Bank += amountBet.Value;
+                    Clients.Clients(userConnsExcept).SendAsync("AddAlert", account.NickName, $"Ставит {amountBet}", "warning");
+                    Clients.Clients(game.Connections).SendAsync("AddCoinsToBank", game.Bank);
+                }
             }
         }
         /// <summary>
-        /// Завершение партии
+        /// Завершить партию игры
         /// </summary>
         /// <param name="gameId">Идентификатор игры</param>
         public void Fold(string gameId)
@@ -176,11 +178,19 @@ namespace OnlinePoker.Hubs
 
             if (game != null)
             {
-                GetCurrentPlayerOnGame(game).IsFold = true;
-                Clients.AllExcept()
+                //Если остальные игроки не завершили партию (ведь должен быть победитель)
+                if (game.Players.Sum(p => (p.IsFold) ? 1 : 0) != game.Players.Count - 1)
+                {
+                    var account = GetAccountById(Context.UserIdentifier);
+                    var userConnsExcept = game.GetConnectionsExcept(Context.ConnectionId);
+
+                    GetCurrentPlayerOnGame(game).IsFold = true;
+                    Clients.Clients(userConnsExcept).SendAsync("AddAlert", account.NickName, "Завершает игру", "danger");
+                }
             }
 
-            game.CheckAtGameOver();
+            if(game.CheckAtGameOver())
+                GameOver(gameId);
         }
         /// <summary>
         /// Предложение вскрыть карты
@@ -192,15 +202,18 @@ namespace OnlinePoker.Hubs
 
             if (game != null)
             {
-                var userConnsExcept = game.GetConnectionsExcept(Context.UserIdentifier);
                 var account = GetAccountById(Context.UserIdentifier);
+                var userConnsExcept = game.GetConnectionsExcept(Context.UserIdentifier);
 
-                GetCurrentPlayerOnGame(game).IsShowDown = true;
+                GetCurrentPlayerOnGame(game).IsShowdown = true;
                 Clients.Clients(userConnsExcept).SendAsync("ShowOfferToBeShowdown", account.NickName);
             }
-
-            game.CheckAtGameOver();
         }
+        /// <summary>
+        /// Ответ на предложение вскрытся
+        /// </summary>
+        /// <param name="gameId">Принимает идентификатор игры</param>
+        /// <param name="isAgree">Принимает булево да/нет</param>
         public void ShowdownAnswer(string gameId, bool isAgree)
         {
             var game = GetGame(gameId);
@@ -208,9 +221,19 @@ namespace OnlinePoker.Hubs
             if (game != null)
             {
                 var account = GetAccountById(Context.UserIdentifier);
+                var userConsExcept = game.GetConnectionsExcept(Context.ConnectionId);
 
-                GetCurrentPlayerOnGame(game).IsShowDown = isAgree;
+                GetCurrentPlayerOnGame(game).IsShowdown = isAgree;
+                Clients.Clients(userConsExcept).SendAsync("AddAlert",
+                    account.NickName,
+                    (isAgree?"Согласен вскрытся":"Отказывается вскрыватся"),
+                    (isAgree?"warning":"danger"));
+
+                if (!isAgree) game.Players.ForEach(p => p.IsShowdown = false);
             }
+
+            if (game.CheckAtGameOver())
+                GameOver(gameId);
         }
         /// <summary>
         /// Получить текущего аутентифицированного пользователя к игре по идентификатору
@@ -225,8 +248,23 @@ namespace OnlinePoker.Hubs
         /// <returns>Возвращает объект игры</returns>
         protected Player GetCurrentPlayerOnGame(Game game) => game.Players.FirstOrDefault(p => p.UserId == Context.UserIdentifier);
         //Конец игры
-        protected void GameOver() {
+        protected void GameOver(String gameId)
+        {
+            var game = GetGame(gameId);
 
+            if (game != null)
+            {
+                var winnerAccount = GetAccountById(game.Winner.UserId);
+                //Когда партия заканчивается сораняем все сделаные ставки и выигриши
+                game.Players.ForEach(player =>
+                {
+                    var account = GetAccountById(player.UserId);
+                    account.CoinsAmount -= Game.STARTING_BET;
+                });
+                winnerAccount.CoinsAmount += game.Bank;
+                
+                Clients.Clients(game.Connections).SendAsync("ShowWindowGameOver", game.Winner.NickName);
+            }
         }
         /// <summary>
         /// Получить объект аккаунта по идентификатору

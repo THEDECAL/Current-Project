@@ -36,7 +36,7 @@ namespace OnlinePoker.Models
         /// <summary>
         /// Вскрывает игрок карты или нет
         /// </summary>
-        public bool IsShowDown { get; set; } = false;
+        public bool IsShowdown { get; set; } = false;
 
         public Player(string userId)
         {
