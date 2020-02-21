@@ -9,6 +9,8 @@
     <NeutralLanguage>ru</NeutralLanguage>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <StartupObject>OnlinePoker.Program</StartupObject>
+    <ApplicationIcon>poker-icon.ico</ApplicationIcon>
+    <AssemblyName>OnlinePoker</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
