@@ -18,7 +18,7 @@ namespace OnlinePoker.Models
         /// <summary>
         /// Метод инициализации колоды карт
         /// </summary>
-        private void DeckInit()
+        protected void DeckInit()
         {
             for (int suit = (int)Suit.Hearts; suit <= (int)Suit.Spades; suit++)
             {
@@ -31,7 +31,7 @@ namespace OnlinePoker.Models
         /// <summary>
         /// Метод перемешивания карт в колоде
         /// </summary>
-        private void Shuffle() => _cards = new Stack<Card>(_cards.OrderBy((c) => _random.Next()));
+        protected void Shuffle() => _cards = new Stack<Card>(_cards.OrderBy((c) => _random.Next()));
         /// <summary>
         /// Метод получения карты сверху колоды
         /// </summary>

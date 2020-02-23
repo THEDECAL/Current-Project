@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Web;
 
@@ -18,8 +19,8 @@ namespace OnlinePoker.Models
         public List<Player> Players { get; private set; } = new List<Player>();
         public IReadOnlyList<string> Connections { get => _playersConnections.Values.SelectMany(c => c).ToList(); }
         public bool IsStarted { get; private set; }
-        public int PlayersCapacity { get; private set; }
         public bool IsPlacePlayer { get => !(Players.Count == PlayersCapacity); }
+        public int PlayersCapacity { get; private set; }
         public int Bank { get; set; }
         /// <summary>
         /// Победитель партии игры
@@ -36,33 +37,29 @@ namespace OnlinePoker.Models
         /// Получить пустые карты (список нолей, что соответсвует картинке рубашки карты)
         /// </summary>
         /// <returns>Возвращает список строк</returns>
-        static public List<string> GetEmptyCards(string cardVersion) => new int[CARDS_FOR_DIST].Select(c => cardVersion + c.ToString()).ToList();
+        static public IReadOnlyList<string> GetEmptyCards(string cardVersion) => new int[CARDS_FOR_DIST].Select(c => cardVersion + c.ToString()).ToList();
         /// <summary>
         /// Добавление соединения и игрока по id аккаунта
         /// </summary>
         /// <param name="player">Принимает объект игрока</param>
         /// <param name="connId">Принимает id соединения</param>
-        public void AddConnection(string userId, string connId)
+        public void AddConnection([NotNull]User account, [NotNull] string connId)
         {
-            if (userId != null && connId != null)
-            {
-                lock (Players)
-                    if (!IsUserExists(userId)) Players.Add(new Player(userId));
+            lock (Players)
+                if (!IsUserExists(account.Id)) Players.Add(new Player(account));
 
-                lock (_playersConnections)
+            lock (_playersConnections)
+            {
+                var isExistingPlayer = _playersConnections.ContainsKey(account.Id);
+                if (isExistingPlayer) //Этот userId уже есть?
                 {
-                    var isExistingPlayer = _playersConnections.ContainsKey(userId);
-                    if (isExistingPlayer) //Этот userId уже есть?
-                    {
-                        var isExistingConnId = _playersConnections[userId].Contains(connId);
-                        if (!isExistingConnId) //Это соединение уже есть?
-                            _playersConnections[userId].Add(connId);
-                    }
-                    else
-                        _playersConnections.Add(userId, new List<string>() { connId });
+                    var isExistingConnId = _playersConnections[account.Id].Contains(connId);
+                    if (!isExistingConnId) //Это соединение уже есть?
+                        _playersConnections[account.Id].Add(connId);
                 }
+                else
+                    _playersConnections.Add(account.Id, new List<string>() { connId });
             }
-            else throw new NullReferenceException();
         }
         /// <summary>
         /// Удаление соединения
@@ -125,18 +122,16 @@ namespace OnlinePoker.Models
         /// Получение всех ников игроков
         /// </summary>
         /// <returns>Возвращает список ников игроков</returns>
-        public List<string> GetPlayersNickNames() => Players.Select(p => p.NickName).ToList();
+        public IReadOnlyList<string> GetPlayersNickNames() => Players.Select(p => p.NickName).ToList();
         /// <summary>
         /// Получение стартовой ставки со всех игроков
         /// </summary>
         public void Bet() {
             Players.ForEach(p => {
-                if (p.CoinsAmount >= STARTING_BET)
-                {
-                    p.CoinsAmount -= STARTING_BET;
+                if (p.SubtractionCoinsAmount(STARTING_BET))
                     this.Bank += STARTING_BET;
-                }
-                else throw new ArgumentException("Не достаточно монет");
+                else
+                    throw new ArgumentException($"Не достаточно монет у {p.NickName}");
             });
         }
         /// <summary>

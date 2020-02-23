@@ -16,9 +16,10 @@ namespace OnlinePoker.Hubs
     /// </summary>
     public class PokerHub : Hub
     {
-        static public List<Game> Games { get; } = new List<Game>();
-        public const int THROW_TIME_ANIM = 700;
         UserManager<User> _userManager;
+
+        static public List<Game> ListGames { get; } = new List<Game>();
+        public const int THROW_TIME_ANIM = 700;
 
         public PokerHub(UserManager<User> userManager)
         {
@@ -27,7 +28,7 @@ namespace OnlinePoker.Hubs
         public override Task OnConnectedAsync() => base.OnConnectedAsync();
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            var game = Games.FirstOrDefault(g => g.Players.Exists(p => p.UserId == Context.UserIdentifier));
+            var game = ListGames.FirstOrDefault(g => g.Players.Exists(p => p.UserId == Context.UserIdentifier));
             if(game != null)
                 game.DelConnection(Context.UserIdentifier, Context.ConnectionId);
 
@@ -53,9 +54,10 @@ namespace OnlinePoker.Hubs
                     {
                         var account = GetAccountById(Context.UserIdentifier);
 
+                        //Если у игрока достаточно монет
                         if (account.CoinsAmount >= Game.STARTING_BET)
                         {
-                            game.AddConnection(Context.UserIdentifier, Context.ConnectionId);
+                            game.AddConnection(account, Context.ConnectionId);
 
                             var userConns = game.GetConnections(Context.UserIdentifier);
                             var allConnsExcept = game.GetConnectionsExcept(Context.UserIdentifier);
@@ -63,7 +65,6 @@ namespace OnlinePoker.Hubs
                             Clients.Clients(userConns).SendAsync("WaitWindow");
                             Clients.Clients(game.Connections).SendAsync("AddPlayer", game.GetPlayersNickNames());
                             Clients.Clients(allConnsExcept).SendAsync("AddAlert", account.NickName, "Подключился к игре", "success");
-                            //Clients.AllExcept(userConns).SendAsync("AddAlert", account.NickName, "Подключился к игре", "success");
                         }
                     }
 
@@ -153,16 +154,20 @@ namespace OnlinePoker.Hubs
         public void Bet(string gameId, int amountBet)
         {
             Game game = GetGame(gameId);
-
+            
             if (game != null)
             {
                 var account = GetAccountById(Context.UserIdentifier);
-                var userConnsExcept = game.GetConnectionsExcept(Context.ConnectionId);
+                var userConnsExcept = game.GetConnectionsExcept(Context.UserIdentifier);
 
-                GetCurrentPlayerOnGame(game).CoinsAmount -= amountBet;
-                game.Bank += amountBet;
-                Clients.Clients(userConnsExcept).SendAsync("AddAlert", account.NickName, $"Ставит {amountBet}", "warning");
-                Clients.Clients(game.Connections).SendAsync("AddCoinsToBank", game.Bank);
+                if (GetCurrentPlayerOnGame(game).SubtractionCoinsAmount(amountBet))
+                {
+                    game.Bank += amountBet;
+                    Clients.Clients(userConnsExcept).SendAsync("AddAlert", account.NickName, $"Ставит {amountBet}", "warning");
+                    Clients.Clients(game.Connections).SendAsync("AddCoinsToBank", game.Bank);
+                }
+                else
+                    Clients.Clients(game.GetConnections(Context.UserIdentifier)).SendAsync("AddAlert", "У вас недостаточно монет", "", "danger");
             }
         }
         /// <summary>
@@ -237,7 +242,7 @@ namespace OnlinePoker.Hubs
         /// </summary>
         /// <param name="gameId">Принимает идентификатор игры</param>
         /// <returns>Возвращает объект игры</returns>
-        protected static Game GetGame(string gameId) => Games.FirstOrDefault(g => g.Id == gameId);
+        protected static Game GetGame(string gameId) => ListGames.FirstOrDefault(g => g.Id == gameId);
         /// <summary>
         /// Получить игру по идентификатору
         /// </summary>
@@ -252,6 +257,8 @@ namespace OnlinePoker.Hubs
             if (game != null)
             {
                 var winnerAccount = GetAccountById(game.Winner.UserId);
+                var userConns = game.GetConnections(Context.UserIdentifier);
+                var userConnsExcept = game.GetConnectionsExcept(Context.UserIdentifier);
                 //Когда партия заканчивается сораняем все сделаные ставки и выигриши
                 game.Players.ForEach(player =>
                 {
@@ -260,7 +267,9 @@ namespace OnlinePoker.Hubs
                 });
                 winnerAccount.CoinsAmount += game.Bank;
                 
-                Clients.Clients(game.Connections).SendAsync("ShowWindowGameOver", game.Winner.NickName);
+                Clients.Clients(userConnsExcept).SendAsync("ShowWindowGameOver", game.Winner.NickName, false);
+                Clients.Clients(userConns).SendAsync("ShowWindowGameOver", game.Winner.NickName, true);
+                //Games.Remove(game);
             }
         }
         /// <summary>
