@@ -45,17 +45,17 @@ hubConnection.on("CardDist", (plCardsArr) => {
 });
 hubConnection.on("QuickCardDist", (plCardsArr) => quickCardDist(plCardsArr));
 hubConnection.on("AddCombName", (combNum) => { currCombNum = combNum; });
-hubConnection.on("AddCoinsToBank", (coinsAmount) => { coinsInBank = coinsAmount });
+hubConnection.on("AddCoinsToBank", (coinsAmount) => { addCoinsToBank(coinsAmount); coinsInBank = coinsAmount; });
 hubConnection.on("AddAlert", (title, text, bsColor) => setTimeout(addAlert(title, text, bsColor)), 500);
 hubConnection.on("ShowOfferToBeShowdown", (playerNickName) => showOfferToBeShowdown(playerNickName));
-hubConnection.on("ShowWindowGameOver", (playerNickName) => showWindowGameOver(playerNickName));
+hubConnection.on("ShowWindowGameOver", (playerNickName, isWinn) => showWindowGameOver(playerNickName, isWinn));
 //Подключение к хабу
 hubConnection.start(setTimeout(connectToGame));
 
 ////Объвление серверных методов
 //Кнопка сделать ставку
 function btnBet() {
-    const amountBet = $("#amount-bet").val();
+    const amountBet = Number($("#amount-bet").val());
     hubConnection.send("Bet", GUI.GAME_ID, amountBet);//.then(console.log(`Error running function ${btnBet.name}`));
 }
 //Кнопка завершить игру
@@ -315,8 +315,14 @@ function showOfferToBeShowdown(playerNickName) {
     $("#modalWindow").modal('show');
 }
 //Показ окна завершения игры и предложение начать новую партию
-function showWindowGameOver(playerNickName) {
-    let title = "Поздравляем <strong>" + playerNickName + "</strong> вы победили!";
+function showWindowGameOver(playerNickName, isWinn) {
+    let title = null;
+    if (isWinn) {
+        title = "Поздравляем <strong>" + playerNickName + "</strong> вы победили!";
+    }
+    else {
+        title = "К сожалению вы проиграли, победил <strong>" + playerNickName + "</strong>";
+    }
 
     GUI.MODALS.empty();
     GUI.MODALS.append(`<div class="modal fade" data-keyboard="false" data-backdrop="static" id="modalWindow" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

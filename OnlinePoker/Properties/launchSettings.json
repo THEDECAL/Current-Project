@@ -22,7 +22,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "nativeDebugging": true
+      "sqlDebugging": false,
+      "nativeDebugging": false
     }
   }
 }

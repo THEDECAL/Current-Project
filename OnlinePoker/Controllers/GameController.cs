@@ -17,7 +17,7 @@ namespace OnlinePoker.Controllers
             try
             {
                 var game = new Models.Game(amountPlayers);
-                PokerHub.Games.Add(game);
+                PokerHub.ListGames.Add(game);
 
                 return RedirectToAction("StartGame", "Game", new { game.Id });
             }
@@ -30,7 +30,7 @@ namespace OnlinePoker.Controllers
         {
             if (Id != null && Id.Trim().Length != 0)
             {
-                var game = PokerHub.Games.FirstOrDefault(g => g.Id == Id);
+                var game = PokerHub.ListGames.FirstOrDefault(g => g.Id == Id);
 
                 return View(Id as Object);
             }
@@ -40,7 +40,7 @@ namespace OnlinePoker.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult CurrentGames() => View(PokerHub.Games);
+        public IActionResult CurrentGames() => View(PokerHub.ListGames);
 
         [HttpGet]
         public IActionResult Rules() => View();

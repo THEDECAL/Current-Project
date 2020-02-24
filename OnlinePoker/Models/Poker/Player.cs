@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace OnlinePoker.Models
@@ -22,13 +23,15 @@ namespace OnlinePoker.Models
 
     public class Player
     {
-        public List<Card> Cards { get; } = new List<Card>();
+        private List<Card> _cards = new List<Card>();
+
+        public IReadOnlyList<Card> Cards { get => _cards; }
         public string UserId { get; private set; }
         public string NickName { get; private set; }
         /// <summary>
         /// Количество фишек
         /// </summary>
-        public int CoinsAmount { get; set; }
+        public int CoinsAmount { get; private set; }
         /// <summary>
         /// Отказался игрок от дальнейшей игры или нет
         /// </summary>
@@ -38,27 +41,23 @@ namespace OnlinePoker.Models
         /// </summary>
         public bool IsShowdown { get; set; } = false;
 
-        public Player(string userId)
+        public Player([NotNull] User account)
         {
-            if (userId != null)
-            {
-                var account = Data.DBCRUD.GetAccountById(userId).Result;
-                UserId = userId;
-                NickName = account.NickName;
-                CoinsAmount = account.CoinsAmount;
-            }
-            else throw new NullReferenceException();
+            //var account = Data.DBCRUD.GetAccountById(userId).Result;
+            UserId = account.Id;
+            NickName = account.NickName;
+            CoinsAmount = account.CoinsAmount;
         }
         /// <summary>
         /// Метод получения первой самой старшей карты среди карт
         /// </summary>
         /// <returns></returns>
-        //private Card GetHighCard() => Cards.FirstOrDefault((cc) => cc.Rank == Cards.Max((c) => c.Rank));
+        private Card GetHighCard() => Cards.FirstOrDefault((cc) => cc.Rank == Cards.Max((c) => c.Rank));
         /// <summary>
         /// Метод получения карты игроком
         /// </summary>
         /// <param name="card"></param>
-        public void TakeCard(Card card) => Cards.Add(card);
+        public void TakeCard(Card card) => _cards.Add(card);
         /// <summary>
         /// Метод получения карт игрока
         /// </summary>
@@ -113,6 +112,25 @@ namespace OnlinePoker.Models
             //HighCard
             return Combination.HighCard;
         }
+        /// <summary>
+        /// Вычитание с проверкой из CoinsAmount
+        /// </summary>
+        /// <param name="amount">Принимает целое положительное число</param>
+        /// <returns>Возвращает true при успешном изминении</returns>
+        public bool SubtractionCoinsAmount(int amount)
+        {
+            if (amount > 0 && amount <= CoinsAmount)
+            {
+                CoinsAmount -= amount;
+                return true;
+            }
+            return false;
+        }
+        /// <summary>
+        /// Прибавление к CoinsAmount
+        /// </summary>
+        /// <param name="amount">Принимает целое положительное число</param>
+        public void AdditionCoinsAmount(int amount) => CoinsAmount += amount;
 
         public static bool operator ==(Player p1, Player p2) => p1.UserId == p2.UserId;
         public static bool operator !=(Player p1, Player p2) => !(p1 == p2);
