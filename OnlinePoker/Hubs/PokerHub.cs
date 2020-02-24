@@ -82,7 +82,8 @@ namespace OnlinePoker.Hubs
         {
             if (game != null)
             {
-                game.AddConnection(Context.UserIdentifier, Context.ConnectionId);
+                var account = GetAccountById(Context.UserIdentifier);
+                game.AddConnection(account, Context.ConnectionId);
                 var userConns = game.GetConnections(Context.UserIdentifier);
                 if (game.IsStarted)
                 {
