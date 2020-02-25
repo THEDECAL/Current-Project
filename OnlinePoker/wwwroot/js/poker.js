@@ -78,7 +78,11 @@ function btnNewParty(isAgree) {
     GUI.MODALS.empty();
 
     if (isAgree) { clearTable(); }
-    else { window.location.href = location.protocol + '//' + window.location.host; }
+    else {
+        setTimeout(() => {
+            window.location.href = location.protocol + '//' + window.location.host;
+        }, 1000);
+    }
 
     hubConnection.send("NewParty", GUI.GAME_ID, isAgree);
 }

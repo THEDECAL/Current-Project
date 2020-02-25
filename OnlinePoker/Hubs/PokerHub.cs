@@ -275,13 +275,10 @@ namespace OnlinePoker.Hubs
                     var account = GetAccountById(player.UserId);
                     account.CoinsAmount = player.CoinsAmount;
                     _userManager.UpdateAsync(account).Wait();
-                    Console.WriteLine(account.NickName + ' ' + account.CoinsAmount);
                 });
-                //winnerAccount.CoinsAmount += game.Bank;
-                //_userManager.UpdateAsync(winnerAccount).Wait();
                 
-                Clients.Clients(userConnsExcept).SendAsync("ShowWindowGameOver", game.Winner.NickName, false);
-                Clients.Clients(userConns).SendAsync("ShowWindowGameOver", game.Winner.NickName, true);
+                Clients.Clients(userConnsExcept).SendAsync("ShowWindowGameOver", game.Winner.NickName, true);
+                Clients.Clients(userConns).SendAsync("ShowWindowGameOver", game.Winner.NickName, false);
             }
         }
         /// <summary>
@@ -296,29 +293,24 @@ namespace OnlinePoker.Hubs
         /// <param name="gameId">Принимает идентификатор игры</param>
         public void NewParty(string gameId, bool isAgree)
         {
-            Console.WriteLine("NewParty entered");
             var game = GetGame(gameId);
 
             if (game != null)
             {
                 GetCurrentPlayerOnGame(game).IsAgreeNewParty = isAgree;
-                //Если все ответили
-                if (game.Players.All(p => (p.IsAgreeNewParty != null) ? true : false))
+                if (isAgree)
                 {
-                    Console.WriteLine("All answered");
                     //Если все согласны
-                    if (game.Players.Count == game.Players.Sum(p => (p.IsAgreeNewParty.Value) ? 1 : 0))
+                    if (game.Players.Count == game.Players.Sum(p => (p.IsAgreeNewParty) ? 1 : 0))
                     {
                         game.NewParty();
                         StartGame(game);
-                        Console.WriteLine("NewParty started");
                     }
-                    else
-                    {
-                        Clients.Clients(game.Connections).SendAsync("AddAlert", "", "Не все согласны на новую партию. Начните новую игру.", "danger");
-                        ListGames.Remove(game);
-                        Console.WriteLine("NewParty not started");
-                    }
+                }
+                else
+                {
+                    Clients.Clients(game.Connections).SendAsync("AddAlert", "", "Не все согласны на новую партию. Начните новую игру.", "danger");
+                    ListGames.Remove(game);
                 }
             }
         }

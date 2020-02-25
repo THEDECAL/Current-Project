@@ -12,8 +12,6 @@ namespace OnlinePoker.Models
 {
     public class OnlinePokerContext : IdentityDbContext<User>
     {
-        //public DbSet<Winner> Winners { get; set; }
-
         public OnlinePokerContext() { }
 
         public OnlinePokerContext(DbContextOptions<OnlinePokerContext> options)

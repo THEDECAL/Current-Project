@@ -43,7 +43,7 @@ namespace OnlinePoker.Models
         /// <summary>
         /// Согласен игрок на новую партию или нет
         /// </summary>
-        public bool? IsAgreeNewParty { get; set; } = null;
+        public bool IsAgreeNewParty { get; set; } = false;
 
         public Player([NotNull] User account)
         {
