@@ -58,13 +58,17 @@ namespace OnlinePoker.Hubs
                         if (account.CoinsAmount >= Game.STARTING_BET)
                         {
                             game.AddConnection(account, Context.ConnectionId);
-
-                            var userConns = game.GetConnections(Context.UserIdentifier);
                             var allConnsExcept = game.GetConnectionsExcept(Context.UserIdentifier);
+                            var userConns = game.GetConnections(Context.UserIdentifier);
+                            Console.WriteLine(account.NickName + ' ' + "Connection added");
 
                             Clients.Clients(userConns).SendAsync("WaitWindow");
                             Clients.Clients(game.Connections).SendAsync("AddPlayer", game.GetPlayersNickNames());
                             Clients.Clients(allConnsExcept).SendAsync("AddAlert", account.NickName, "Подключился к игре", "success");
+                        }
+                        else
+                        {
+                            Clients.Clients(Context.ConnectionId).SendAsync("AddAlert", account.NickName, "У вас не достаточно монет", "danger");
                         }
                     }
 
@@ -72,7 +76,7 @@ namespace OnlinePoker.Hubs
                 }
                 else throw new NullReferenceException();
             }
-            catch (Exception) {  }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
         /// <summary>
         /// Переподключение игрока к игре
@@ -142,6 +146,7 @@ namespace OnlinePoker.Hubs
 
                         Clients.Clients(userConns).SendAsync("CardDist", cards);
                         Clients.Clients(userConns).SendAsync("AddCombName", p.GetCombination());
+                        Clients.Clients(game.Connections).SendAsync("AddAlert", p.NickName, $"Делает начальную ставку {Game.STARTING_BET} монет", "danger");
                     });
                 }
             }
@@ -250,8 +255,11 @@ namespace OnlinePoker.Hubs
         /// <param name="gameId">Принимает идентификатор игры</param>
         /// <returns>Возвращает объект игры</returns>
         protected Player GetCurrentPlayerOnGame(Game game) => game.Players.FirstOrDefault(p => p.UserId == Context.UserIdentifier);
-        //Конец игры
-        protected void GameOver(String gameId)
+        /// <summary>
+        /// Конец игры
+        /// </summary>
+        /// <param name="gameId">Принимает идентификатор игры</param>
+        protected void GameOver(string gameId)
         {
             var game = GetGame(gameId);
 
@@ -260,17 +268,20 @@ namespace OnlinePoker.Hubs
                 var winnerAccount = GetAccountById(game.Winner.UserId);
                 var userConns = game.GetConnections(Context.UserIdentifier);
                 var userConnsExcept = game.GetConnectionsExcept(Context.UserIdentifier);
+
                 //Когда партия заканчивается сораняем все сделаные ставки и выигриши
                 game.Players.ForEach(player =>
                 {
                     var account = GetAccountById(player.UserId);
-                    account.CoinsAmount -= Game.STARTING_BET;
+                    account.CoinsAmount = player.CoinsAmount;
+                    _userManager.UpdateAsync(account).Wait();
+                    Console.WriteLine(account.NickName + ' ' + account.CoinsAmount);
                 });
-                winnerAccount.CoinsAmount += game.Bank;
+                //winnerAccount.CoinsAmount += game.Bank;
+                //_userManager.UpdateAsync(winnerAccount).Wait();
                 
                 Clients.Clients(userConnsExcept).SendAsync("ShowWindowGameOver", game.Winner.NickName, false);
                 Clients.Clients(userConns).SendAsync("ShowWindowGameOver", game.Winner.NickName, true);
-                //Games.Remove(game);
             }
         }
         /// <summary>
@@ -279,5 +290,37 @@ namespace OnlinePoker.Hubs
         /// <param name="accountId">Принимает идентификатор аккаунта</param>
         /// <returns>Возвращает объект аккаунта</returns>
         protected User GetAccountById(string accountId) => _userManager.FindByIdAsync(accountId).Result;
+        /// <summary>
+        /// Предложение начать новую партию
+        /// </summary>
+        /// <param name="gameId">Принимает идентификатор игры</param>
+        public void NewParty(string gameId, bool isAgree)
+        {
+            Console.WriteLine("NewParty entered");
+            var game = GetGame(gameId);
+
+            if (game != null)
+            {
+                GetCurrentPlayerOnGame(game).IsAgreeNewParty = isAgree;
+                //Если все ответили
+                if (game.Players.All(p => (p.IsAgreeNewParty != null) ? true : false))
+                {
+                    Console.WriteLine("All answered");
+                    //Если все согласны
+                    if (game.Players.Count == game.Players.Sum(p => (p.IsAgreeNewParty.Value) ? 1 : 0))
+                    {
+                        game.NewParty();
+                        StartGame(game);
+                        Console.WriteLine("NewParty started");
+                    }
+                    else
+                    {
+                        Clients.Clients(game.Connections).SendAsync("AddAlert", "", "Не все согласны на новую партию. Начните новую игру.", "danger");
+                        ListGames.Remove(game);
+                        Console.WriteLine("NewParty not started");
+                    }
+                }
+            }
+        }
     }
 }

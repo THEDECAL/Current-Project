@@ -77,13 +77,10 @@ function btnNewParty(isAgree) {
     $("#modalWindow").modal('hide');
     GUI.MODALS.empty();
 
-    if (isAgree) {
-        clearTable();
-        hubConnection.send("NewParty", GUI.GAME_ID, isAgree);//.then(console.log(`Error running function ${btnYesOrNot.name}`));
-    }
-    else {
-        window.location.href = location.protocol + '//' + window.location.host;
-    }
+    if (isAgree) { clearTable(); }
+    else { window.location.href = location.protocol + '//' + window.location.host; }
+
+    hubConnection.send("NewParty", GUI.GAME_ID, isAgree);
 }
 
 //Подключение к хабу
@@ -198,19 +195,11 @@ function quickCardDist(plCardsArr) {
 //Добавление имени игрока на стол
 function addPlayers(nickNamesArr) {
     for (var i in nickNamesArr) {
-        //addPlayer(nickNamesArr[i], parseInt(Number(i) + Number(1)));
         var el = $(`#player${parseInt(Number(i) + Number(1))} .player-title`);
         el.empty();
-        el.append(nickNamesArr[i]);//.hide();
-        //el.fadeIn(2500);
+        el.append(nickNamesArr[i]);
     }
 }
-//function addPlayer(nickName, plNum) {
-//    var el = $(`#player${plNum} .player-title`);
-//    el.empty();
-//    el.append(nickName).hide();
-//    el.fadeIn(2500);
-//}
 //Анимация броска карты
 function throwCard(plNum) {
     var cardPoint = GUI.DECK.offset();
@@ -290,6 +279,10 @@ function addAlert(title, text, bsColor) {
         </button>
     </div>`);
     GUI.ALERTS.prepend(alert.hide().fadeIn());
+
+    //Закрытие по таймауту
+    //const timeOut = Number(3000);
+    //setTimeout(alert.fadeOut().remove(), timeOut);
 }
 //Показ модального окна предложения вскрыть карты
 function showOfferToBeShowdown(playerNickName) {

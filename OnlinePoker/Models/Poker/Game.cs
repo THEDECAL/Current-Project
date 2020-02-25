@@ -110,8 +110,6 @@ namespace OnlinePoker.Models
         /// <returns>Возвращает список соединений</returns>
         public IReadOnlyList<string> GetConnectionsExcept(string userId) =>
             _playersConnections.Where(c => c.Key != userId).SelectMany(c => c.Value).ToList();
-            //.ToDictionary(k => k.Key, v => v.Value)
-            //.Values.SelectMany(c => c).ToList();
         /// <summary>
         /// Проверка существования игрока по id аккаунта
         /// </summary>
@@ -145,15 +143,27 @@ namespace OnlinePoker.Models
             if (Players.All(p => p.IsShowdown))
             {
                 Winner = Players.OrderBy(p => (int)p.GetCombination()).LastOrDefault();
+                Winner.AdditionCoinsAmount(Bank);
                 isGameOver = true;
             }
             else if (Players.Sum(p => (p.IsFold) ? 1 : 0) == Players.Count - 1)
             {
                 Winner = Players.FirstOrDefault(p => !p.IsFold);
+                Winner.AdditionCoinsAmount(Bank);
                 isGameOver = true;
             }
 
             return isGameOver;
+        }
+        /// <summary>
+        /// Подготовка игры к новой партии с теми-же игроками
+        /// </summary>
+        public void NewParty()
+        {
+            IsStarted = false;
+            Bank = 0;
+            Winner = null;
+            Players.ForEach(p => p.NewParty());
         }
     }
 }

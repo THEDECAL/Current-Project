@@ -24,7 +24,6 @@ namespace OnlinePoker.Areas.Identity.Pages.Account
         private readonly UserManager<User> _userManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-        private readonly int DEFAULT_COINS_AMOUNT = 100;
 
         [Required]
         [StringLength(15, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
@@ -57,7 +56,7 @@ namespace OnlinePoker.Areas.Identity.Pages.Account
             [StringLength(15, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [Remote(action: "IsNickNameNotExist", controller: "Validation")]
             [BindProperty]
-            [Display(Name = "NickName")]
+            [Display(Name = "Никнэйм*")]
             public string NickName { get; set; }
 
             [Required]
@@ -91,7 +90,7 @@ namespace OnlinePoker.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new User { UserName = Input.Email, Email = Input.Email, NickName = Input.NickName, CoinsAmount = DEFAULT_COINS_AMOUNT};
+                var user = new User { UserName = Input.Email, Email = Input.Email, NickName = Input.NickName, CoinsAmount = Models.User.STARTING_COINS};
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {

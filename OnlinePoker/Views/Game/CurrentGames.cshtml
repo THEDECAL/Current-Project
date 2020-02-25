@@ -1,4 +1,6 @@
-﻿@model List<OnlinePoker.Models.Game>
+﻿@using Microsoft.AspNetCore.Identity
+@model List<OnlinePoker.Models.Game>
+@inject UserManager<User> UserManager
 @{
     ViewBag.Title = "Текущие игры";
 }
@@ -16,7 +18,7 @@
                 {
                     <p class="card-text">@player.NickName</p>
                 }
-                @if (game.IsPlacePlayer)
+                @if (game.Players.Exists(p => p.NickName == UserManager.FindByNameAsync(User.Identity.Name).Result.NickName) || game.IsPlacePlayer)
                 {
                     <a href="/Game/StartGame/@game.Id" class="card-link">Подключится</a>
                 }

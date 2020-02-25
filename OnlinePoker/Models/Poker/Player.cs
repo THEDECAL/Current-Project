@@ -40,6 +40,10 @@ namespace OnlinePoker.Models
         /// Вскрывает игрок карты или нет
         /// </summary>
         public bool IsShowdown { get; set; } = false;
+        /// <summary>
+        /// Согласен игрок на новую партию или нет
+        /// </summary>
+        public bool? IsAgreeNewParty { get; set; } = null;
 
         public Player([NotNull] User account)
         {
@@ -131,6 +135,15 @@ namespace OnlinePoker.Models
         /// </summary>
         /// <param name="amount">Принимает целое положительное число</param>
         public void AdditionCoinsAmount(int amount) => CoinsAmount += amount;
+        /// <summary>
+        /// Подготовка игрока к новой партии
+        /// </summary>
+        public void NewParty()
+        {
+            _cards.Clear();
+            IsFold = false;
+            IsShowdown = false;
+        }
 
         public static bool operator ==(Player p1, Player p2) => p1.UserId == p2.UserId;
         public static bool operator !=(Player p1, Player p2) => !(p1 == p2);

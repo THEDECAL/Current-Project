@@ -7,6 +7,6 @@ namespace OnlinePoker.Models
     {
         public const int STARTING_COINS = 100;
         public string NickName { get; set; }
-        public int CoinsAmount { get; set; } = STARTING_COINS;
+        public int CoinsAmount { get; set; }
     }
 }
