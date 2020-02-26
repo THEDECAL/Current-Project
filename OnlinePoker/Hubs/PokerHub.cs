@@ -169,7 +169,7 @@ namespace OnlinePoker.Hubs
                 if (GetCurrentPlayerOnGame(game).SubtractionCoinsAmount(amountBet))
                 {
                     game.Bank += amountBet;
-                    Clients.Clients(userConnsExcept).SendAsync("AddAlert", account.NickName, $"Ставит {amountBet}", "warning");
+                    Clients.Clients(game.Connections).SendAsync("AddAlert", account.NickName, $"Ставит {amountBet}", "warning");
                     Clients.Clients(game.Connections).SendAsync("AddCoinsToBank", game.Bank);
                 }
                 else
