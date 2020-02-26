@@ -10,7 +10,7 @@ namespace OnlinePoker.Models.Data
     {
         public static async Task InitializeAsync(UserManager<User> userManager)
         {
-            if (CheckOnExistByEmail(userManager, "thedecal1@gmail.com") == null)
+            if(await userManager.FindByEmailAsync("thedecal1@gmail.com") == null)
             {
                 var user1 = new User
                     {
@@ -22,8 +22,9 @@ namespace OnlinePoker.Models.Data
                         LockoutEnabled = true
                     };
                 await userManager.CreateAsync(user1, @"AQeT.5*gehWqeAh");
+                userManager.UpdateAsync(user1).Wait();
             }
-            if (CheckOnExistByEmail(userManager, "thedecal2@gmail.com") == null)
+            if (await userManager.FindByEmailAsync("thedecal2@gmail.com") == null)
             {
                 var user2 = new User
                 {
@@ -35,9 +36,8 @@ namespace OnlinePoker.Models.Data
                     LockoutEnabled = true
                 };
                 await userManager.CreateAsync(user2, @"AQeT.5*gehWqeAh");
+                userManager.UpdateAsync(user2).Wait();
             }
         }
-
-        public static async Task<User> CheckOnExistByEmail(UserManager<User> userManager, string email) => await userManager.FindByEmailAsync(email);
     }
 }
