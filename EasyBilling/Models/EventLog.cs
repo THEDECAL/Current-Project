@@ -10,6 +10,5 @@ namespace EasyBilling.Models
         public int Id { get; set; }
         public string Message { get; set; } = string.Empty;
         public DateTime Date { get; set; } = DateTime.Now;
-        public bool IsRemove { get; set; } = false;
     }
 }

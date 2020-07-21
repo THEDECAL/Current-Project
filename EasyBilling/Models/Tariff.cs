@@ -14,6 +14,8 @@ namespace EasyBilling.Models
         public int BandwidthInput { get; set; } = 100000;
         public int BandwidthOutput { get; set; } = 100000;
         public int AmounfOfDays { get; set; } = 28;
-        public bool IsRemove { get; set; } = false;
+        public DateTime DateOfCreation { get; set; } = DateTime.Now;
+        public DateTime DateOfUpdate { get; set; } = DateTime.Now;
+        public bool IsEnabled { get; set; } = false;
     }
 }

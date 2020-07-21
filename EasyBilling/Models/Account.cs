@@ -9,5 +9,8 @@ namespace EasyBilling.Models
     public class Account : IdentityUser
     {
         public int ProfileId { get; set; }
+        public Profile Profile { get; set; }
+        public DateTime LastLogin { get; set; }
+        public bool IsEnabled { get; set; } = true;
     }
-}   
+}

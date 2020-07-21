@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EasyBilling.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class BillingDbContext : IdentityDbContext
     {
         public DbSet<Profile> Profiles { get; set; }
         public DbSet<Device> Devices { get; set; }
@@ -16,10 +16,10 @@ namespace EasyBilling.Data
         public DbSet<CashOutlay> CashOutlays { get; set; }
         public DbSet<ApiKey> ApiKeys { get; set; }
         public DbSet<EventLog> EventLogs { get; set; }
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        public BillingDbContext(DbContextOptions<BillingDbContext> options)
             : base(options)
         {
             Database.EnsureCreated();
         }
     }
-}
+} 

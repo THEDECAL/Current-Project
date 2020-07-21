@@ -10,10 +10,10 @@ namespace EasyBilling.Models
         public int Id { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
         public int Amount { get; set; } = 0;
-
-        public int SourceUserId { get; set; }
-        public int DestinationUserId { get; set; }
+        public int SourceProfileId { get; set; }
+        public Profile SourceProfile { get; set; }
+        public int DestinationProfileId { get; set; }
+        public Profile DestinationProfile { get; set; }
         public string Comment { get; set; } = string.Empty;
-        public bool IsRemove { get; set; } = false;
     }
 }

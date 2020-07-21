@@ -17,6 +17,8 @@ namespace EasyBilling.Models
         public string PhoneNumber { get; set; } = string.Empty;
         public string Comment { get; set; } = string.Empty;
         public double AmountOfCash { get; set; } = 0;
+        public int TariffId { get; set; }
+        public Tariff Tarrif { get; set; }
         public DateTime DateBeginOfUseOfTarrif { get; set; }
         public int UsedTraffic { get; set; } = 0;
         public string CustomField1 { get; set; } = string.Empty;
@@ -24,6 +26,8 @@ namespace EasyBilling.Models
         public string CustomField3 { get; set; } = string.Empty;
         public string CustomField4 { get; set; } = string.Empty;
         public string CustomField5 { get; set; } = string.Empty;
-        public bool IsRemove { get; set; } = false;
+        public DateTime DateOfCreation { get; set; } = DateTime.Now;
+        public DateTime DateOfUpdate { get; set; } = DateTime.Now;
+        public bool IsHolded { get; set; } = false;
     }
 }
