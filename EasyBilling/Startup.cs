@@ -12,6 +12,7 @@ using EasyBilling.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using EasyBilling.Models;
 
 namespace EasyBilling
 {
@@ -26,11 +27,10 @@ namespace EasyBilling
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<BillingDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<BillingDbContext>();
+            //Сервисы необходимые для работы сессий
+            services.AddDistributedMemoryCache();
+            services.AddSession();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
@@ -49,7 +49,7 @@ namespace EasyBilling
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-            app.UseHttpsRedirection();
+            app.UseHttpsRedirection(); //Использовать перенаправление на защищённый протокол
             app.UseStatusCodePages(); //Отображать статусый код
             app.UseStaticFiles();
 
@@ -58,6 +58,7 @@ namespace EasyBilling
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCookiePolicy(); //Отслеживать согласие на хранение куки
+            app.UseSession(); //Использовать сессии
 
             app.UseEndpoints(endpoints =>
             {

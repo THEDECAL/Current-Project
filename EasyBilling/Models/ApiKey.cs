@@ -9,7 +9,6 @@ namespace EasyBilling.Models
     {
         public int Id { get; set; }
         public string Key { get; set; } = string.Empty;
-        public int ProfileId { get; set; }
         public Profile Profile { get; set; }
         public bool IsEnabled { get; set; } = true;
     }
