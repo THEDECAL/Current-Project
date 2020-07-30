@@ -10,16 +10,23 @@ namespace EasyBilling.Data
 {
     public class DbInitializer
     {
-        UserManager<IdentityAccount> _userManager;
-        public DbInitializer(UserManager<IdentityAccount> userManager)
+        private readonly UserManager<IdentityAccount> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        public DbInitializer(UserManager<IdentityAccount> userManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
+        }
+        public void Initialize()
+        {
+            RolesInitializeAsync().Wait();
+            UsersInitializeAsync().Wait();
         }
         /// <summary>
         /// Инициализация пользователей
         /// </summary>
         /// <returns></returns>
-        public async Task UsersInitializeAsync()
+        private async Task UsersInitializeAsync()
         {
             if (_userManager.Users.Count() == 0)
             {
@@ -42,11 +49,25 @@ namespace EasyBilling.Data
                 var result = await _userManager.CreateAsync(admin, @"AQeT.5*gehWqeAh");
                 if (result.Succeeded)
                 {
-                    /*await _userManager.AddToRoleAsync(admin, RolesHelper.GetRoleName(RolesHelper.Role.Administrator));*/
+                    var adminRole = RolesHelper.Role.admin.ToString();
+                    await _userManager.AddToRoleAsync(admin, adminRole);
                 }
-                else throw new Exception($"User ${admin.UserName} is not created");
             }
-            else throw new Exception("Users is exist.");
+        }
+        /// <summary>
+        /// Инициализация ролей
+        /// </summary>
+        /// <returns></returns>
+        private async Task RolesInitializeAsync()
+        {
+            if (_roleManager.Roles.Count() == 0)
+            {
+                var roles = RolesHelper.GetRoles();
+                foreach (var item in roles)
+                {
+                    await _roleManager.CreateAsync(item);
+                }
+            }
         }
     }
 }

@@ -8,11 +8,15 @@ namespace EasyBilling.Data
 {
     static public class RolesHelper
     {
-        public enum Role { Administrator, Operator, Casher, Client };
+        public enum Role { admin, @operator, casher, client };
         static string[] _roles = { "Администратор", "Оператор", "Кассир", "Клиент" };
 
         static public string GetRoleName(Role role) => _roles[(int)role];
-        static public IdentityRole GetRole(Role role) => new IdentityRole(GetRoleName(role));
-        static public IdentityRole[] GetRoles() => _roles.Select(role => new IdentityRole(role)).ToArray();
+        static public IdentityRole GetRole(Role role) => new IdentityRole(role.ToString());
+        static public IdentityRole[] GetRoles()
+        {
+            var enumValues = Enum.GetValues(typeof(Role)).OfType<Role>().ToList();
+            return enumValues.Select(role => GetRole(role)).ToArray();
+        }
     }
 }

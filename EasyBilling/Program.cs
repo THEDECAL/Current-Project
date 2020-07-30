@@ -28,8 +28,9 @@ namespace EasyBilling
                 try
                 {
                     var um = services.GetRequiredService<UserManager<IdentityAccount>>();
-                    var initializer = new DbInitializer(um);
-                    initializer.UsersInitializeAsync().Wait();
+                    var rm = services.GetRequiredService<RoleManager<IdentityRole>>();
+                    var initializer = new DbInitializer(um, rm);
+                    initializer.Initialize();
 
                     logger.LogInformation("Initialization of the databse is success completed.");
                 }

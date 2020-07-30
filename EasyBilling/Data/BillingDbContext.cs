@@ -23,16 +23,16 @@ namespace EasyBilling.Data
         public BillingDbContext(DbContextOptions<BillingDbContext> options)
             : base(options)
         {
-            Database.EnsureDeleted();
-            Database.EnsureCreated();
+            /*Database.EnsureDeleted();*/
+            /*Database.EnsureCreated();*/
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+/*        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Инициализация ролей в БД
             modelBuilder.Entity<IdentityRole>().HasData(RolesHelper.GetRoles());
 
             base.OnModelCreating(modelBuilder);
-        }
+        }*/
     }
 }

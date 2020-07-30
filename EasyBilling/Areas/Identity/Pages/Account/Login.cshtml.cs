@@ -44,7 +44,6 @@ namespace EasyBilling.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
-            [EmailAddress]
             [Display(Name = "Логин")]
             public string Login { get; set; }
 
@@ -89,23 +88,24 @@ namespace EasyBilling.Areas.Identity.Pages.Account
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 /*var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);*/
                 var result = await _signInManager.PasswordSignInAsync(Input.Login, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
+                if (result.Succeeded)   
                 {
-                    _logger.LogInformation("User logged in.");
+                    var name = HttpContext.User.Identity.Name;
+                    _logger.LogInformation($"User ${HttpContext.User.Identity.Name} logged in.");
                     return LocalRedirect(returnUrl);
                 }
-                if (result.RequiresTwoFactor)
+/*                if (result.RequiresTwoFactor)
                 {
                     return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                }
+                }*/
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning("User account locked out.");
+                    _logger.LogWarning("Ваш аккаунт временно заблокирован.");
                     return RedirectToPage("./Lockout");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Неудачная попытка входа.");
                     return Page();
                 }
             }
