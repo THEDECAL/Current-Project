@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EasyBilling.Models
+namespace EasyBilling.Models.Pocos
 {
     public class EventLog
     {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EasyBilling.Data;
 using EasyBilling.Models;
+using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -27,9 +28,12 @@ namespace EasyBilling
 
                 try
                 {
+                    //Загружаем неоюбходимые сервисы для инициализации данных
                     var um = services.GetRequiredService<UserManager<IdentityAccount>>();
                     var rm = services.GetRequiredService<RoleManager<IdentityRole>>();
-                    var initializer = new DbInitializer(um, rm);
+                    var bc = services.GetRequiredService<BillingDbContext>();
+
+                    var initializer = new DbInitializer(um, rm, bc);
                     initializer.Initialize();
 
                     logger.LogInformation("Initialization of the databse is success completed.");

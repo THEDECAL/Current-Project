@@ -63,6 +63,10 @@ namespace EasyBilling
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
+                    name: "permitte-query",
+                    pattern: "{controller=home}/{component=name}/{action=index}/{id?}");
+
+                endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=home}/{action=index}/{id?}");
                 endpoints.MapRazorPages();

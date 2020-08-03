@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using EasyBilling.Models;
+using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -16,9 +17,12 @@ namespace EasyBilling.Data
         public DbSet<Device> Devices { get; set; }
         public DbSet<Tariff> Tariffs { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<AccessRight> AccessRights { get; set; }
+        public DbSet<Page> Pages { get; set; }
         public DbSet<CashOutlay> CashOutlays { get; set; }
         public DbSet<ApiKey> ApiKeys { get; set; }
         public DbSet<EventLog> EventLogs { get; set; }
+        public DbSet<AccessToController> AccessToControllers { get; set; }
 
         public BillingDbContext(DbContextOptions<BillingDbContext> options)
             : base(options)

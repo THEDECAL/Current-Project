@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EasyBilling.Models.Enums;
 
 namespace EasyBilling.Data
 {
-    static public class RolesHelper
+    static public class RoleHelper
     {
-        public enum Role { admin, @operator, casher, client };
         static string[] _roles = { "Администратор", "Оператор", "Кассир", "Клиент" };
 
         static public string GetRoleName(Role role) => _roles[(int)role];

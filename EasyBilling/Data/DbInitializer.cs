@@ -1,4 +1,5 @@
-﻿using EasyBilling.Models;
+﻿using EasyBilling.Models.Enums;
+using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,15 +13,20 @@ namespace EasyBilling.Data
     {
         private readonly UserManager<IdentityAccount> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public DbInitializer(UserManager<IdentityAccount> userManager, RoleManager<IdentityRole> roleManager)
+        private readonly BillingDbContext _dbContext;
+        public DbInitializer(UserManager<IdentityAccount> userManager,
+            RoleManager<IdentityRole> roleManager,
+            BillingDbContext dbContext)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _dbContext = dbContext;
         }
         public void Initialize()
         {
             RolesInitializeAsync().Wait();
             UsersInitializeAsync().Wait();
+            AccessRightsInitializeAsync().Wait();
         }
         /// <summary>
         /// Инициализация пользователей
@@ -49,7 +55,7 @@ namespace EasyBilling.Data
                 var result = await _userManager.CreateAsync(admin, @"AQeT.5*gehWqeAh");
                 if (result.Succeeded)
                 {
-                    var adminRole = RolesHelper.Role.admin.ToString();
+                    var adminRole = Role.admin.ToString();
                     await _userManager.AddToRoleAsync(admin, adminRole);
                 }
             }
@@ -62,12 +68,22 @@ namespace EasyBilling.Data
         {
             if (_roleManager.Roles.Count() == 0)
             {
-                var roles = RolesHelper.GetRoles();
+                var roles = RoleHelper.GetRoles();
                 foreach (var item in roles)
                 {
                     await _roleManager.CreateAsync(item);
                 }
             }
+        }
+        private async Task AccessRightsInitializeAsync()
+        {
+            //admin
+            _dbContext.AccessToControllers.Add(new AccessToController()
+            {
+                Role = new IdentityRole(Role.admin.ToString()),
+                IsAccessing = true,
+                
+            }); ;
         }
     }
 }

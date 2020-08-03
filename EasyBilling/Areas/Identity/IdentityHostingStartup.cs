@@ -1,6 +1,6 @@
 ﻿using System;
 using EasyBilling.Data;
-using EasyBilling.Models;
+using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
