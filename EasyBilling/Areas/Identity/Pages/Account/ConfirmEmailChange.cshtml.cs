@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using EasyBilling.Models;
+using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using EasyBilling.Models.Pocos;
 
 namespace EasyBilling.Areas.Identity.Pages.Account
 {
@@ -18,7 +19,7 @@ namespace EasyBilling.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityAccount> _userManager;
         private readonly SignInManager<IdentityAccount> _signInManager;
 
-        public ConfirmEmailChangeModel(UserManager<Models.IdentityAccount> userManager, SignInManager<Models.IdentityAccount> signInManager)
+        public ConfirmEmailChangeModel(UserManager<IdentityAccount> userManager, SignInManager<IdentityAccount> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;

@@ -1,5 +1,5 @@
 ﻿using EasyBilling.Data;
-using EasyBilling.Models;
+using EasyBilling.Models.Pocos;
 using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -39,11 +39,11 @@ namespace EasyBilling.Attributes
 
             using (_dbContext)
             {
-                roleAccessRights = _dbContext.AccessRights
-                    .Include(ar => ar.Page)
-                    .FirstOrDefault(ar =>
-                        ar.RoleId.Equals(userRoleId) &&
-                        ar.Page.Name.Equals(controller));
+                //roleAccessRights = _dbContext.AccessRights
+                //    .Include(ar => ar.Page)
+                //    .FirstOrDefault(ar =>
+                //        ar.RoleId.Equals(userRoleId) &&
+                //        ar.Page.Name.Equals(controller));
             }
 
             if (roleAccessRights != null &&

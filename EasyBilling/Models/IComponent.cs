@@ -1,18 +1,28 @@
 ﻿using System;
+using System.Linq;
 
 namespace EasyBilling.Models
 {
     public interface IComponent
     {
+        string Name { get; }
+        ComponentActionRigths? ActionRigths { get; }
+
         struct ComponentActionRigths
         {
             public bool IsRead { get; set; }
             public bool IsCreate { get; set; }
             public bool IsUpdate { get; set; }
             public bool IsDelete { get; set; }
+
+            public string[] GetRightsNames()
+            {
+                var t = GetType();
+                var fields = t.GetFields().Select(f =>
+                    f.GetRawConstantValue().ToString());
+                return fields?.ToArray();
+            }
         }
-        ComponentActionRigths? ActionRigths { get; }
-        string Name { get; }
     }
 /*    [Flags]
     public enum ComponentName

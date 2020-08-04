@@ -1,4 +1,4 @@
-﻿using EasyBilling.Models.Enums;
+﻿using EasyBilling.Models;
 using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -16,31 +16,35 @@ namespace EasyBilling.Data
 {
     public class DbInitializer
     {
-        const 
+        private static readonly DbInitializer _dbInit;
 
-        static private readonly DbInitializer _dbInit;
-
-        private readonly IServiceScope _scope;
-        private readonly UserManager<IdentityAccount> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly BillingDbContext _dbContext;
-        private readonly IConfiguration _config;
-        static public DbInitializer GetInstance(IHost host) => _dbInit ?? new DbInitializer(host);
+        private readonly UserManager<IdentityAccount> _userMgr;
+        private readonly RoleManager<IdentityRole> _roleMgr;
+        //private readonly IConfiguration _config;
 
         private DbInitializer(IHost host)
         {
-            using (_scope = host.Services.CreateScope()) {
-                _userManager = _scope.ServiceProvider.GetRequiredService<UserManager<IdentityAccount>>();
-                var rm = _scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                var bc = _scope.ServiceProvider.GetRequiredService<BillingDbContext>();
-                var appBuilder = new ConfigurationBuilder().AddJsonFile("", false, false);
+            using (var scope = host.Services.CreateScope()) {
+                var sp = scope.ServiceProvider;
+                _userMgr = sp.GetRequiredService<UserManager<IdentityAccount>>();
+                _roleMgr = sp.GetRequiredService<RoleManager<IdentityRole>>();
+                _dbContext = sp.GetRequiredService<BillingDbContext>();
+                //var appBuilder = new ConfigurationBuilder().AddJsonFile("", false, false);
             }
         }
-        public async Task InitializeAsync()
+        /// <summary>
+        /// Получение единственного экземпляра
+        /// </summary>
+        /// <param name="host"></param>
+        /// <returns>Возвращает объект класса</returns>
+        public static DbInitializer GetInstance(IHost host) => _dbInit ?? new DbInitializer(host);
+
+        public void Initialize()
         {
-            await RolesInitializeAsync();
-            await UsersInitializeAsync();
-            await AccessRightsInitializeAsync();
+            RolesInitializeAsync().Wait();
+            UsersInitializeAsync().Wait();
+            AccessRightsInitializeAsync().Wait();
         }
         /// <summary>
         /// Инициализация пользователей
@@ -48,7 +52,7 @@ namespace EasyBilling.Data
         /// <returns></returns>
         private async Task UsersInitializeAsync()
         {
-            if (_userManager.Users.Count() == 0)
+            if (_userMgr.Users.Count() == 0)
             {
                 var admin = new IdentityAccount()
                 {
@@ -66,11 +70,11 @@ namespace EasyBilling.Data
                         DateOfCreation = DateTime.Now
                     }
                 };
-                var result = await _userManager.CreateAsync(admin, @"AQeT.5*gehWqeAh");
+                var result = await _userMgr.CreateAsync(admin, @"AQeT.5*gehWqeAh");
                 if (result.Succeeded)
                 {
-                    var adminRole = Role.admin.ToString();
-                    await _userManager.AddToRoleAsync(admin, adminRole);
+                    //var adminRole = Role.admin.ToString();
+                    //await _userMgr.AddToRoleAsync(admin, adminRole);
                 }
             }
         }
@@ -80,13 +84,13 @@ namespace EasyBilling.Data
         /// <returns></returns>
         private async Task RolesInitializeAsync()
         {
-            if (_roleManager.Roles.Count() == 0)
+            if (_roleMgr.Roles.Count() == 0)
             {
-                var roles = RoleHelper.GetRoles();
-                foreach (var item in roles)
-                {
-                    await _roleManager.CreateAsync(item);
-                }
+                //var roles = RoleHelper.GetRoles();
+                //foreach (var item in roles)
+                //{
+                //    await _roleMgr.CreateAsync(item);
+                //}
             }
         }
         private async Task AccessRightsInitializeAsync()

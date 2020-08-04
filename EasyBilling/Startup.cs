@@ -1,20 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.EntityFrameworkCore;
-using EasyBilling.Data;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using EasyBilling.Models;
-using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing;
 
 namespace EasyBilling
 {
@@ -32,6 +21,7 @@ namespace EasyBilling
             //Сервисы необходимые для работы сессий
             services.AddDistributedMemoryCache();
             services.AddSession();
+            services.AddRouting();
 
             services.AddControllersWithViews();
             services.AddRazorPages();
@@ -40,6 +30,7 @@ namespace EasyBilling
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            #region using of services
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -56,31 +47,44 @@ namespace EasyBilling
             app.UseStaticFiles();
 
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseCookiePolicy(); //Отслеживать согласие на хранение куки
             app.UseSession(); //Использовать сессии
+
+            //var routeBldr = new RouteBuilder(app);
+            //routeBldr.MapRoute(name: "checking-access-rights",
+            //    template: "{controller:required:alpha:length(0, 30)}/" +
+            //                        "{component:alpha:length(0, 30)}/" +
+            //                        "{action:alpha:length(0, 10)}/" +
+            //                        "{id?}");
+
+            //app.UseRouter(routeBldr.Build());
+            //app.Run(async h => 
+            //{
+            //    await h.
+            //});
+            #endregion
             app.UseEndpoints(endpoints =>
             {
                 //Маршрутизация проверки прав доступа
                 endpoints.MapControllerRoute(
                     name: "checking-access-rights",
                     pattern:
-                        "{controller=home:required:alpha}/" +
-                        "{component=index:alpha}/" +
-                        "{action:alpha)}/" +
-                        "{id?}"
-                    );
+                        "{controller:required:alpha:length(0, 30)}/" +
+                        "{component:alpha:length(0, 30)}/" +
+                        "{action:alpha:length(0, 10)}/" +
+                        "{id?}");
 
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern:
-                        "{controller=home:alpha}/" +
-                        "{action=index:alpha}/" +
+                        "{controller:alpha:length(0, 30)=home}/" +
+                        "{action:alpha:length(0, 30)=index}/" +
                         "{id?}");
-                endpoints.MapRazorPages();
-            });
+            endpoints.MapRazorPages();
+        });
         }
     }
 }

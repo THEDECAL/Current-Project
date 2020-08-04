@@ -5,10 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using EasyBilling.Models;
+using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Authorization;
 using EasyBilling.Attributes;
 using EasyBilling.Data;
+using EasyBilling.Models;
 
 namespace EasyBilling.Controllers
 {

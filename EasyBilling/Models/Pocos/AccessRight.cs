@@ -1,17 +1,11 @@
-﻿using EasyBilling.Models.Enums;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Components;
 
 namespace EasyBilling.Models.Pocos
 {
@@ -54,5 +48,4 @@ namespace EasyBilling.Models.Pocos
             Components.CollectionChanged += converter;
         }
     }
-
 }

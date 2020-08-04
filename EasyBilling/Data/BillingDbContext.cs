@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using EasyBilling.Models;
+using EasyBilling.Models.Pocos;
 using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;

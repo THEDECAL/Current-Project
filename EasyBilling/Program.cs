@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using EasyBilling.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -7,15 +6,15 @@ namespace EasyBilling
 {
     public class Program
     {
-        public async Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var hostBuilder = CreateHostBuilder(args).Build();
-            await DbInitializer.GetInstance(hostBuilder)
-                .InitializeAsync();
-            await hostBuilder.RunAsync();
+            var host = CreateHostBuilder(args).Build();
+            //DbInitializer.GetInstance(host).Initialize();
+
+            host.Run();
         }
 
-        private IHostBuilder CreateHostBuilder(string[] args) =>
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                     .ConfigureWebHostDefaults(webBuilder =>
                     webBuilder.UseStartup<Startup>());
