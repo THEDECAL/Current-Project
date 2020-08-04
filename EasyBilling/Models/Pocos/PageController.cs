@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EasyBilling.Models.Pocos
 {
-    public class Page
+    public class PageController
     {
         public int Id { get; set; }
         [Required]

@@ -13,6 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using EasyBilling.Models;
+using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing;
 
 namespace EasyBilling
 {
@@ -59,16 +61,24 @@ namespace EasyBilling
             app.UseAuthorization();
             app.UseCookiePolicy(); //Отслеживать согласие на хранение куки
             app.UseSession(); //Использовать сессии
-
             app.UseEndpoints(endpoints =>
             {
+                //Маршрутизация проверки прав доступа
                 endpoints.MapControllerRoute(
-                    name: "permitte-query",
-                    pattern: "{controller=home}/{component=name}/{action=index}/{id?}");
+                    name: "checking-access-rights",
+                    pattern:
+                        "{controller=home:required:alpha}/" +
+                        "{component=index:alpha}/" +
+                        "{action:alpha)}/" +
+                        "{id?}"
+                    );
 
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=home}/{action=index}/{id?}");
+                    pattern:
+                        "{controller=home:alpha}/" +
+                        "{action=index:alpha}/" +
+                        "{id?}");
                 endpoints.MapRazorPages();
             });
         }

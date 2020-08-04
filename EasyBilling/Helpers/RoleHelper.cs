@@ -7,16 +7,30 @@ using EasyBilling.Models.Enums;
 
 namespace EasyBilling.Data
 {
+/*    [Flags]
+    public enum Role
+    {
+        admin,
+        @operator,
+        casher,
+        client
+    };
     static public class RoleHelper
     {
-        static string[] _roles = { "Администратор", "Оператор", "Кассир", "Клиент" };
+        static string[] _roles =
+        {
+            "Администратор",
+            "Оператор",
+            "Кассир",
+            "Клиент"
+        };*/
 
-        static public string GetRoleName(Role role) => _roles[(int)role];
-        static public IdentityRole GetRole(Role role) => new IdentityRole(role.ToString());
-        static public IdentityRole[] GetRoles()
+     /*   public string GetRoleName(Role role) => _roles[(int)role];
+        public IdentityRole GetRole(Role role) => new IdentityRole(role.ToString());
+        public IdentityRole[] GetRoles()
         {
             var enumValues = Enum.GetValues(typeof(Role)).OfType<Role>().ToList();
             return enumValues.Select(role => GetRole(role)).ToArray();
         }
-    }
+    }*/
 }

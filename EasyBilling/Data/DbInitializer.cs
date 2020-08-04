@@ -1,32 +1,46 @@
 ﻿using EasyBilling.Models.Enums;
 using EasyBilling.Models.Pocos;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace EasyBilling.Data
 {
     public class DbInitializer
     {
+        const 
+
+        static private readonly DbInitializer _dbInit;
+
+        private readonly IServiceScope _scope;
         private readonly UserManager<IdentityAccount> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly BillingDbContext _dbContext;
-        public DbInitializer(UserManager<IdentityAccount> userManager,
-            RoleManager<IdentityRole> roleManager,
-            BillingDbContext dbContext)
+        private readonly IConfiguration _config;
+        static public DbInitializer GetInstance(IHost host) => _dbInit ?? new DbInitializer(host);
+
+        private DbInitializer(IHost host)
         {
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _dbContext = dbContext;
+            using (_scope = host.Services.CreateScope()) {
+                _userManager = _scope.ServiceProvider.GetRequiredService<UserManager<IdentityAccount>>();
+                var rm = _scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var bc = _scope.ServiceProvider.GetRequiredService<BillingDbContext>();
+                var appBuilder = new ConfigurationBuilder().AddJsonFile("", false, false);
+            }
         }
-        public void Initialize()
+        public async Task InitializeAsync()
         {
-            RolesInitializeAsync().Wait();
-            UsersInitializeAsync().Wait();
-            AccessRightsInitializeAsync().Wait();
+            await RolesInitializeAsync();
+            await UsersInitializeAsync();
+            await AccessRightsInitializeAsync();
         }
         /// <summary>
         /// Инициализация пользователей
@@ -80,9 +94,7 @@ namespace EasyBilling.Data
             //admin
             _dbContext.AccessToControllers.Add(new AccessToController()
             {
-                Role = new IdentityRole(Role.admin.ToString()),
                 IsAccessing = true,
-                
             }); ;
         }
     }

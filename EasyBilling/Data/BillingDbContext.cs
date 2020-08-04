@@ -18,7 +18,6 @@ namespace EasyBilling.Data
         public DbSet<Tariff> Tariffs { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<AccessRight> AccessRights { get; set; }
-        public DbSet<Page> Pages { get; set; }
         public DbSet<CashOutlay> CashOutlays { get; set; }
         public DbSet<ApiKey> ApiKeys { get; set; }
         public DbSet<EventLog> EventLogs { get; set; }
@@ -30,13 +29,5 @@ namespace EasyBilling.Data
             /*Database.EnsureDeleted();*/
             /*Database.EnsureCreated();*/
         }
-
-/*        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            //Инициализация ролей в БД
-            modelBuilder.Entity<IdentityRole>().HasData(RolesHelper.GetRoles());
-
-            base.OnModelCreating(modelBuilder);
-        }*/
     }
 }
