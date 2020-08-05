@@ -31,32 +31,33 @@ namespace EasyBilling.Attributes
             var ad = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)
                 context.ActionDescriptor;
             var controller = ad.ControllerName;
+            
             //var component = ad.FilterDescriptors.
             var action = ad.ActionName;
-            var userRoleId = context.HttpContext.User
-                .FindFirstValue(ClaimTypes.Role);
-            AccessRight roleAccessRights = null;
+            //var userRoleId = context.HttpContext.User
+            //    .FindFirstValue(ClaimTypes.Role);
+            //AccessRight roleAccessRights = null;
 
-            using (_dbContext)
-            {
-                //roleAccessRights = _dbContext.AccessRights
-                //    .Include(ar => ar.Page)
-                //    .FirstOrDefault(ar =>
-                //        ar.RoleId.Equals(userRoleId) &&
-                //        ar.Page.Name.Equals(controller));
-            }
+            //using (_dbContext)
+            //{
+            //    //roleAccessRights = _dbContext.AccessRights
+            //    //    .Include(ar => ar.Page)
+            //    //    .FirstOrDefault(ar =>
+            //    //        ar.RoleId.Equals(userRoleId) &&
+            //    //        ar.Page.Name.Equals(controller));
+            //}
 
-            if (roleAccessRights != null &&
-                roleAccessRights.IsAvailable)
-            {
-                if (controller.Equals("Home") || action.Equals("Index"))
-                    return;
-                else
-                {
-                    /*roleAccessRights.ComponentsPermissions
-                        .Where(r => r.Key == )*/
-                }
-            }
+            //if (roleAccessRights != null &&
+            //    roleAccessRights.IsAvailable)
+            //{
+            //    if (controller.Equals("Home") || action.Equals("Index"))
+            //        return;
+            //    else
+            //    {
+            //        /*roleAccessRights.ComponentsPermissions
+            //            .Where(r => r.Key == )*/
+            //    }
+            //}
 
             throw new UnauthorizedAccessException("Отказано в доступе.");
         }

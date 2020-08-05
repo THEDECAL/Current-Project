@@ -7,5 +7,20 @@ namespace EasyBilling.Helpers
 {
     public class PageHelper
     {
+
+    }
+    [Flags]
+    public enum PageName
+    {
+        AccessRights = 1,
+        APIKey,
+        Client,
+        Device,
+        Event,
+        FinancialOperations,
+        Home,
+        Tariff,
+        Users,
+        Cassa
     }
 }

@@ -4,15 +4,32 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.VisualBasic;
+using System;
+using System.Diagnostics;
+using System.IO;
 
 namespace EasyBilling
 {
     public class Startup
     {
+        //const string CONFIG_DIR = "Settings";
         public IConfiguration Configuration { get; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            //try
+            //{
+            //    var configBuilder = new ConfigurationBuilder()
+            //        .AddConfiguration(configuration)
+            //        .AddJsonFile(Path.Combine(CONFIG_DIR, "defaultRoles.json"));
+
+            //    Configuration = configBuilder.Build();
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine(ex);
+            //}
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -68,26 +85,23 @@ namespace EasyBilling
             #endregion
             app.UseEndpoints(endpoints =>
             {
-                //Маршрутизация проверки прав доступа
                 endpoints.MapControllerRoute(
-                    name: "checking-access-rights",
+                    name: "component-endpoint",
                     pattern:
                         "{controller:required:alpha:length(0, 30)}/" +
                         "{component:alpha:length(0, 30)}/" +
                         "{action:alpha:length(0, 10)}/" +
                         "{id?}");
+                endpoints.MapRazorPages();
 
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern:
                         "{controller:alpha:length(0, 30)=home}/" +
                         "{action:alpha:length(0, 30)=index}/" +
-                        "{id?}", async context =>
-                        {
-                            
-                        });
-            endpoints.MapRazorPages();
-        });
+                        "{id?}");
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

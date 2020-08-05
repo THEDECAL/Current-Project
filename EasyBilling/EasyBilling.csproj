@@ -38,11 +38,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Providers\" />
     <Folder Include="Views\Client\" />
     <Folder Include="Views\Device\" />
     <Folder Include="Views\Shared\Components\" />
     <Folder Include="Views\Tariff\" />
-    <Folder Include="Views\Users\" />
     <Folder Include="Views\FinancialOperations\" />
     <Folder Include="Views\Event\" />
     <Folder Include="Views\APIKey\" />

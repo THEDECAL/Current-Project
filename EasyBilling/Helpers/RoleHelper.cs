@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyBilling.Models;
+using EasyBilling.Models.Pocos;
 
 namespace EasyBilling.Data
 {
-/*    [Flags]
+    [Flags]
     public enum Role
     {
         admin,
@@ -23,14 +24,16 @@ namespace EasyBilling.Data
             "Оператор",
             "Кассир",
             "Клиент"
-        };*/
+        };
 
-     /*   public string GetRoleName(Role role) => _roles[(int)role];
-        public IdentityRole GetRole(Role role) => new IdentityRole(role.ToString());
-        public IdentityRole[] GetRoles()
+        static public string GetRoleLocalizedName(Role role) => _roles[(int)role];
+        static public IdentityGroup GetRole(Role role)
+            => new IdentityGroup(role.ToString())
+                { LocalizedName = GetRoleLocalizedName(role)};
+        static public IdentityGroup[] GetRoles()
         {
             var enumValues = Enum.GetValues(typeof(Role)).OfType<Role>().ToList();
             return enumValues.Select(role => GetRole(role)).ToArray();
         }
-    }*/
+    }
 }

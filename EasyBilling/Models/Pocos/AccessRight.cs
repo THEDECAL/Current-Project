@@ -14,38 +14,38 @@ namespace EasyBilling.Models.Pocos
         public int Id { get; set; }
         [Required]
         public string RoleId { get; set; }
-        public IdentityRole Role { get; set; }
+        public IdentityGroup Role { get; set; }
         [Required]
-        public string ControllerName { get; set; }
+        public int PageId { get; set; }
         [Required]
         public bool IsAvailable { get; set; }
-        public string ComponentsJson { get; private set; }
-        [NotMapped]
-        public ObservableCollection<PageComponent> Components { get; private set; }
-        public AccessRight()
-        {
-            Components = new ObservableCollection<PageComponent>();
+        //public string ComponentsJson { get; private set; }
+        //[NotMapped]
+        //public ObservableCollection<PageComponent> Components { get; private set; }
+        //public AccessRight()
+        //{
+        //    Components = new ObservableCollection<PageComponent>();
 
-            NotifyCollectionChangedEventHandler converter = (sender, e) =>
-            {
-                try
-                {
-                    ComponentsJson =
-                        JsonConvert.SerializeObject(Components);
-                }
-                catch (JsonSerializationException ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                }
-            };
+        //    NotifyCollectionChangedEventHandler converter = (sender, e) =>
+        //    {
+        //        try
+        //        {
+        //            ComponentsJson =
+        //                JsonConvert.SerializeObject(Components);
+        //        }
+        //        catch (JsonSerializationException ex)
+        //        {
+        //            Debug.WriteLine(ex.Message);
+        //        }
+        //    };
 
-            if (Components.Count == 0 &&
-                !String.IsNullOrEmpty(ComponentsJson))
-            {
-                converter(null, null);
-            }
+        //    if (Components.Count == 0 &&
+        //        !String.IsNullOrEmpty(ComponentsJson))
+        //    {
+        //        converter(null, null);
+        //    }
 
-            Components.CollectionChanged += converter;
-        }
+        //    Components.CollectionChanged += converter;
+        //}
     }
-}
+} 
