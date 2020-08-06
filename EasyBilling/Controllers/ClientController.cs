@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using EasyBilling.Data;
+﻿using EasyBilling.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EasyBilling.Controllers
 {
     [Authorize]
+    [CheckAccessRights]
+    [NoShowToMenu]
     public class ClientController : Controller
     {
         public IActionResult Index()

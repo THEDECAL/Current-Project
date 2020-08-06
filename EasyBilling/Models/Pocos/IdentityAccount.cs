@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using EasyBilling.Models.Pocos;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace EasyBilling.Models.Pocos
+namespace Microsoft.AspNetCore.Identity
 {
     public class IdentityAccount : IdentityUser
     {

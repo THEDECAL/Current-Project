@@ -19,7 +19,7 @@ namespace EasyBilling.Areas.Identity
                 services.AddDbContext<BillingDbContext>(options =>
                     options.UseSqlServer(context.Configuration.GetConnectionString("DefaultConnection")));
                 services.AddDefaultIdentity<IdentityAccount>(options => options.SignIn.RequireConfirmedAccount = true)
-                    .AddRoles<IdentityGroup>()
+                    .AddRoles<IdentityRole>()
                     .AddEntityFrameworkStores<BillingDbContext>();
             });
         }

@@ -11,16 +11,21 @@
 </head>
 <body>
     <div class="container">
+        <partial name="_NavBar" />
+
         <main role="main" class="pb-3">
-            @RenderBody()
+            <div class="card row align-items-center" style="padding: 30px;">
+                @RenderBody()
+            </div>
         </main>
     </div>
 
-    @*    <footer class="border-top footer text-muted">
-            <div class="container">
-                &copy; 2020 - EasyBilling - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-            </div>
-        </footer>*@
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2020 - EasyBilling - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+
     @*<script src="~/lib/jquery/dist/jquery.min.js"></script>*@
     @*<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>*@
     <script src="~/lib/jquery/jquery-3.2.1.slim.min.js"></script>

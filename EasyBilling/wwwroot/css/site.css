@@ -81,3 +81,9 @@ body {
     --input-padding-x: .75rem;
     --input-padding-y: .75rem;
 }
+
+.menu {
+    margin-right: -15px;
+    margin-left: -15px;
+    background-color: white !important;
+}

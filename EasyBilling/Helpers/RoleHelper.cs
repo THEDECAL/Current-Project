@@ -27,10 +27,9 @@ namespace EasyBilling.Data
         };
 
         static public string GetRoleLocalizedName(Role role) => _roles[(int)role];
-        static public IdentityGroup GetRole(Role role)
-            => new IdentityGroup(role.ToString())
-                { LocalizedName = GetRoleLocalizedName(role)};
-        static public IdentityGroup[] GetRoles()
+        static public IdentityRole GetRole(Role role)
+            => new IdentityRole(role.ToString());
+        static public IdentityRole[] GetRoles()
         {
             var enumValues = Enum.GetValues(typeof(Role)).OfType<Role>().ToList();
             return enumValues.Select(role => GetRole(role)).ToArray();

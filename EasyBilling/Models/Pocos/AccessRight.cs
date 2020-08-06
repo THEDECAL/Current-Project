@@ -14,9 +14,9 @@ namespace EasyBilling.Models.Pocos
         public int Id { get; set; }
         [Required]
         public string RoleId { get; set; }
-        public IdentityGroup Role { get; set; }
+        public IdentityRole Role { get; set; }
         [Required]
-        public int PageId { get; set; }
+        public string ControllerName { get; set; }
         [Required]
         public bool IsAvailable { get; set; }
         //public string ComponentsJson { get; private set; }
@@ -48,4 +48,4 @@ namespace EasyBilling.Models.Pocos
         //    Components.CollectionChanged += converter;
         //}
     }
-} 
+}
