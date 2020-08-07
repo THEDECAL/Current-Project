@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyBilling.Attributes;
@@ -10,11 +11,9 @@ namespace EasyBilling.Controllers
 {
     [Authorize]
     [CheckAccessRights]
-    public class DeviceController : Controller
+    [DisplayName("Устройства")]
+    [MenuPosition(2)]
+    public class DeviceController : CustomController
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
     }
 }

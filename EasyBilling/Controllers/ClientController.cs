@@ -1,17 +1,15 @@
 ﻿using EasyBilling.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel;
 
 namespace EasyBilling.Controllers
 {
     [Authorize]
     [CheckAccessRights]
     [NoShowToMenu]
-    public class ClientController : Controller
+    [DisplayName("Клиент")]
+    public class ClientController : CustomController
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
     }
 }

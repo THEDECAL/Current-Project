@@ -4,24 +4,21 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using EasyBilling.Attributes;
 using EasyBilling.Models;
+using System.ComponentModel;
 
 namespace EasyBilling.Controllers
 {
     [Authorize]
     [NoShowToMenu]
-    public class HomeController : Controller
+    [DisplayName("Главная")]
+    [MenuPosition(0)]
+    public class HomeController : CustomController
     {
         private readonly ILogger<HomeController> _logger;
 
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-        }
-
-        public IActionResult Index()
-        {
-            ViewData["Title"] = "Главная";
-            return View();
         }
 
         public IActionResult Privacy()

@@ -15,6 +15,7 @@
 
         <main role="main" class="pb-3">
             <div class="card row align-items-center" style="padding: 30px;">
+                <a class="btn btn-lg btn-info btn-block" role="button" href="#">@ViewData["Title"]</a>
                 @RenderBody()
             </div>
         </main>
@@ -33,6 +34,6 @@
     <script src="~/lib/bootstrap-material-design/js/bootstrap-material-design.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>$(document).ready(function () { $('body').bootstrapMaterialDesign(); });</script>
-    @RenderSection("Scripts", required: false)
+    @*@RenderSection("Scripts", required: false)*@
 </body>
 </html>

@@ -19,7 +19,7 @@ namespace EasyBilling.Models
         {
             try
             {
-                if (!string.IsNullOrEmpty(name) && actionRigths != null)
+                if (!string.IsNullOrWhiteSpace(name) && actionRigths != null)
                 {
                     Name = name;
                     _actionRigths = actionRigths.Value;

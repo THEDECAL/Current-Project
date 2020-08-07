@@ -38,7 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Providers\" />
     <Folder Include="Views\Client\" />
     <Folder Include="Views\Device\" />
     <Folder Include="Views\Shared\Components\" />
@@ -48,7 +47,6 @@
     <Folder Include="Views\APIKey\" />
     <Folder Include="Views\AccessAndPermission\" />
     <Folder Include="TagHelpers\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

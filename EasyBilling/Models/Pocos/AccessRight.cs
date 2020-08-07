@@ -40,7 +40,7 @@ namespace EasyBilling.Models.Pocos
         //    };
 
         //    if (Components.Count == 0 &&
-        //        !String.IsNullOrEmpty(ComponentsJson))
+        //        !String.IsNullOrWhiteSpace(ComponentsJson))
         //    {
         //        converter(null, null);
         //    }
