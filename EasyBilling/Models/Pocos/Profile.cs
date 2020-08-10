@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace EasyBilling.Models.Pocos
 {
@@ -39,10 +37,16 @@ namespace EasyBilling.Models.Pocos
         [MaxLength(100)]
         public string CustomField5 { get; set; } = string.Empty;
         public DateTime BirthDay { get; set; }
-        [Required]
         public DateTime DateOfCreation { get; set; } = DateTime.Now;
         public DateTime DateOfUpdate { get; set; }
+        public DateTime LastLogin { get; set; }
         [Required]
         public bool IsHolded { get; set; } = false;
+        [Required]
+        public bool IsEnabled { get; set; } = true;
+        [Required]
+        public string AccountId { get; set; }
+        [Required]
+        public IdentityUser Account { get; set; }
     }
 }

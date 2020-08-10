@@ -9,9 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\Shared\Components\**" />
     <Compile Remove="wwwroot\lib\bootstrap-material-design\js\js\**" />
+    <Content Remove="Views\Shared\Components\**" />
     <Content Remove="wwwroot\lib\bootstrap-material-design\js\js\**" />
+    <EmbeddedResource Remove="Views\Shared\Components\**" />
     <EmbeddedResource Remove="wwwroot\lib\bootstrap-material-design\js\js\**" />
+    <None Remove="Views\Shared\Components\**" />
     <None Remove="wwwroot\lib\bootstrap-material-design\js\js\**" />
   </ItemGroup>
 
@@ -40,12 +44,11 @@
   <ItemGroup>
     <Folder Include="Views\Client\" />
     <Folder Include="Views\Device\" />
-    <Folder Include="Views\Shared\Components\" />
     <Folder Include="Views\Tariff\" />
     <Folder Include="Views\FinancialOperations\" />
     <Folder Include="Views\Event\" />
     <Folder Include="Views\APIKey\" />
-    <Folder Include="Views\AccessAndPermission\" />
+    <Folder Include="Views\AccessRights\" />
     <Folder Include="TagHelpers\" />
   </ItemGroup>
 

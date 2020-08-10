@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using EasyBilling.Models.Pocos;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
+﻿using EasyBilling.Models.Pocos;
+using EasyBilling.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace EasyBilling.Data
 {
-    public class BillingDbContext :IdentityDbContext<IdentityAccount>
+    public class BillingDbContext : IdentityDbContext<IdentityUser>
     {
         public DbSet<Profile> Profiles { get; set; }
         public DbSet<Device> Devices { get; set; }
@@ -24,8 +23,8 @@ namespace EasyBilling.Data
         public BillingDbContext(DbContextOptions<BillingDbContext> options)
             : base(options)
         {
-            /*Database.EnsureDeleted();
-            Database.EnsureCreated();*/
+            //this.Database.EnsureDeleted();
+            //this.Database.EnsureCreated();
         }
     }
 }

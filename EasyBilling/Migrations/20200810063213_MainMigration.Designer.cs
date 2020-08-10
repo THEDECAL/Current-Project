@@ -4,14 +4,16 @@ using EasyBilling.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace EasyBilling.Data.Migrations
+namespace EasyBilling.Migrations
 {
     [DbContext(typeof(BillingDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200810063213_MainMigration")]
+    partial class MainMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -19,7 +21,32 @@ namespace EasyBilling.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("EasyBilling.Models.ApiKey", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.AccessRight", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ControllerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AccessRights");
+                });
+
+            modelBuilder.Entity("EasyBilling.Models.Pocos.ApiKey", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -32,7 +59,7 @@ namespace EasyBilling.Data.Migrations
                     b.Property<string>("Key")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProfileId")
+                    b.Property<int?>("ProfileId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -42,7 +69,7 @@ namespace EasyBilling.Data.Migrations
                     b.ToTable("ApiKeys");
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.CashOutlay", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.CashOutlay", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -58,10 +85,10 @@ namespace EasyBilling.Data.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DestinationProfileId")
+                    b.Property<int?>("DestinationProfileId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SourceProfileId")
+                    b.Property<int?>("SourceProfileId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -73,7 +100,7 @@ namespace EasyBilling.Data.Migrations
                     b.ToTable("CashOutlays");
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.Device", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.Device", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -81,22 +108,34 @@ namespace EasyBilling.Data.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Brand")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Comment")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("CurrentState")
+                    b.Property<int>("CurrentStateId")
                         .HasColumnType("int");
 
                     b.Property<string>("CustomField1")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<string>("CustomField2")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<string>("CustomField3")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
+
+                    b.Property<string>("CustomField4")
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
+
+                    b.Property<string>("CustomField5")
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<DateTime>("DateOfCreation")
                         .HasColumnType("datetime2");
@@ -111,6 +150,7 @@ namespace EasyBilling.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Model")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -127,7 +167,7 @@ namespace EasyBilling.Data.Migrations
                     b.ToTable("Devices");
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.EventLog", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.EventLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -145,7 +185,7 @@ namespace EasyBilling.Data.Migrations
                     b.ToTable("EventLogs");
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.Payment", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.Payment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -161,10 +201,10 @@ namespace EasyBilling.Data.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DestinationProfileId")
+                    b.Property<int?>("DestinationProfileId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SourceProfileId")
+                    b.Property<int?>("SourceProfileId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -176,39 +216,51 @@ namespace EasyBilling.Data.Migrations
                     b.ToTable("Payments");
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.Profile", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.Profile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<double>("AmountOfCash")
                         .HasColumnType("float");
 
-                    b.Property<string>("Comment")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("BirthDay")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("CurrentState")
-                        .HasColumnType("int");
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(300)")
+                        .HasMaxLength(300);
 
                     b.Property<string>("CustomField1")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<string>("CustomField2")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<string>("CustomField3")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<string>("CustomField4")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<string>("CustomField5")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<DateTime>("DateBeginOfUseOfTarrif")
                         .HasColumnType("datetime2");
@@ -220,21 +272,29 @@ namespace EasyBilling.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsHolded")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Patronymic")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("LastLogin")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("Patronymic")
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
                     b.Property<string>("SecondName")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
 
-                    b.Property<int>("TariffId")
+                    b.Property<int?>("TarrifId")
                         .HasColumnType("int");
 
                     b.Property<int>("UsedTraffic")
@@ -242,12 +302,14 @@ namespace EasyBilling.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TariffId");
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("TarrifId");
 
                     b.ToTable("Profiles");
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.Tariff", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.Tariff", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -486,52 +548,55 @@ namespace EasyBilling.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.ApiKey", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.AccessRight", b =>
                 {
-                    b.HasOne("EasyBilling.Models.Profile", "Profile")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", "Role")
                         .WithMany()
-                        .HasForeignKey("ProfileId")
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.CashOutlay", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.ApiKey", b =>
                 {
-                    b.HasOne("EasyBilling.Models.Profile", "DestinationProfile")
+                    b.HasOne("EasyBilling.Models.Pocos.Profile", "Profile")
                         .WithMany()
-                        .HasForeignKey("DestinationProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EasyBilling.Models.Profile", "SourceProfile")
-                        .WithMany()
-                        .HasForeignKey("SourceProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProfileId");
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.Payment", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.CashOutlay", b =>
                 {
-                    b.HasOne("EasyBilling.Models.Profile", "DestinationProfile")
+                    b.HasOne("EasyBilling.Models.Pocos.Profile", "DestinationProfile")
                         .WithMany()
-                        .HasForeignKey("DestinationProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DestinationProfileId");
 
-                    b.HasOne("EasyBilling.Models.Profile", "SourceProfile")
+                    b.HasOne("EasyBilling.Models.Pocos.Profile", "SourceProfile")
                         .WithMany()
-                        .HasForeignKey("SourceProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SourceProfileId");
                 });
 
-            modelBuilder.Entity("EasyBilling.Models.Profile", b =>
+            modelBuilder.Entity("EasyBilling.Models.Pocos.Payment", b =>
                 {
-                    b.HasOne("EasyBilling.Models.Tariff", "Tarrif")
+                    b.HasOne("EasyBilling.Models.Pocos.Profile", "DestinationProfile")
                         .WithMany()
-                        .HasForeignKey("TariffId")
+                        .HasForeignKey("DestinationProfileId");
+
+                    b.HasOne("EasyBilling.Models.Pocos.Profile", "SourceProfile")
+                        .WithMany()
+                        .HasForeignKey("SourceProfileId");
+                });
+
+            modelBuilder.Entity("EasyBilling.Models.Pocos.Profile", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("EasyBilling.Models.Pocos.Tariff", "Tarrif")
+                        .WithMany()
+                        .HasForeignKey("TarrifId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

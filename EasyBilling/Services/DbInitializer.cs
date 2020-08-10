@@ -1,49 +1,40 @@
-﻿using EasyBilling.Models.Pocos;
+﻿using EasyBilling.Data;
+using EasyBilling.Models.Pocos;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EasyBilling.Data
+namespace EasyBilling.Services
 {
-    public class DbInitializer
+    public class DbInitializer //: IDisposable
     {
-        private static DbInitializer _dbInit;
-
         private readonly BillingDbContext _dbContext;
-        private readonly UserManager<IdentityAccount> _userMgr;
-        private readonly RoleManager<IdentityRole> _roleMgr;
-
-        private DbInitializer(IHost host)
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        public DbInitializer(IServiceScopeFactory scopeFactory)
         {
-            var scope = host.Services.CreateScope();
+            var scope = scopeFactory.CreateScope();
             var sp = scope.ServiceProvider;
-            
-            _userMgr = sp.GetRequiredService<UserManager<IdentityAccount>>();
-            _roleMgr = sp.GetRequiredService<RoleManager<IdentityRole>>();
+
+            _userManager = sp.GetRequiredService<UserManager<IdentityUser>>();
+            _roleManager = sp.GetRequiredService<RoleManager<IdentityRole>>();
             _dbContext = sp.GetRequiredService<BillingDbContext>();
         }
-
-        /// <summary>
-        /// Получение единственного экземпляра
-        /// </summary>
-        /// <param name="host"></param>
-        /// <returns>Возвращает объект класса</returns>
-        public static DbInitializer GetInstance(IHost host) =>
-            _dbInit = (_dbInit == null) ? new DbInitializer(host) : _dbInit;
-
-        public void Initialize()
+        public async Task InitializeAsync()
         {
-            RolesInitializeAsync().Wait();
-            AccessRightsInitializeAsync().Wait();
-            UsersInitializeAsync().Wait();
-
-            //Освобождаем ресурсы после использования сервисов
-            _dbContext.Dispose();
-            _userMgr.Dispose();
-            _roleMgr.Dispose();
+            await Task.Run(async () =>
+            {
+                await RolesInitializeAsync();
+                await AccessRightsInitializeAsync();
+                await UsersInitializeAsync();
+            });
         }
         /// <summary>
         /// Инициализация пользователей
@@ -51,29 +42,40 @@ namespace EasyBilling.Data
         /// <returns></returns>
         private async Task UsersInitializeAsync()
         {
-            if (_userMgr.Users.Count() == 0)
+            if (_userManager.Users.Count() == 0)
             {
-                var admin = new IdentityAccount()
+                IdentityUser admin = null;
+                Profile adminProfile = new Profile()
                 {
-                    UserName = "admin",
-                    Email = "admin@localhost",
-                    PhoneNumber = "099-999-99-99",
-                    IsEnabled = true,
-                    EmailConfirmed = true,
-                    LockoutEnabled = true,
-                    Profile = new Profile()
+                    FirstName = "Администратор",
+                    SecondName = "Биллинга",
+                    Address = "Пушкина 9-15",
+                    DateOfCreation = DateTime.Now,
+                    BirthDay = new DateTime()
+                        .AddDays(23)
+                        .AddYears(1990)
+                        .AddMonths(8),
+                    Account = admin = new IdentityUser()
                     {
-                        FirstName = "Администратор",
-                        SecondName = "Биллинга",
-                        Address = "Пушкина 9-15",
-                        DateOfCreation = DateTime.Now
+                        UserName = "admin",
+                        Email = "admin@localhost",
+                        PhoneNumber = "099-999-99-99",
+                        EmailConfirmed = true,
+                        LockoutEnabled = true
                     }
                 };
-                var result = await _userMgr.CreateAsync(admin, @"AQeT.5*gehWqeAh");
+
+                var result = await _userManager.CreateAsync(admin, @"AQeT.5*gehWqeAh");
                 if (result.Succeeded)
                 {
                     var adminRole = Role.admin.ToString();
-                    await _userMgr.AddToRoleAsync(admin, adminRole);
+                    await _userManager.AddToRoleAsync(admin, adminRole);
+                }
+                else
+                {
+                    Console.WriteLine($"Роль {adminProfile}" +
+                        $"не связалась с {admin.UserName}," + 
+                        "произошла ошибка.");
                 }
             }
         }
@@ -83,13 +85,22 @@ namespace EasyBilling.Data
         /// <returns></returns>
         private async Task RolesInitializeAsync()
         {
-            if (_roleMgr.Roles.Count() == 0)
+            //if (_roleManager.Roles.Count() == 0)
+            if (_dbContext.Roles.Count() == 0)
             {
-                var roles = RoleHelper.GetRoles();
+                 var roles = await RoleHelper.GetRolesAsync();
+                var roleLst = new List<IdentityRole>();
+
                 foreach (var item in roles)
                 {
-                    await _roleMgr.CreateAsync(item);
+                    if (item != null)
+                    {
+                        roleLst.Add(item);
+                        await _dbContext.AddAsync(item);
+                        //await _roleManager.CreateAsync(item);
+                    }
                 }
+                await _dbContext.SaveChangesAsync();
             }
         }
         /// <summary>
@@ -110,57 +121,57 @@ namespace EasyBilling.Data
                 const string eventCtrl = "Event";
                 const string financialOperationsCtrl = "FinancialOperations";
                 #region admin
-                var adminRole = await _roleMgr.FindByNameAsync(
+                var adminRole = await  _roleManager.FindByNameAsync(
                     Role.admin.ToString());
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = usersCtrl,
                     IsAvailable = true,
                     Role = adminRole
                 });
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = clientCtrl,
                     IsAvailable = true,
                     Role = adminRole
                 });
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = accessRightsCtrl,
                     IsAvailable = true,
                     Role = adminRole
                 });
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = tariffCtrl,
                     IsAvailable = true,
                     Role = adminRole
                 });
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = apiKeyCtrl,
                     IsAvailable = true,
                     Role = adminRole
                 });
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = eventCtrl,
                     IsAvailable = true,
                     Role = adminRole
                 });
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = financialOperationsCtrl,
                     IsAvailable = true,
                     Role = adminRole
                 });
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = deviceCtrl,
                     IsAvailable = true,
                     Role = adminRole
                 });
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = clientCtrl,
                     IsAvailable = true,
@@ -168,15 +179,15 @@ namespace EasyBilling.Data
                 });
                 #endregion
                 #region operator
-                var operatorRole = await _roleMgr.FindByNameAsync(
+                var operatorRole = await _roleManager.FindByNameAsync(
                     Role.@operator.ToString());
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = usersCtrl,
                     IsAvailable = true,
                     Role = operatorRole
                 });
-                _dbContext.AccessRights.Add(new AccessRight()
+                await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = clientCtrl,
                     IsAvailable = true,
@@ -184,7 +195,7 @@ namespace EasyBilling.Data
                 });
                 #endregion
                 #region casher
-                var casherRole = await _roleMgr.FindByNameAsync(
+                var casherRole = await _roleManager.FindByNameAsync(
                     Role.casher.ToString());
                 _dbContext.AccessRights.Add(new AccessRight()
                 {
@@ -194,7 +205,7 @@ namespace EasyBilling.Data
                 });
                 #endregion
                 #region client
-                var clientRole = await _roleMgr.FindByNameAsync(
+                var clientRole = await _roleManager.FindByNameAsync(
                     Role.casher.ToString());
                 _dbContext.AccessRights.Add(new AccessRight()
                 {
@@ -207,21 +218,30 @@ namespace EasyBilling.Data
                 await _dbContext.SaveChangesAsync();
             }
         }
+        //public async void Dispose()
+        //{
+        //    await _dbContext.DisposeAsync();
+        //    await Task.Run(() =>
+        //    {
+        //        _roleManager.Dispose();
+        //        _userManager.Dispose();
+        //    });
+        //}
         /// <summary>
         ///  Инициалищация базы данных абонентов
         /// </summary>
         /// <returns></returns>
-        private async Task ClientsInitializeAsync()
-        {
+        //private async Task ClientsInitializeAsync()
+        //{
 
-        }
+        //}
         /// <summary>
         ///  Инициалищация тарифов
         /// </summary>
         /// <returns></returns>
-        private async Task TariffsInitializeAsync()
-        {
+        //private async Task TariffsInitializeAsync()
+        //{
 
-        }
+        //}
     }
 }

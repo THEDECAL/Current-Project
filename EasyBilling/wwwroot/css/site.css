@@ -87,3 +87,11 @@ body {
     margin-left: -15px;
     background-color: white !important;
 }
+
+.menu-brand {
+    width: 180px;
+}
+
+.mebu-item {
+    text-transform: capitalize !important;
+}

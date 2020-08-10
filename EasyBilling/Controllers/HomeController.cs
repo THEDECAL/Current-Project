@@ -11,7 +11,6 @@ namespace EasyBilling.Controllers
     [Authorize]
     [NoShowToMenu]
     [DisplayName("Главная")]
-    [MenuPosition(0)]
     public class HomeController : CustomController
     {
         private readonly ILogger<HomeController> _logger;

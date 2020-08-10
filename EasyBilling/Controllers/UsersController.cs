@@ -10,7 +10,6 @@ namespace EasyBilling.Controllers
     [Authorize]
     [CheckAccessRights]
     [DisplayName("Пользователи")]
-    [MenuPosition(1)]
     public class UsersController : CustomController
     {
     }

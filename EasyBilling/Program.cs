@@ -1,6 +1,9 @@
 using EasyBilling.Data;
+using EasyBilling.Services;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace EasyBilling
 {
@@ -9,7 +12,16 @@ namespace EasyBilling
         public static void Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
-            DbInitializer.GetInstance(host).Initialize();
+            try
+            {
+                var scope = host.Services.CreateScope();
+                var dbInit = scope.ServiceProvider.GetRequiredService<DbInitializer>();
+                dbInit.InitializeAsync().Wait();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
 
             host.Run();
         }
