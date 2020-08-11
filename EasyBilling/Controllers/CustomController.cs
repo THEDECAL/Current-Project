@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc
         public string DisplayName { get; }
         public CustomController()
         {
-            var temp = GetType();
+            //var temp = GetType();
             DisplayName = (GetType()
                 .GetCustomAttributes(typeof(DisplayNameAttribute), true)
                 .SingleOrDefault() as DisplayNameAttribute).DisplayName;

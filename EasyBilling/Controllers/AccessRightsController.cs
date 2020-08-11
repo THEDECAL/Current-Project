@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using EasyBilling.Attributes;
 using EasyBilling.Data;
+using EasyBilling.Helpers;
 using EasyBilling.Models.Pocos;
+using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EasyBilling.Controllers
 {
@@ -25,6 +29,21 @@ namespace EasyBilling.Controllers
             _dbContext = dbContext;
             _roleManager = roleManager;
         }
+
+        [HttpGet]
+        public async new Task<IActionResult> Index()
+        {
+            ViewData["Title"] = DisplayName;
+
+            var accessRights = await _dbContext.AccessRights
+                .Include(ar => ar.Role).ToListAsync();
+            var roles = await _roleManager.Roles.ToListAsync();
+            var model = new AccessRightsViewModel(accessRights, roles);
+            var dic = ControllerHelper.GetControllersNames();
+
+            return View(model: model);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateAccessRight(AccessRight rights)
         {
@@ -36,6 +55,7 @@ namespace EasyBilling.Controllers
 
             return RedirectToAction("Index");
         }
+
         [HttpPost]
         public async Task<IActionResult> UpdateAccessRight(AccessRight rights)
         {

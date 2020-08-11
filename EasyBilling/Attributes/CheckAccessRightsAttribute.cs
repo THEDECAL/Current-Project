@@ -20,14 +20,11 @@ namespace EasyBilling.Attributes
                 context.ActionDescriptor;
             var controllerName = ad.ControllerName;
 
-            using (_arm)
-            {
-                AccessRight accessRights = _arm.GetRights(context.HttpContext.User.Identity.Name,
-                    controllerName).Result;
-                //При каких условиях давать доступ
-                if (accessRights != null && accessRights.IsAvailable)
-                    return;
-            }
+            AccessRight accessRights = _arm.GetRights(context.HttpContext.User.Identity.Name,
+                controllerName).Result;
+            //При каких условиях давать доступ
+            if (accessRights != null && accessRights.IsAvailable)
+                return;
 
             context.HttpContext.Response.Redirect($"/Home/ErrorAccess/{ad.DisplayName}");
 

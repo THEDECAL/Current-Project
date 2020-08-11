@@ -9,12 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TagHelpers\**" />
     <Compile Remove="Views\Shared\Components\**" />
     <Compile Remove="wwwroot\lib\bootstrap-material-design\js\js\**" />
+    <Content Remove="TagHelpers\**" />
     <Content Remove="Views\Shared\Components\**" />
     <Content Remove="wwwroot\lib\bootstrap-material-design\js\js\**" />
+    <EmbeddedResource Remove="TagHelpers\**" />
     <EmbeddedResource Remove="Views\Shared\Components\**" />
     <EmbeddedResource Remove="wwwroot\lib\bootstrap-material-design\js\js\**" />
+    <None Remove="TagHelpers\**" />
     <None Remove="Views\Shared\Components\**" />
     <None Remove="wwwroot\lib\bootstrap-material-design\js\js\**" />
   </ItemGroup>
@@ -49,7 +53,7 @@
     <Folder Include="Views\Event\" />
     <Folder Include="Views\APIKey\" />
     <Folder Include="Views\AccessRights\" />
-    <Folder Include="TagHelpers\" />
+    <Folder Include="HtmlHelpers\" />
   </ItemGroup>
 
 </Project>

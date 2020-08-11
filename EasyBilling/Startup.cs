@@ -17,31 +17,26 @@ namespace EasyBilling
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public async void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
-            await Task.Run(() =>
-            {
-                //Добавление собственных сервисов
-                services.AddAccessRightsManager();
-                services.AddDbInitializer();
-                //services.AddDbContext(DbContextOptions<BillingDbContext>, BillingDbContext)();
-                //services.AddIdentity<IdentityUser, IdentityRole>();
+            //Добавление собственных сервисов
+            services.AddAccessRightsManager();
+            services.AddDbInitializer();
+            //services.AddDbContext(DbContextOptions<BillingDbContext>, BillingDbContext)();
+            //services.AddIdentity<IdentityUser, IdentityRole>();
 
-                //Сервисы необходимые для работы сессий
-                services.AddDistributedMemoryCache();
-                services.AddSession();
-                services.AddRouting();
+            //Сервисы необходимые для работы сессий
+            services.AddDistributedMemoryCache();
+            services.AddSession();
+            services.AddRouting();
 
-                services.AddControllersWithViews();
-                services.AddRazorPages();
-            });
+            services.AddControllersWithViews();
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            await Task.Run(() =>
-            {
                 if (env.IsDevelopment())
                 {
                     app.UseDeveloperExceptionPage();
@@ -83,7 +78,6 @@ namespace EasyBilling
                                 "{id?}");
                     endpoints.MapRazorPages();
                 });
-            });
         }
     }
 }

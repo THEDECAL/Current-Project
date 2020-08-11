@@ -12,7 +12,6 @@ namespace EasyBilling.Controllers
     [Authorize]
     [CheckAccessRights]
     [DisplayName("Устройства")]
-    [MenuPosition(2)]
     public class DeviceController : CustomController
     {
     }
