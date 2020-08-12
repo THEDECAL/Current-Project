@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyBilling.Controllers
 {
@@ -23,11 +24,15 @@ namespace EasyBilling.Controllers
     {
         private readonly BillingDbContext _dbContext;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IServiceScopeFactory _scopeFactory;
         public AccessRightsController(BillingDbContext dbContext,
-            RoleManager<IdentityRole> roleManager)
+
+            RoleManager<IdentityRole> roleManager,
+            IServiceScopeFactory scopeFactory)
         {
             _dbContext = dbContext;
             _roleManager = roleManager;
+            _scopeFactory = scopeFactory;
         }
 
         [HttpGet]
@@ -35,13 +40,14 @@ namespace EasyBilling.Controllers
         {
             ViewData["Title"] = DisplayName;
 
-            var accessRights = await _dbContext.AccessRights
-                .Include(ar => ar.Role).ToListAsync();
-            var roles = await _roleManager.Roles.ToListAsync();
-            var model = new AccessRightsViewModel(accessRights, roles);
-            var dic = ControllerHelper.GetControllersNames();
+            //var accessRights = await _dbContext.AccessRights
+            //    .Include(ar => ar.Role).ToListAsync();
+            var dvm = new DataViewModel<AccessRight>(_scopeFactory);
+            //var roles = await _roleManager.Roles.ToListAsync();
+            //var cntrlsNames = ControllerHelper.GetControllersNames();
+            //var model = new AccessRightsViewModel(dvm, roles, cntrlsNames);
 
-            return View(model: model);
+            return View(model: null);
         }
 
         [HttpPost]

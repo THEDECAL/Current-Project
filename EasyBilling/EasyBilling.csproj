@@ -53,7 +53,6 @@
     <Folder Include="Views\Event\" />
     <Folder Include="Views\APIKey\" />
     <Folder Include="Views\AccessRights\" />
-    <Folder Include="HtmlHelpers\" />
   </ItemGroup>
 
 </Project>

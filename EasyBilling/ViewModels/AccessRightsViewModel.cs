@@ -9,10 +9,16 @@ namespace EasyBilling.ViewModels
 {
     public class AccessRightsViewModel
     {
-        public AccessRightsViewModel(List<AccessRight> accessRights,
-            List<IdentityRole> roles)
-        {
+        public Dictionary<string,string> ControllersNames { get; private set; }
+        public List<AccessRight> AccessRights { get; private set; }
+        public List<IdentityRole> Roles { get; private set; }
 
+        public AccessRightsViewModel(List<AccessRight> accessRights,
+            List<IdentityRole> roles, Dictionary<string, string> controllersNames)
+        {
+            ControllersNames = controllersNames;
+            AccessRights = accessRights;
+            Roles = roles;
         }
     }
 }

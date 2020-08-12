@@ -9,7 +9,7 @@ namespace EasyBilling.Models.Pocos
     {
         public int Id { get; set; }
         [Required]
-        public string RoleId { get; set; }
+        //public string RoleId { get; set; }
         [DisplayName("Роль")]
         public IdentityRole Role { get; set; }
         [Required]
