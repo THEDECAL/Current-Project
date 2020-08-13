@@ -75,8 +75,7 @@ namespace EasyBilling
                             pattern:
                                 "{controller:alpha:length(0, 30)=home}/" +
                                 "{action:alpha:length(0, 30)=index}/" +
-                                "{id?}/" +
-                                "{sort?}");
+                                "{id?}");
                     endpoints.MapRazorPages();
                 });
         }

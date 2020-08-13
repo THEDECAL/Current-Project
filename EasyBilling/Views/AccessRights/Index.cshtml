@@ -1,1 +1,22 @@
-﻿
+﻿@using EasyBilling.Models.Pocos
+@model EasyBilling.ViewModels.AccessRightsViewModel
+
+<table class="table table-striped">
+    @Model.TableHelper.GetTableHead()
+    <tbody>
+        @{
+            int counter = 1;
+            foreach (AccessRight item in Model.DataViewModel.Data)
+            {
+                <tr>
+                    <th scope="row">@counter</th>
+                    <td>@item.Role.Name</td>
+                    <td>@item.ControllerName</td>
+                    <td>@item.IsAvailable</td>
+                </tr>
+                counter++;
+            }
+        }
+    </tbody>
+</table>
+@Model.TableHelper.GetPaginationPanel()

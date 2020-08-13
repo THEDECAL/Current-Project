@@ -7,6 +7,7 @@ namespace EasyBilling.Models.Pocos
 {
     public class AccessRight
     {
+        [DisplayName("№")]
         public int Id { get; set; }
         [Required]
         //public string RoleId { get; set; }

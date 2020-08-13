@@ -36,18 +36,25 @@ namespace EasyBilling.Controllers
         }
 
         [HttpGet]
-        public async new Task<IActionResult> Index()
+        public IActionResult Index(string sort = "Id",
+            SortType sortType = SortType.ASC,
+            int page = 1,
+            int pageSize = 10)
         {
             ViewData["Title"] = DisplayName;
 
-            //var accessRights = await _dbContext.AccessRights
-            //    .Include(ar => ar.Role).ToListAsync();
-            var dvm = new DataViewModel<AccessRight>(_scopeFactory);
-            //var roles = await _roleManager.Roles.ToListAsync();
-            //var cntrlsNames = ControllerHelper.GetControllersNames();
-            //var model = new AccessRightsViewModel(dvm, roles, cntrlsNames);
+            var dvm = new DataViewModel<AccessRight>(_scopeFactory,
+                includeField1: "Role",
+                sortType: sortType,
+                sortField: sort,
+                page: page,
+                pageSize: pageSize
+            );
+            var roles = _roleManager.Roles.ToList();
+            var cntrlsNames = ControllerHelper.GetControllersNames();
+            var model = new AccessRightsViewModel(dvm, roles, cntrlsNames);
 
-            return View(model: null);
+            return View(model: model);
         }
 
         [HttpPost]
