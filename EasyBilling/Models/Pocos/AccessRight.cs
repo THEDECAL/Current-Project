@@ -19,33 +19,5 @@ namespace EasyBilling.Models.Pocos
         [Required]
         [DisplayName("Разрешение")]
         public bool IsAvailable { get; set; }
-        //public string ComponentsJson { get; private set; }
-        //[NotMapped]
-        //public ObservableCollection<PageComponent> Components { get; private set; }
-        //public AccessRight()
-        //{
-        //    Components = new ObservableCollection<PageComponent>();
-
-        //    NotifyCollectionChangedEventHandler converter = (sender, e) =>
-        //    {
-        //        try
-        //        {
-        //            ComponentsJson =
-        //                JsonConvert.SerializeObject(Components);
-        //        }
-        //        catch (JsonSerializationException ex)
-        //        {
-        //            Debug.WriteLine(ex.Message);
-        //        }
-        //    };
-
-        //    if (Components.Count == 0 &&
-        //        !String.IsNullOrWhiteSpace(ComponentsJson))
-        //    {
-        //        converter(null, null);
-        //    }
-
-        //    Components.CollectionChanged += converter;
-        //}
     }
 }

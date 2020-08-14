@@ -20,6 +20,7 @@ namespace EasyBilling.Helpers
     {
         const int MAX_PAGE_SIZE = 100;
         private readonly DbSet<T> _dbSet;
+        private Type _type;
         private int _page;
         private int _pageSize;
         public string IncludeField1 { get; private set; }
@@ -27,7 +28,8 @@ namespace EasyBilling.Helpers
         public string SortField { get; private set; }
         public SortType SortType { get; private set; }
         public List<T> Data { get; private set; }
-        public int AmountPage { get; }
+        public int AmountPage { get; private set; }
+        public string SearchRequest { get; private set; }
         public int Page
         {
             get => _page;
@@ -54,7 +56,8 @@ namespace EasyBilling.Helpers
             string sortField = "Id",
             SortType sortType = SortType.ASC,
             int page = 1,
-            int pageSize = 10)
+            int pageSize = 10,
+            string searchRequest = "")
         {
             var scope = scopeFactory.CreateScope();
             var sp = scope.ServiceProvider;
@@ -62,6 +65,8 @@ namespace EasyBilling.Helpers
             var dbContext = sp.GetRequiredService<BillingDbContext>();
             _dbSet = dbContext.Set<T>();
 
+            _type = typeof(T);
+            SearchRequest = (searchRequest == null )?"":searchRequest.ToLower();
             IncludeField1 = includeField1;
             IncludeField2 = includeField2;
             SortField = sortField;
@@ -84,12 +89,12 @@ namespace EasyBilling.Helpers
                 {
                     //Подключение связанных объектов
                     if (!string.IsNullOrWhiteSpace(IncludeField1))
-                        Data = query.Include(IncludeField1).ToList();
+                        query = query.Include(IncludeField1);
                     else if (!string.IsNullOrWhiteSpace(IncludeField2))
-                        Data = query.Include(IncludeField2).ToList();
+                        query = query.Include(IncludeField2);
                     else if (!string.IsNullOrWhiteSpace(IncludeField1) &&
                         !string.IsNullOrWhiteSpace(IncludeField2))
-                        Data = query.Include(IncludeField1).Include(IncludeField2).ToList();
+                        query = query.Include(IncludeField1).Include(IncludeField2);
                 }
                 catch (Exception ex)
                 {
@@ -97,13 +102,19 @@ namespace EasyBilling.Helpers
                 }
 
                 //Сортировка по выбранному столбцу
-                var prop = typeof(T).GetProperties()
+                var prop = _type.GetProperties()
                     .FirstOrDefault(p => p.Name.ToLower()
-                    .Equals(SortField.ToLower()));// .GetProperty(SortField);
+                    .Equals(SortField.ToLower()));
+                var searchFunc = new Func<T, bool>((o) =>
+                    o.GetType().GetProperties().Any(p => p.GetValue(o, null)
+                            .ToString().ToLower().Contains(SearchRequest.ToLower())));
+
                 if (SortType == SortType.DESC)
-                    Data = query.OrderByDescending(p => prop.GetValue(p, null)).ToList();
+                    Data = query.Where(searchFunc)
+                        .OrderByDescending(p => prop.GetValue(p, null).ToString()).ToList();
                 else
-                    Data = Data.OrderBy(p => prop.GetValue(p, null)).ToList();
+                    Data = query.Where(searchFunc)
+                        .OrderBy(p => prop.GetValue(p, null).ToString()).ToList();
             }
             catch (Exception ex)
             {

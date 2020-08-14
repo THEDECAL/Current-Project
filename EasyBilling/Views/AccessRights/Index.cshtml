@@ -1,6 +1,7 @@
 ﻿@using EasyBilling.Models.Pocos
 @model EasyBilling.ViewModels.AccessRightsViewModel
 
+@Model.TableHelper.GetSearchPanel()
 <table class="table table-striped">
     @Model.TableHelper.GetTableHead()
     <tbody>
@@ -13,6 +14,10 @@
                     <td>@item.Role.Name</td>
                     <td>@item.ControllerName</td>
                     <td>@item.IsAvailable</td>
+                    <td>
+                        <a class="btn btn-info btn-sm" href="#">Изменить</a>
+                        @Html.ActionLink("Удалить", "DeleteAccessRight", "AccessRights", new { id = item.Id }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
                 </tr>
                 counter++;
             }

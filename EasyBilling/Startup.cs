@@ -22,8 +22,6 @@ namespace EasyBilling
             //Добавление собственных сервисов
             services.AddAccessRightsManager();
             services.AddDbInitializer();
-            //services.AddDbContext(DbContextOptions<BillingDbContext>, BillingDbContext)();
-            //services.AddIdentity<IdentityUser, IdentityRole>();
 
             //Сервисы необходимые для работы сессий
             services.AddDistributedMemoryCache();
@@ -49,7 +47,7 @@ namespace EasyBilling
                     app.UseHsts();
                 }
                 app.UseHttpsRedirection(); //Использовать перенаправление на защищённый протокол
-                                           //app.UseStatusCodePages(); //Отображать статусый код
+                //app.UseStatusCodePages(); //Отображать статус код
                 app.UseStaticFiles();
 
                 app.UseRouting();
@@ -61,14 +59,6 @@ namespace EasyBilling
 
                 app.UseEndpoints(endpoints =>
                 {
-                    //endpoints.MapControllerRoute(
-                    //    name: "component-endpoint",
-                    //    pattern:
-                    //        "{controller:required:alpha:length(0, 30)}/" +
-                    //        "{component:alpha:length(0, 30)}/" +
-                    //        "{action:alpha:length(0, 10)}/" +
-                    //        "{id?}");
-                    //endpoints.MapRazorPages();
 
                     endpoints.MapControllerRoute(
                             name: "default",

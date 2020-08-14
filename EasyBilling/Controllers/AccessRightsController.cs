@@ -36,10 +36,12 @@ namespace EasyBilling.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index(string sort = "Id",
+        public IActionResult Index(
+            string sort = "Id",
             SortType sortType = SortType.ASC,
             int page = 1,
-            int pageSize = 10)
+            int pageSize = 10,
+            string search = "")
         {
             ViewData["Title"] = DisplayName;
 
@@ -48,7 +50,8 @@ namespace EasyBilling.Controllers
                 sortType: sortType,
                 sortField: sort,
                 page: page,
-                pageSize: pageSize
+                pageSize: pageSize,
+                searchRequest: search
             );
             var roles = _roleManager.Roles.ToList();
             var cntrlsNames = ControllerHelper.GetControllersNames();
