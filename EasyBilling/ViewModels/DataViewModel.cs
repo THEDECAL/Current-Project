@@ -80,46 +80,62 @@ namespace EasyBilling.Helpers
 
         private void GetData()
         {
+            var searchFunc = new Func<T, bool>((o) =>
+                    o.GetType().GetProperties().Any(p => p.GetValue(o, null)
+                        .ToString().ToLower().Contains(SearchRequest.ToLower())));
             try
             {
-                //Выбераем данные для текущей страницы (пагинация)
-                var query = _dbSet.Skip((Page - 1) * PageSize).Take(PageSize);
-
+                IQueryable<T> queryQ = _dbSet.AsQueryable();
+                //Подключение связанных объектов
                 try
                 {
-                    //Подключение связанных объектов
                     if (!string.IsNullOrWhiteSpace(IncludeField1))
-                        query = query.Include(IncludeField1);
+                        queryQ = queryQ.Include(IncludeField1);
                     else if (!string.IsNullOrWhiteSpace(IncludeField2))
-                        query = query.Include(IncludeField2);
+                        queryQ = queryQ.Include(IncludeField2);
                     else if (!string.IsNullOrWhiteSpace(IncludeField1) &&
                         !string.IsNullOrWhiteSpace(IncludeField2))
-                        query = query.Include(IncludeField1).Include(IncludeField2);
+                        queryQ = queryQ.Include(IncludeField1).Include(IncludeField2);
                 }
                 catch (Exception ex)
+                { Console.WriteLine(ex.StackTrace); }
+
+
+                IEnumerable<T> queryE = null;
+                //Выбераем поисковый запрос
+                try
                 {
-                    Console.WriteLine(ex.StackTrace);
+                    queryE = queryQ.Where(searchFunc);
+                    AmountPage = (int)Math.Ceiling(queryE.Count() / (double)PageSize);
                 }
+                catch (Exception ex)
+                { Console.WriteLine(ex.StackTrace); }
 
                 //Сортировка по выбранному столбцу
-                var prop = _type.GetProperties()
-                    .FirstOrDefault(p => p.Name.ToLower()
-                    .Equals(SortField.ToLower()));
-                var searchFunc = new Func<T, bool>((o) =>
-                    o.GetType().GetProperties().Any(p => p.GetValue(o, null)
-                            .ToString().ToLower().Contains(SearchRequest.ToLower())));
+                try
+                {
+                    var prop = _type.GetProperties()
+                        .FirstOrDefault(p => p.Name.ToLower()
+                        .Equals(SortField.ToLower()));
 
-                if (SortType == SortType.DESC)
-                    Data = query.Where(searchFunc)
-                        .OrderByDescending(p => prop.GetValue(p, null).ToString()).ToList();
-                else
-                    Data = query.Where(searchFunc)
-                        .OrderBy(p => prop.GetValue(p, null).ToString()).ToList();
+                    if (SortType == SortType.DESC)
+                        queryE = queryE.OrderByDescending(p => prop.GetValue(p, null).ToString()).ToList();
+                    else
+                        queryE = queryE.OrderBy(p => prop.GetValue(p, null).ToString()).ToList();
+                }
+                catch (Exception ex)
+                { Console.WriteLine(ex.StackTrace); }
+
+                //Выбераем данные для текущей страницы (пагинация)
+                try
+                {
+                    Data = queryE.Skip((Page - 1) * PageSize).Take(PageSize).ToList();
+                }
+                catch (Exception ex)
+                { Console.WriteLine(ex.StackTrace); }
             }
             catch (Exception ex)
-            {
-                Console.WriteLine(ex.StackTrace);
-            }
+            { Console.WriteLine(ex.StackTrace); }
         }
     }
 }
