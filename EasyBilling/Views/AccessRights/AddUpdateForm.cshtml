@@ -1,0 +1,73 @@
+﻿@model EasyBilling.Models.Pocos.AccessRight
+@using EasyBilling.Helpers
+@inject Microsoft.AspNetCore.Identity.RoleManager<Microsoft.AspNetCore.Identity.IdentityRole> roleManager
+
+@{
+    var buttonName = (ViewData["ActionPage"].Equals("Create") ? "Добавить" : "Изменить");
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-antiforgery="true" asp-action="@ViewData["ActionPage"]" method="post" class="form-size">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input asp-for="Id" type="hidden" class="form-control" />
+            <div class="form-group">
+                <label asp-for="ControllerName" class="control-label"></label>
+                <select class="mt-2 custom-select form-control" asp-for="ControllerName">
+                    @foreach (var item in await ControllerHelper.GetControllersNamesAsync())
+                    {
+                        if (Model.ControllerName == null || item.Key != Model.ControllerName)
+                        {
+                            <option value="@item.Key">@item.Value</option>
+                        }
+                        else
+                        {
+                            <option selected value="@item.Key">@item.Value</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="ControllerName" class="text-danger"></span>
+            </div>
+            <div class="mb-0 form-group">
+                <label asp-for="Role" class="control-label"></label>
+                <select class="mt-2 custom-select form-control" asp-for="Role.Name">
+                    @foreach (var item in roleManager.Roles.ToArray())
+                    {
+                        if (Model.Role == null || Model.Role.Name != item.Name)
+                        {
+                            <option value="@item.Name">@item.Name</option>
+                        }
+                        else
+                        {
+                            <option selected value="@item.Name">@item.Name</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="switch">
+                    <label class="form-check-label">
+                        Запрещено
+                    </label>
+                    <label class="form-check-label">
+                        @if (!Model.IsAvailable)
+                        {
+                            <input class="form-control" type="checkbox" asp-for="IsAvailable" />
+                        }
+                        else
+                        {
+                            <input class="form-control" type="checkbox" asp-for="IsAvailable" checked />
+                        }
+                        Разрешено
+                    </label>
+                    <span asp-validation-for="IsAvailable" class="text-danger"></span>
+                </div>
+             </div>
+            <div class="form-group row justify-content-between mt-5">
+                <input type="submit" value="@buttonName" class="btn btn-primary" />
+                @Html.ActionLink("Назад", "Index", null, htmlAttributes: new { @class = "btn btn-info" })
+            </div>
+        </form>
+    </div>
+</div>

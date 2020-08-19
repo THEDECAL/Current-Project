@@ -1,4 +1,5 @@
 ﻿using EasyBilling.Data;
+using EasyBilling.HtmlHelpers;
 using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace EasyBilling.Helpers
+namespace EasyBilling.ViewModels
 {
     [Flags]
     public enum SortType { ASC, DESC }
@@ -23,6 +24,7 @@ namespace EasyBilling.Helpers
         private Type _type;
         private int _page;
         private int _pageSize;
+        public TableHtmlHelper<T> TableHelper { get; private set; }
         public string IncludeField1 { get; private set; }
         public string IncludeField2 { get; private set; }
         public string SortField { get; private set; }
@@ -66,6 +68,7 @@ namespace EasyBilling.Helpers
             _dbSet = dbContext.Set<T>();
 
             _type = typeof(T);
+            TableHelper = new TableHtmlHelper<T>(this);
             SearchRequest = (searchRequest == null )?"":searchRequest.ToLower();
             IncludeField1 = includeField1;
             IncludeField2 = includeField2;

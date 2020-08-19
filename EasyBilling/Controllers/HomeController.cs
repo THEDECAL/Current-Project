@@ -34,10 +34,10 @@ namespace EasyBilling.Controllers
                 });
         }
 
-        public IActionResult ErrorAccess(string id)
+        public IActionResult ErrorAccess()
         {
             ViewData["Title"] = "Отказано в доступе";
-            return View(model: id);
+            return View();
         }
     }
 }

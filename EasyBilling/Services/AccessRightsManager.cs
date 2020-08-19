@@ -35,11 +35,8 @@ namespace EasyBilling.Services
         }
         public async Task<AccessRight[]> GetAllAsync()
         {
-            using (_dbContext)
-            {
-                return await _dbContext.AccessRights
-                    .Include(ar => ar.Role).ToArrayAsync();
-            }
+            return await _dbContext.AccessRights
+                .Include(ar => ar.Role).AsNoTracking().ToArrayAsync();
         }
 
         private async Task<IdentityUser> GetAccountAsync([NotNull] string userName)
@@ -79,6 +76,7 @@ namespace EasyBilling.Services
                     return await _dbContext.AccessRights
                         .Include(ar => ar.Role)
                         .Where(ar => ar.Role.Name.Equals(roles[0]))
+                        .AsNoTracking()
                         .ToArrayAsync();
                 }
                 return null;
@@ -99,6 +97,7 @@ namespace EasyBilling.Services
                         .Include(ar => ar.Role)
                         .Where(ar => ar.Role.Name.Equals(roles[0]) &&
                             ar.ControllerName.Equals(controllerName))
+                        .AsNoTracking()
                         .FirstOrDefaultAsync();
                     return rights;
                 }
@@ -117,8 +116,10 @@ namespace EasyBilling.Services
                     //Выбераем контроллеры в соотвествии с правами для пользователя
                     var cntrls = _dbContext.AccessRights
                         .Include(ar => ar.Role)
-                        .Where(ar => ar.Role.Name.Equals(roles[0]))
-                        .Select(ar => ar.ControllerName).ToArray();
+                        .Where(ar => ar.Role.Name.Equals(roles[0]) && ar.IsAvailable)
+                        .Select(ar => ar.ControllerName)
+                        .AsNoTracking()
+                        .ToArray();
 
                     //С помощью рефлексии получаем локализированное имя контроллера
                     var menuItems = new Dictionary<string, string>();
@@ -141,11 +142,5 @@ namespace EasyBilling.Services
             }
             else throw new ArgumentNullException();
         }
-
-        //public async void Dispose()
-        //{
-        //    await _dbContext.DisposeAsync();
-        //    await Task.Run(() => _userManager.Dispose());
-        //}
     }
 }

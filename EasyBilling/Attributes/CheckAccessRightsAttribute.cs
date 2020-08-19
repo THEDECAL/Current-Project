@@ -15,7 +15,7 @@ namespace EasyBilling.Attributes
             _arm = context.HttpContext.RequestServices
                 .GetRequiredService<AccessRightsManager>();
 
-            //Приведение к типу для получения функций контроллера и действий
+            //Приведение к типу для получения функций и действий контроллера
             var ad = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)
                 context.ActionDescriptor;
             var controllerName = ad.ControllerName;
@@ -26,9 +26,7 @@ namespace EasyBilling.Attributes
             if (accessRights != null && accessRights.IsAvailable)
                 return;
 
-            context.HttpContext.Response.Redirect($"/Home/ErrorAccess/{ad.DisplayName}");
-
-            //throw new UnauthorizedAccessException("Отказано в доступе.");
+            context.HttpContext.Response.Redirect($"/Home/ErrorAccess");
         }
     }
 }

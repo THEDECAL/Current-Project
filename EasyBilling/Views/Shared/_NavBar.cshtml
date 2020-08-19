@@ -1,7 +1,6 @@
 ﻿@inject EasyBilling.Services.AccessRightsManager arm
 
 <header>
-    <div class="container">
         <nav class="navbar navbar-expand-sm navbar-light rounded my-3 menu">
             <a class="navbar-brand menu-brand" asp-controller="Home" asp-action="Index">
                 <img src="/images/easy-billing-icon.svg" width="30" height="30" class="d-inline-block align-top" alt="">
@@ -17,7 +16,7 @@
                         <a class="nav-link text-dark menu-item" asp-area="" asp-controller="Home" asp-action="Index">Главная</a>
                     </li>
                     @{
-                        var menuItems = arm.GetMenuItemsByRole(User.Identity.Name).Result;
+                        var menuItems = await arm.GetMenuItemsByRole(User.Identity.Name);
                         foreach (var item in menuItems)
                         {
                             <li class="nav-item">
@@ -32,5 +31,4 @@
                 </form>
             </div>
         </nav>
-    </div>
 </header>

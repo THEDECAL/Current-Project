@@ -1,13 +1,13 @@
 ﻿@using EasyBilling.Models.Pocos
-@model EasyBilling.ViewModels.AccessRightsViewModel
+@model EasyBilling.ViewModels.DataViewModel<AccessRight>
 
-@Model.TableHelper.GetSearchPanel()
+@await Model.TableHelper.GetSearchPanelAsync()
 <table class="table table-striped">
-    @Model.TableHelper.GetTableHead()
+    @await Model.TableHelper.GetTableHeadAsync()
     <tbody>
         @{
             int counter = 1;
-            foreach (AccessRight item in Model.DataViewModel.Data)
+            foreach (AccessRight item in Model.Data)
             {
                 <tr>
                     <th scope="row">@counter</th>
@@ -15,8 +15,12 @@
                     <td>@item.ControllerName</td>
                     <td>@item.IsAvailable</td>
                     <td>
-                        <a class="btn btn-info btn-sm" href="#">Изменить</a>
-                        @Html.ActionLink("Удалить", "DeleteAccessRight", "AccessRights", new { id = item.Id }, new { @class = "btn btn-danger btn-sm" })
+                        <form asp-antiforgery="true" method="post" asp-action="Delete" class="form-inline">
+                            <input type="hidden" value="@item.Id" name="id"/>
+                            @Html.ActionLink("Изменить", "AddUpdateForm", "AccessRights", new { id = item.Id }, new { @class = "btn btn-info btn-sm" })
+                            <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+                        </form>
+                        @*@Html.ActionLink("Удалить", "Delete", "AccessRights", new { id = item.Id }, new { @class = "btn btn-danger btn-sm" })*@
                     </td>
                 </tr>
                 counter++;
@@ -24,4 +28,4 @@
         }
     </tbody>
 </table>
-@Model.TableHelper.GetPaginationPanel()
+@await Model.TableHelper.GetPaginationPanelAsync()
