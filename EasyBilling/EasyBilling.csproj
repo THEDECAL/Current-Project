@@ -48,7 +48,6 @@
   <ItemGroup>
     <Folder Include="Views\Client\" />
     <Folder Include="Views\Device\" />
-    <Folder Include="Views\Tariff\" />
     <Folder Include="Views\FinancialOperations\" />
     <Folder Include="Views\Event\" />
     <Folder Include="Views\APIKey\" />

@@ -21,16 +21,16 @@ namespace EasyBilling.Helpers
     {
         static Dictionary<string,string> _roleNames = new Dictionary<string, string>()
         {
-            { "admin", "Администратор" },
-            { "operator", "Оператор" },
-            { "casher", "Кассир" },
-            { "client", "Клиент" }
+            { Role.admin.ToString(), "Администратор" },
+            { Role.@operator.ToString(), "Оператор" },
+            { Role.casher.ToString(), "Кассир" },
+            { Role.client.ToString(), "Клиент" }
         };
 
         static public string GetRoleLocalizedName(Role role) => _roleNames.ElementAt((int)role).Value;
         static public string GetRoleLocalizedName([NotNull] string role) => _roleNames.GetValueOrDefault(role);
         static public IdentityRole GetRole(Role role) =>
-            new IdentityRole(role.ToString());
+            new IdentityRole(role.ToString()) { NormalizedName = role.ToString().ToUpper() };
 
         static async public Task<IdentityRole[]> GetRolesAsync() =>
             await Task.Run(() =>

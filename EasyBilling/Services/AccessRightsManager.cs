@@ -125,17 +125,23 @@ namespace EasyBilling.Services
                     var menuItems = new Dictionary<string, string>();
                     foreach (var item in cntrls)
                     {
-                        string cntrlName = $"EasyBilling.Controllers.{item}Controller";
-                        var type = Type.GetType(cntrlName);
+                        try
+                        {
+                            string cntrlName = $"EasyBilling.Controllers.{item}Controller";
+                            var type = Type.GetType(cntrlName);
 
-                        if(type.GetCustomAttribute(typeof(NoShowToMenuAttribute)) != null)
-                            continue;
+                            if (type.GetCustomAttribute(typeof(NoShowToMenuAttribute)) != null)
+                            { continue; }
 
-                        var dnAtt = type.GetCustomAttribute(
-                            typeof(DisplayNameAttribute)) as DisplayNameAttribute;
-                        if (dnAtt != null);
-                            menuItems.Add(item, dnAtt.DisplayName);
+                            var dnAtt = type.GetCustomAttribute(
+                                typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+                            if (dnAtt != null)
+                            { menuItems.Add(item, dnAtt.DisplayName); }
+                        }
+                        catch (Exception)
+                        { }
                     }
+                    
                     return menuItems;
                 }
                 else return null;

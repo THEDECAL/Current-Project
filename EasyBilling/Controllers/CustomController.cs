@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.Mvc
                 .SingleOrDefault() as DisplayNameAttribute).DisplayName;
         }
         [HttpGet]
-        [DisplayName("")]
         public virtual async Task<IActionResult> Index(
             string sort = "Id",
             SortType sortType = SortType.ASC,
@@ -45,10 +44,16 @@ namespace Microsoft.AspNetCore.Mvc
 
         public override Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var actionDnAtt = (ControllerContext.ActionDescriptor.MethodInfo
-                .GetCustomAttributes(typeof(DisplayNameAttribute), false)[0]
-                as DisplayNameAttribute)?.DisplayName;
-            string actionDisplayName = (!string.IsNullOrWhiteSpace(actionDnAtt)) ? " - " + actionDnAtt : "";
+            string actionDisplayName = "";
+            try
+            {
+                var actionDnAtt = ControllerContext.ActionDescriptor.MethodInfo
+                    .GetCustomAttributes(typeof(DisplayNameAttribute), false)[0] as DisplayNameAttribute;
+                actionDisplayName = " - " + actionDnAtt.DisplayName;
+            }
+            catch (Exception)
+            { }
+
             ViewData["Title"] = $"{DisplayName}{actionDisplayName}";
             ViewData["ControllerName"] = GetType().Name.Replace("Controller", "");
             return base.OnActionExecutionAsync(context, next);

@@ -89,7 +89,7 @@ namespace EasyBilling.Services
             //if (_roleManager.Roles.Count() == 0)
             if (_dbContext.Roles.Count() == 0)
             {
-                 var roles = await RoleHelper.GetRolesAsync();
+                var roles = await RoleHelper.GetRolesAsync();
                 var roleLst = new List<IdentityRole>();
 
                 foreach (var item in roles)
@@ -122,8 +122,8 @@ namespace EasyBilling.Services
                 const string eventCtrl = "Event";
                 const string financialOperationsCtrl = "FinancialOperations";
                 #region admin
-                var adminRole = await  _roleManager.FindByNameAsync(
-                    Role.admin.ToString());
+                var tmp = Role.admin.ToString();
+                var adminRole = await  _roleManager.FindByNameAsync(tmp);
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
                     ControllerName = usersCtrl,
@@ -219,15 +219,6 @@ namespace EasyBilling.Services
                 await _dbContext.SaveChangesAsync();
             }
         }
-        //public async void Dispose()
-        //{
-        //    await _dbContext.DisposeAsync();
-        //    await Task.Run(() =>
-        //    {
-        //        _roleManager.Dispose();
-        //        _userManager.Dispose();
-        //    });
-        //}
         /// <summary>
         ///  Инициалищация базы данных абонентов
         /// </summary>

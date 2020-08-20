@@ -25,6 +25,7 @@ namespace EasyBilling.ViewModels
         private int _page;
         private int _pageSize;
         public TableHtmlHelper<T> TableHelper { get; private set; }
+        public string ControllerName { get; private set; }
         public string IncludeField1 { get; private set; }
         public string IncludeField2 { get; private set; }
         public string SortField { get; private set; }
@@ -53,6 +54,7 @@ namespace EasyBilling.ViewModels
         public bool IsHaveNextPage { get => (Page + 1 > AmountPage) ? false : true; }
         public bool IsHavePreviousPage { get => (Page - 1 < 1) ? false : true; }
         public DataViewModel(IServiceScopeFactory scopeFactory,
+            string controllerName,
             string includeField1 = "",
             string includeField2 = "",
             string sortField = "Id",
@@ -70,6 +72,7 @@ namespace EasyBilling.ViewModels
             _type = typeof(T);
             TableHelper = new TableHtmlHelper<T>(this);
             SearchRequest = (searchRequest == null )?"":searchRequest.ToLower();
+            ControllerName = controllerName;
             IncludeField1 = includeField1;
             IncludeField2 = includeField2;
             SortField = sortField;

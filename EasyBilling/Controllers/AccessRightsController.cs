@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using EasyBilling.Attributes;
 using EasyBilling.Data;
 using EasyBilling.Helpers;
+using EasyBilling.Models;
 using EasyBilling.Models.Pocos;
 using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace EasyBilling.Controllers
 {
     [DisplayName("Права доступа")]
-    public class AccessRightsController : CustomController
+    public class AccessRightsController : CustomController, ICustomControllerCrud<AccessRight>
     {
         public AccessRightsController(BillingDbContext dbContext,
             RoleManager<IdentityRole> roleManager,
@@ -38,6 +39,7 @@ namespace EasyBilling.Controllers
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<AccessRight>(_scopeFactory,
+                    controllerName: ViewData["ControllerName"] as string,
                     includeField1: "Role",
                     sortType: sortType,
                     sortField: sort,
@@ -49,36 +51,36 @@ namespace EasyBilling.Controllers
                 return View("CustomIndex", model: dvm);
             });
         }
+
         [DisplayName(("Добавить-Изменить"))]
         [HttpGet]
-        public async Task<ActionResult> AddUpdateForm(int? id = null)
+        public async Task<IActionResult> AddUpdateForm(int? id = null)
         {
             return await Task.Run(async () =>
             {
-                //ViewData["Title"] = DisplayName;
                 ViewData["ActionPage"] = nameof(Create);
 
-                AccessRight ar = new AccessRight();
+                var model = new AccessRight();
                 if (id != null)
                 {
-                    ar = await _dbContext.AccessRights.FindAsync(id);
-                    if (ar == null)
-                        ar = new AccessRight();
+                    model = await _dbContext.AccessRights.FindAsync(id);
+                    if (model == null)
+                        model = new AccessRight();
                     else
                         ViewData["ActionPage"] = nameof(Update);
                 }
 
-                return View(nameof(AddUpdateForm), model: ar);
+                return View(nameof(AddUpdateForm), model: model);
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(AccessRight rights)
+        public async Task<IActionResult> Create(AccessRight obj)
         {
-            if (await ServerSideValidation(rights) && ModelState.IsValid)
+            if (await ServerSideValidation(obj) && ModelState.IsValid)
             {
-                rights.Role = await _roleManager.FindByNameAsync(rights.Role.Name);
-                await _dbContext.AccessRights.AddAsync(rights);
+                obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
+                await _dbContext.AccessRights.AddAsync(obj);
                 await _dbContext.SaveChangesAsync();
 
                 return RedirectToAction("Index");
@@ -88,34 +90,21 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Update(AccessRight rights)
+        public async Task<IActionResult> Update(AccessRight obj)
         {
-            if (await ServerSideValidation(rights) && ModelState.IsValid)
+            if (await ServerSideValidation(obj) && ModelState.IsValid)
             {
-                rights.Role = await _roleManager.FindByNameAsync(rights.Role.Name);
+                obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
                 await Task.Run(() =>
                 {
-                    _dbContext.AccessRights.Update(rights);
+                    _dbContext.AccessRights.Update(obj);
                     _dbContext.SaveChanges();
                 });
 
                 return RedirectToAction("Index");
             }
 
-            return await AddUpdateForm(rights.Id);
-        }
-
-        private async Task<bool> ServerSideValidation(AccessRight rights)
-        {
-            var cntrlExist = await ControllerHelper.IsExistAsync(rights.ControllerName);
-            if (!cntrlExist)
-            { ModelState.AddModelError("ControllerName", "Выбранная страница не существует"); }
-            var role = await _roleManager.FindByNameAsync(rights.Role.Name);
-            if (role == null)
-            { ModelState.AddModelError("Role", "Выбранная роль не существует"); }
-            TryValidateModel(rights);
-
-            return (cntrlExist && role != null) ? true : false;
+            return await AddUpdateForm(obj.Id);
         }
 
         [HttpPost]
@@ -132,6 +121,19 @@ namespace EasyBilling.Controllers
             });
 
             return RedirectToAction("Index");
+        }
+
+        public async Task<bool> ServerSideValidation(AccessRight obj)
+        {
+            var cntrlExist = await ControllerHelper.IsExistAsync(obj.ControllerName);
+            if (!cntrlExist)
+            { ModelState.AddModelError("ControllerName", "Выбранная страница не существует"); }
+            var role = await _roleManager.FindByNameAsync(obj.Role.Name);
+            if (role == null)
+            { ModelState.AddModelError("Role", "Выбранная роль не существует"); }
+            TryValidateModel(obj);
+
+            return (cntrlExist && role != null) ? true : false;
         }
 
         public async Task<IActionResult> CheckCntrlExist([NotNull] string controllerName)

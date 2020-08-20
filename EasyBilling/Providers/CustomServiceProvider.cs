@@ -7,7 +7,7 @@ namespace EasyBilling.Providers
     public static class CustomServiceProvider
     {
         public static void AddAccessRightsManager(this IServiceCollection services) =>
-            services.AddSingleton<AccessRightsManager>();
+            services.AddTransient<AccessRightsManager>();
 
         public static void AddDbInitializer(this IServiceCollection services) => 
             services.AddSingleton<DbInitializer>();

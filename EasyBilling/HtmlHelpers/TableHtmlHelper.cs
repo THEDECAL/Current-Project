@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -181,7 +182,7 @@ namespace EasyBilling.HtmlHelpers
 
                 TagBuilder a = new TagBuilder("a");
                 a.AddCssClass("btn btn-raised btn-success mt-5 mr-3");
-                a.Attributes.Add("href", $"/{_type.Name}s/AddUpdateForm");
+                a.Attributes.Add("href", $"/{_data.ControllerName}/AddUpdateForm");
                 a.InnerHtml.Append("Добавить");
                 form.InnerHtml.AppendHtml(a);
 

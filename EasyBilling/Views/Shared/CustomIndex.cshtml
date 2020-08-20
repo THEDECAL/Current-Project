@@ -1,34 +1,10 @@
-﻿@*@using EasyBilling.Models.Pocos
-@using EasyBilling.Helpers*@
-@*@model EasyBilling.ViewModels.DataViewModel<dynamic>*@
-
-@await Model.TableHelper.GetControlPanelAsync()
+﻿@await Model.TableHelper.GetControlPanelAsync()
 @if (Model.Data.Count > 0)
 {
     <table class="table table-striped table-sm">
         @await Model.TableHelper.GetTableHeadAsync()
         <tbody>
-            @await Html.PartialAsync("TableData")
-            @*@{
-                int counter = 1;
-                foreach (AccessRight item in Model.Data)
-                {
-                    <tr>
-                        <th scope="row">@counter</th>
-                        <td>@RoleHelper.GetRoleLocalizedName(item.Role.Name)</td>
-                        <td>@await ControllerHelper.GetLocalizedName(item.ControllerName)</td>
-                        <td>@(item.IsAvailable ? "Разрешено" : "Запрещено")</td>
-                        <td class="p-0 m-0">
-                            <form asp-antiforgery="true" method="post" asp-action="Delete" class="mb-0 form-inline">
-                                <input type="hidden" value="@item.Id" name="id" />
-                                @Html.ActionLink("Изменить", "AddUpdateForm", "AccessRights", new { id = item.Id }, new { @class = "btn btn-raised btn-primary btn-sm m-1 px-2 py-1" })
-                                <button class="btn btn-raised btn-danger btn-sm m-1 px-2 py-1" type="submit">Удалить</button>
-                            </form>
-                        </td>
-                    </tr>
-                    counter++;
-                }
-            }*@
+            @await Html.PartialAsync("_TableData")
         </tbody>
     </table>
     @await Model.TableHelper.GetPaginationPanelAsync()

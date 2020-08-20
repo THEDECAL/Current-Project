@@ -1,0 +1,16 @@
+﻿@{
+    var buttonName = (ViewData["ActionPage"].Equals("Create") ? "Добавить" : "Изменить");
+}
+
+<div class="row justify-content-around">
+    <form asp-antiforgery="true" asp-action="@ViewData["ActionPage"]" method="post" class="form-size">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        @await Html.PartialAsync("_AddUpdateFields")
+
+        <div class="form-group row justify-content-between mt-5">
+            <input type="submit" value="@buttonName" class="btn btn-raised btn-success" />
+            @Html.ActionLink("Назад", "Index", null, htmlAttributes: new { @class = "btn btn-info" })
+        </div>
+    </form>
+</div>
