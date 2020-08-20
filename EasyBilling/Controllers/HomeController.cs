@@ -5,20 +5,20 @@ using Microsoft.AspNetCore.Authorization;
 using EasyBilling.Attributes;
 using EasyBilling.Models;
 using System.ComponentModel;
+using EasyBilling.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyBilling.Controllers
 {
-    [Authorize]
     [NoShowToMenu]
     [DisplayName("Главная")]
     public class HomeController : CustomController
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
+        public HomeController(BillingDbContext dbContext,
+            RoleManager<IdentityRole> roleManager,
+            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
+        { }
 
         public IActionResult Privacy()
         {

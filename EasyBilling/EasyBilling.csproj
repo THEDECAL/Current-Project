@@ -52,6 +52,7 @@
     <Folder Include="Views\FinancialOperations\" />
     <Folder Include="Views\Event\" />
     <Folder Include="Views\APIKey\" />
+    <Folder Include="wwwroot\lib\bootstrap-material-design\css\" />
   </ItemGroup>
 
 </Project>

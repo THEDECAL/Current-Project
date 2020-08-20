@@ -1,6 +1,7 @@
-﻿@{
+﻿@*@{
     var controllerName = this.ViewContext.RouteData.Values["controller"].ToString();
-}
+    ViewData["ControllerName"] = controllerName;
+}*@
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +9,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>@ViewData["Title"] - EasyBilling</title>
     <link rel="stylesheet" href="~/lib/bootstrap-material-design/css/bootstrap-material-design.min.css" />
+    @*<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />*@
+    <link rel="stylesheet" href="~/lib/bootstrap-material-design/assets/css/docs.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
@@ -16,20 +19,28 @@
 
         <main role="main" class="position-absolute main-settings">
             @*<div class="card row align-items-center" style="padding: 30px;">*@
-            <div class="card p-3 mb-5">
-                <a class="btn btn-lg btn-info btn-block" role="button" href="/@controllerName">@ViewData["Title"]</a>
+            <div class="card p-3 mb-3">
+                <a class="btn btn-lg btn-info btn-block" role="button" href="/@ViewData["ControllerName"]">@ViewData["Title"]</a>
                 @RenderBody()
             </div>
         </main>
     </div>
 
+    <script src="~/lib/bootstrap-material-design/assets/js/vendor/split.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap-material-design/assets/js/vendor/popper.min.js"></script>
     @*<script src="~/lib/jquery/jquery-3.2.1.slim.min.js"></script>*@
-    <script src="~/lib/popper/popper.js"></script>
+    @*<script src="~/lib/popper/popper.js"></script>*@
     <script src="~/lib/bootstrap-material-design/js/bootstrap-material-design.js"></script>
+    <script src="~/lib/bootstrap-material-design/assets/js/vendor/anchor.min.js"></script>
+    <script src="~/lib/bootstrap-material-design/assets/js/vendor/clipboard.min.js"></script>
+    <script src="~/lib/bootstrap-material-design/assets/js/vendor/holder.min.js"></script>
+    <script src="~/lib/bootstrap-material-design/assets/js/src/application.js"></script>
+    <script src="~/lib/bootstrap-material-design/assets/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="~/lib/bootstrap-material-design/assets/js/ie-emulation-modes-warning.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>$(document).ready(function () { $('body').bootstrapMaterialDesign(); });</script>
-    <partial name="_ValidationScriptsPartial"/>
+    <partial name="_ValidationScriptsPartial" />
     @*@RenderSection("Scripts", required: false)*@
 </body>
 </html>

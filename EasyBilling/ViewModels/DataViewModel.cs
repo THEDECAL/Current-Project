@@ -76,6 +76,7 @@ namespace EasyBilling.ViewModels
             SortType = sortType;
             PageSize = pageSize;
             AmountPage = (int)Math.Ceiling(_dbSet.Count() / (double)PageSize);
+            Data = new List<T>();
             Page = page;
 
             GetData();
@@ -132,7 +133,7 @@ namespace EasyBilling.ViewModels
                 //Выбераем данные для текущей страницы (пагинация)
                 try
                 {
-                    Data = queryE.Skip((Page - 1) * PageSize).Take(PageSize).ToList();
+                    Data.AddRange(queryE.Skip((Page - 1) * PageSize).Take(PageSize).ToList());
                 }
                 catch (Exception ex)
                 { Console.WriteLine(ex.StackTrace); }

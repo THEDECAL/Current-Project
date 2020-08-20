@@ -43,5 +43,15 @@ namespace EasyBilling.Helpers
             var names = await GetControllersNamesAsync();
             return names.Keys.Any(k => k.Equals(cntrlName));
         }
+        static public async Task<string> GetLocalizedName([NotNull] string cntrlName)
+        {
+            return await Task.Run(() =>
+            {
+                var type = Type.GetType("EasyBilling.Controllers." + cntrlName + "Controller");
+                var displayNamrAtt = type.GetCustomAttributes(typeof(DisplayNameAttribute))
+                            .FirstOrDefault() as DisplayNameAttribute;
+                return displayNamrAtt.DisplayName;
+            });
+        }
     }
 }

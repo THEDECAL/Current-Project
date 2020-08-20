@@ -5,8 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using EasyBilling.Models;
 using EasyBilling.Models.Pocos;
+using System.Diagnostics.CodeAnalysis;
 
-namespace EasyBilling.Data
+namespace EasyBilling.Helpers
 {
     [Flags]
     public enum Role
@@ -18,15 +19,16 @@ namespace EasyBilling.Data
     };
     static public class RoleHelper
     {
-        static string[] _roles =
+        static Dictionary<string,string> _roleNames = new Dictionary<string, string>()
         {
-            "Администратор",
-            "Оператор",
-            "Кассир",
-            "Клиент"
+            { "admin", "Администратор" },
+            { "operator", "Оператор" },
+            { "casher", "Кассир" },
+            { "client", "Клиент" }
         };
 
-        static public string GetRoleLocalizedName(Role role) => _roles[(int)role];
+        static public string GetRoleLocalizedName(Role role) => _roleNames.ElementAt((int)role).Value;
+        static public string GetRoleLocalizedName([NotNull] string role) => _roleNames.GetValueOrDefault(role);
         static public IdentityRole GetRole(Role role) =>
             new IdentityRole(role.ToString());
 

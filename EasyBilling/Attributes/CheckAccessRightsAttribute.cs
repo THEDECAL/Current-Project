@@ -23,7 +23,8 @@ namespace EasyBilling.Attributes
             AccessRight accessRights = _arm.GetRights(context.HttpContext.User.Identity.Name,
                 controllerName).Result;
             //При каких условиях давать доступ
-            if (accessRights != null && accessRights.IsAvailable)
+            if (controllerName.Equals("Home") ||
+                accessRights != null && accessRights.IsAvailable)
                 return;
 
             context.HttpContext.Response.Redirect($"/Home/ErrorAccess");

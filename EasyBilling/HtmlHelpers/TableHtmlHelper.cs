@@ -23,12 +23,17 @@ namespace EasyBilling.HtmlHelpers
             _type = typeof(T);
             _data = data;
         }
+        /// <summary>
+        /// Получить Html код заголовоки столбцов таблицы
+        /// </summary>
+        /// <returns></returns>
         public async Task<HtmlString> GetTableHeadAsync()
         {
             return await Task.Run(async () =>
             {
                 TagBuilder thead = new TagBuilder("thead");
                 TagBuilder tr = new TagBuilder("tr");
+                tr.AddCssClass("table-dark");
                 thead.InnerHtml.AppendHtml(tr);
 
                 var props = _type.GetProperties();
@@ -45,12 +50,14 @@ namespace EasyBilling.HtmlHelpers
                                 sortType: _data.SortType,
                                 page: _data.Page,
                                 pageSize: _data.PageSize));
+                    a.AddCssClass("text-white");
                     a.InnerHtml.Append((dnAtt != null) ? dnAtt.DisplayName : item.Name);
                     th.InnerHtml.AppendHtml(a);
                     tr.InnerHtml.AppendHtml(th);
                 }
 
                 TagBuilder thActions = new TagBuilder("th");
+                thActions.AddCssClass("text-white");
                 thActions.Attributes.Add("scope", "col");
                 thActions.InnerHtml.Append("Действия");
                 tr.InnerHtml.AppendHtml(thActions);
@@ -58,6 +65,10 @@ namespace EasyBilling.HtmlHelpers
                 return await GetHtmlStringAsync(thead);
             });
         }
+        /// <summary>
+        /// Получить Html код панели постраничной навигации
+        /// </summary>
+        /// <returns></returns>
         public async Task<HtmlString> GetPaginationPanelAsync()
         {
             return await Task.Run(async () =>
@@ -155,7 +166,11 @@ namespace EasyBilling.HtmlHelpers
                 return await GetHtmlStringAsync(nav);
             });
         }
-        public async Task<HtmlString> GetSearchPanelAsync()
+        /// <summary>
+        /// Получить Html код панели поиска, добавления...
+        /// </summary>
+        /// <returns></returns>
+        public async Task<HtmlString> GetControlPanelAsync()
         {
             return await Task.Run(async () =>
             {
@@ -163,6 +178,12 @@ namespace EasyBilling.HtmlHelpers
                 form.AddCssClass("form-inline row justify-content-center");
                 form.Attributes.Add("method", "get");
                 form.Attributes.Add("style", "width: 1000px;");
+
+                TagBuilder a = new TagBuilder("a");
+                a.AddCssClass("btn btn-raised btn-success mt-5 mr-3");
+                a.Attributes.Add("href", $"/{_type.Name}s/AddUpdateForm");
+                a.InnerHtml.Append("Добавить");
+                form.InnerHtml.AppendHtml(a);
 
                 TagBuilder div = new TagBuilder("div");
                 div.AddCssClass("form-group");

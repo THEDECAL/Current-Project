@@ -19,26 +19,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyBilling.Controllers
 {
-    [Authorize]
-    [CheckAccessRights]
     [DisplayName("Права доступа")]
     public class AccessRightsController : CustomController
     {
-        private readonly BillingDbContext _dbContext;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IServiceScopeFactory _scopeFactory;
         public AccessRightsController(BillingDbContext dbContext,
-
             RoleManager<IdentityRole> roleManager,
-            IServiceScopeFactory scopeFactory)
-        {
-            _dbContext = dbContext;
-            _roleManager = roleManager;
-            _scopeFactory = scopeFactory;
-        }
-
+            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
+        { }
         [HttpGet]
-        public async Task<IActionResult> Index(
+        [DisplayName("Список")]
+        public override async Task<IActionResult> Index(
             string sort = "Id",
             SortType sortType = SortType.ASC,
             int page = 1,
@@ -47,8 +37,6 @@ namespace EasyBilling.Controllers
         {
             return await Task.Run(() =>
             {
-                ViewData["Title"] = DisplayName;
-
                 var dvm = new DataViewModel<AccessRight>(_scopeFactory,
                     includeField1: "Role",
                     sortType: sortType,
@@ -57,19 +45,17 @@ namespace EasyBilling.Controllers
                     pageSize: pageSize,
                     searchRequest: search
                 );
-                //var roles = _roleManager.Roles.ToList();
-                //var cntrlsNames = ControllerHelper.GetControllersNames();
-                //var model = new AccessRightsViewModel(dvm, roles, cntrlsNames);
 
-                return View(model: dvm);
+                return View("CustomIndex", model: dvm);
             });
         }
+        [DisplayName(("Добавить-Изменить"))]
         [HttpGet]
         public async Task<ActionResult> AddUpdateForm(int? id = null)
         {
             return await Task.Run(async () =>
             {
-                ViewData["Title"] = DisplayName;
+                //ViewData["Title"] = DisplayName;
                 ViewData["ActionPage"] = nameof(Create);
 
                 AccessRight ar = new AccessRight();

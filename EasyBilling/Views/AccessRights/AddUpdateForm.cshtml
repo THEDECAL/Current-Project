@@ -6,7 +6,7 @@
     var buttonName = (ViewData["ActionPage"].Equals("Create") ? "Добавить" : "Изменить");
 }
 
-<div class="row">
+<div class="row m-1">
     <div class="col-md-4">
         <form asp-antiforgery="true" asp-action="@ViewData["ActionPage"]" method="post" class="form-size">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -16,15 +16,10 @@
                 <select class="mt-2 custom-select form-control" asp-for="ControllerName">
                     @foreach (var item in await ControllerHelper.GetControllersNamesAsync())
                     {
-                        if (Model.ControllerName == null || item.Key != Model.ControllerName)
-                        {
-                            <option value="@item.Key">@item.Value</option>
-                        }
-                        else
-                        {
-                            <option selected value="@item.Key">@item.Value</option>
-                        }
-                    }
+                        <option value="@item.Key" selected="@(Model.ControllerName != null && item.Key.Equals(Model.ControllerName))">
+                            @item.Value
+                        </option>
+                }
                 </select>
                 <span asp-validation-for="ControllerName" class="text-danger"></span>
             </div>
@@ -33,14 +28,9 @@
                 <select class="mt-2 custom-select form-control" asp-for="Role.Name">
                     @foreach (var item in roleManager.Roles.ToArray())
                     {
-                        if (Model.Role == null || Model.Role.Name != item.Name)
-                        {
-                            <option value="@item.Name">@item.Name</option>
-                        }
-                        else
-                        {
-                            <option selected value="@item.Name">@item.Name</option>
-                        }
+                        <option value="@item.Name" selected="@(Model.Role.Name != null && Model.Role.Name.Equals(item.Name))">
+                            @RoleHelper.GetRoleLocalizedName(item.Name)
+                        </option>
                     }
                 </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
@@ -51,13 +41,9 @@
                         Запрещено
                     </label>
                     <label class="form-check-label">
-                        @if (!Model.IsAvailable)
-                        {
-                            <input class="form-control" type="checkbox" asp-for="IsAvailable" />
-                        }
-                        else
-                        {
-                            <input class="form-control" type="checkbox" asp-for="IsAvailable" checked />
+                        @{
+                            string chk = (Model.IsAvailable) ? "checked" : "";
+                            <input class="form-control" type="checkbox" asp-for="IsAvailable" chk/>
                         }
                         Разрешено
                     </label>
@@ -65,7 +51,7 @@
                 </div>
              </div>
             <div class="form-group row justify-content-between mt-5">
-                <input type="submit" value="@buttonName" class="btn btn-primary" />
+                <input type="submit" value="@buttonName" class="btn btn-raised btn-success" />
                 @Html.ActionLink("Назад", "Index", null, htmlAttributes: new { @class = "btn btn-info" })
             </div>
         </form>
