@@ -131,6 +131,11 @@ namespace EasyBilling.Controllers
             var role = await _roleManager.FindByNameAsync(obj.Role.Name);
             if (role == null)
             { ModelState.AddModelError("Role", "Выбранная роль не существует"); }
+            var accessRightExisting = _dbContext.AccessRights.Include("Role")
+                .FirstOrDefault(ar => ar.Role.Name.Equals(obj.Role.Name) &&
+                ar.ControllerName.Equals(obj.ControllerName));
+            if (accessRightExisting != null)
+            { ModelState.AddModelError("", "Правило для это роли и страницы уже есть, измените его."); }
             TryValidateModel(obj);
 
             return (cntrlExist && role != null) ? true : false;

@@ -1,3 +1,66 @@
 ﻿@model EasyBilling.Models.Pocos.Tariff
 
-<input asp-for="Id" type="hidden" class="form-control" />
+<input asp-for="Id" type="hidden" class="form-control"/>
+<div class="form-group">
+    <label asp-for="Name"></label>
+    <input asp-for="Name" type="text" class="form-control" />
+    <span asp-validation-for="Name" class="text-danger"></span>
+</div>
+
+<div class="mb-2 form-row border p-2">
+    <div class="col">
+        <div class="form-group">
+            <label asp-for="Price"></label>
+            <input asp-for="Price" type="text" class="form-control" />
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            <label asp-for="AmounfOfDays"></label>
+            <input asp-for="AmounfOfDays" class="form-control" />
+            <span asp-validation-for="AmounfOfDays" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3 form-row">
+    <div class="col border p-2 mr-1">
+        <label class="pl-1 text-muted col-form-label-sm">Пропускная способность</label>
+        <div class="m-0 row justify-content-between">
+            <div class="mb-0 p-0 form-group col-md-5">
+                <label asp-for="BandwidthInput"></label>
+                <input asp-for="BandwidthInput" class="form-control" />
+            </div>
+            <div class="mb-0 p-0 form-group col-md-5">
+                <label asp-for="BandwidthOutput"></label>
+                <input asp-for="BandwidthOutput" class="form-control" />
+            </div>
+        </div>
+        <span asp-validation-for="BandwidthInput" class="text-danger"></span>
+        <span asp-validation-for="BandwidthOutput" class="text-danger"></span>
+    </div>
+    <div class="col border p-2 ml-1">
+        <div class="form-group">
+            <label asp-for="AmountOfTraffic"></label>
+            <input asp-for="AmountOfTraffic" type="text" class="form-control">
+            <span asp-validation-for="AmountOfTraffic"></span>
+        </div>
+    </div>
+</div>
+
+<div class="m-0 form-group row justify-content-center">
+    <div class="switch">
+        <label class="form-check-label">
+            Выключен
+        </label>
+        <label class="form-check-label">
+            @*@{
+                string chk = (Model.IsEnabled) ? "checked" : "";
+                <input class="form-control" type="checkbox" asp-for="IsEnabled" chk />
+            }*@
+            Включен
+        </label>
+        <span asp-validation-for="IsEnabled" class="text-danger"></span>
+    </div>
+</div>

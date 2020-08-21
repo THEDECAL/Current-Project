@@ -93,53 +93,56 @@ namespace EasyBilling.ViewModels
             try
             {
                 IQueryable<T> queryQ = _dbSet.AsQueryable();
-                //Подключение связанных объектов
-                try
+                if (queryQ.Count() > 0)
                 {
-                    if (!string.IsNullOrWhiteSpace(IncludeField1))
-                        queryQ = queryQ.Include(IncludeField1);
-                    else if (!string.IsNullOrWhiteSpace(IncludeField2))
-                        queryQ = queryQ.Include(IncludeField2);
-                    else if (!string.IsNullOrWhiteSpace(IncludeField1) &&
-                        !string.IsNullOrWhiteSpace(IncludeField2))
-                        queryQ = queryQ.Include(IncludeField1).Include(IncludeField2);
+                    //Подключение связанных объектов
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(IncludeField1))
+                            queryQ = queryQ.Include(IncludeField1);
+                        else if (!string.IsNullOrWhiteSpace(IncludeField2))
+                            queryQ = queryQ.Include(IncludeField2);
+                        else if (!string.IsNullOrWhiteSpace(IncludeField1) &&
+                            !string.IsNullOrWhiteSpace(IncludeField2))
+                            queryQ = queryQ.Include(IncludeField1).Include(IncludeField2);
+                    }
+                    catch (Exception ex)
+                    { Console.WriteLine(ex.StackTrace); }
+
+
+                    IEnumerable<T> queryE = null;
+                    //Выбераем поисковый запрос
+                    try
+                    {
+                        queryE = queryQ.Where(searchFunc);
+                        AmountPage = (int)Math.Ceiling(queryE.Count() / (double)PageSize);
+                    }
+                    catch (Exception ex)
+                    { Console.WriteLine(ex.StackTrace); }
+
+                    //Сортировка по выбранному столбцу
+                    try
+                    {
+                        var prop = _type.GetProperties()
+                            .FirstOrDefault(p => p.Name.ToLower()
+                            .Equals(SortField.ToLower()));
+
+                        if (SortType == SortType.DESC)
+                            queryE = queryE.OrderByDescending(p => prop.GetValue(p, null).ToString()).ToList();
+                        else
+                            queryE = queryE.OrderBy(p => prop.GetValue(p, null).ToString()).ToList();
+                    }
+                    catch (Exception ex)
+                    { Console.WriteLine(ex.StackTrace); }
+
+                    //Выбераем данные для текущей страницы (пагинация)
+                    try
+                    {
+                        Data.AddRange(queryE.Skip((Page - 1) * PageSize).Take(PageSize).ToList());
+                    }
+                    catch (Exception ex)
+                    { Console.WriteLine(ex.StackTrace); }
                 }
-                catch (Exception ex)
-                { Console.WriteLine(ex.StackTrace); }
-
-
-                IEnumerable<T> queryE = null;
-                //Выбераем поисковый запрос
-                try
-                {
-                    queryE = queryQ.Where(searchFunc);
-                    AmountPage = (int)Math.Ceiling(queryE.Count() / (double)PageSize);
-                }
-                catch (Exception ex)
-                { Console.WriteLine(ex.StackTrace); }
-
-                //Сортировка по выбранному столбцу
-                try
-                {
-                    var prop = _type.GetProperties()
-                        .FirstOrDefault(p => p.Name.ToLower()
-                        .Equals(SortField.ToLower()));
-
-                    if (SortType == SortType.DESC)
-                        queryE = queryE.OrderByDescending(p => prop.GetValue(p, null).ToString()).ToList();
-                    else
-                        queryE = queryE.OrderBy(p => prop.GetValue(p, null).ToString()).ToList();
-                }
-                catch (Exception ex)
-                { Console.WriteLine(ex.StackTrace); }
-
-                //Выбераем данные для текущей страницы (пагинация)
-                try
-                {
-                    Data.AddRange(queryE.Skip((Page - 1) * PageSize).Take(PageSize).ToList());
-                }
-                catch (Exception ex)
-                { Console.WriteLine(ex.StackTrace); }
             }
             catch (Exception ex)
             { Console.WriteLine(ex.StackTrace); }
