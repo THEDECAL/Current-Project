@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyBilling.Attributes;
@@ -11,6 +12,7 @@ using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyBilling.Controllers
@@ -68,24 +70,64 @@ namespace EasyBilling.Controllers
             });
         }
 
+        [HttpPost]
         public async Task<IActionResult> Create(Tariff obj)
         {
-            return await Task.Run(() => View());
+            await ServerSideValidation(obj);
+            if (ModelState.IsValid)
+            {
+                await _dbContext.Tariffs.AddAsync(obj);
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToAction("Index");
+            }
+
+            return await AddUpdateForm();
         }
 
+        [HttpPost]
         public async Task<IActionResult> Update(Tariff obj)
         {
-            return View();
+            await ServerSideValidation(obj);
+            if (ModelState.IsValid)
+            {
+                await Task.Run(() =>
+                {
+                    _dbContext.Tariffs.Update(obj);
+                    _dbContext.SaveChanges();
+                });
+
+                return RedirectToAction("Index");
+            }
+
+            return await AddUpdateForm(obj.Id);
         }
 
-        //public async Task<IActionResult> Delete(int? id = null)
-        //{
+        [HttpPost]
+        public async Task<IActionResult> Delete(int? id = null)
+        {
+            var obj = await _dbContext.Tariffs.FindAsync(id);
+            await Task.Run(() =>
+            {
+                if (obj != null)
+                {
+                    _dbContext.Tariffs.Remove(obj);
+                    _dbContext.SaveChanges();
+                }
+            });
 
-        //}
+            return RedirectToAction("Index");
+        }
 
-        //public async Task<bool> ServerSideValidation(Tariff obj)
-        //{
+        public async Task ServerSideValidation(Tariff obj)
+        {
+            TryValidateModel(obj);
+            var tariffExist = await _dbContext.Tariffs.AnyAsync(t => t.Name.Equals(obj.Name));
+            if (tariffExist)
+            { ModelState.AddModelError("Name", "Такое название тарифа уже существует, выберите другое"); }
+        }
 
-        //}
+        public async Task<IActionResult> CheckName([NotNull] string name)
+            => Json(await _dbContext.Tariffs.AnyAsync(t => t.Name.Equals(name)));
     }
 }

@@ -77,7 +77,8 @@ namespace EasyBilling.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(AccessRight obj)
         {
-            if (await ServerSideValidation(obj) && ModelState.IsValid)
+            await ServerSideValidation(obj);
+            if (ModelState.IsValid)
             {
                 obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
                 await _dbContext.AccessRights.AddAsync(obj);
@@ -92,7 +93,8 @@ namespace EasyBilling.Controllers
         [HttpPost]
         public async Task<IActionResult> Update(AccessRight obj)
         {
-            if (await ServerSideValidation(obj) && ModelState.IsValid)
+            await ServerSideValidation(obj);
+            if (ModelState.IsValid)
             {
                 obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
                 await Task.Run(() =>
@@ -110,12 +112,12 @@ namespace EasyBilling.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int? id)
         {
-            var ar = await _dbContext.AccessRights.FindAsync(id);
+            var obj = await _dbContext.AccessRights.FindAsync(id);
             await Task.Run(() =>
             {
-                if (ar != null)
+                if (obj != null)
                 {
-                    _dbContext.AccessRights.Remove(ar);
+                    _dbContext.AccessRights.Remove(obj);
                     _dbContext.SaveChanges();
                 }
             });
@@ -123,8 +125,9 @@ namespace EasyBilling.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task<bool> ServerSideValidation(AccessRight obj)
+        public async Task ServerSideValidation(AccessRight obj)
         {
+            TryValidateModel(obj);
             var cntrlExist = await ControllerHelper.IsExistAsync(obj.ControllerName);
             if (!cntrlExist)
             { ModelState.AddModelError("ControllerName", "Выбранная страница не существует"); }
@@ -135,10 +138,7 @@ namespace EasyBilling.Controllers
                 .FirstOrDefault(ar => ar.Role.Name.Equals(obj.Role.Name) &&
                 ar.ControllerName.Equals(obj.ControllerName));
             if (accessRightExisting != null)
-            { ModelState.AddModelError("", "Правило для это роли и страницы уже есть, измените его."); }
-            TryValidateModel(obj);
-
-            return (cntrlExist && role != null) ? true : false;
+            { ModelState.AddModelError("", "Правило для это роли и страницы уже есть, измените его"); }
         }
 
         public async Task<IActionResult> CheckCntrlExist([NotNull] string controllerName)

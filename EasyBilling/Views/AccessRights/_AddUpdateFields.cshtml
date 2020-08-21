@@ -4,7 +4,7 @@
 
 <input asp-for="Id" type="hidden" class="form-control" />
 <div class="form-group">
-    <label asp-for="ControllerName" class="control-label"></label>
+    <label asp-for="ControllerName" class="text-info"></label>
     <select class="mt-2 custom-select form-control" asp-for="ControllerName">
         @foreach (var item in await ControllerHelper.GetControllersNamesAsync())
         {
@@ -16,7 +16,7 @@
     <span asp-validation-for="ControllerName" class="text-danger"></span>
 </div>
 <div class="mb-0 form-group">
-    <label asp-for="Role" class="control-label"></label>
+    <label asp-for="Role" class="text-info"></label>
     <select class="mt-2 custom-select form-control" asp-for="Role.Name">
         @foreach (var item in roleManager.Roles.ToArray())
         {

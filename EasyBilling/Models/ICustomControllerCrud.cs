@@ -13,6 +13,6 @@ namespace EasyBilling.Models
         public Task<IActionResult> Create(T obj);
         public Task<IActionResult> Update(T obj);
         public Task<IActionResult> Delete(int? id = null);
-        public Task<bool> ServerSideValidation(T obj);
+        public Task ServerSideValidation(T obj);
     }
 }
