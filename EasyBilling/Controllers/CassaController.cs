@@ -16,7 +16,7 @@ namespace EasyBilling.Controllers
     public class CassaController : CustomController
     {
         public CassaController(BillingDbContext dbContext,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<Models.Pocos.Role> roleManager,
             IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
         { }
     }

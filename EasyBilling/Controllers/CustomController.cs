@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -18,21 +19,24 @@ namespace Microsoft.AspNetCore.Mvc
     public abstract class CustomController : Controller
     {
         protected readonly BillingDbContext _dbContext;
-        protected readonly RoleManager<IdentityRole> _roleManager;
+        protected readonly RoleManager<EasyBilling.Models.Pocos.Role> _roleManager;
         protected readonly IServiceScopeFactory _scopeFactory;
 
-        public string DisplayName { get; }
+        public string DisplayName { get => (GetType().GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute).DisplayName; }
+        public string ControllerName { get => GetType().Name.Replace("Controller", ""); }
+        public string ActionName { get => RouteData.Values["action"] as string; }
+
         public CustomController(BillingDbContext dbContext,
-                RoleManager<IdentityRole> roleManager,
+                RoleManager<EasyBilling.Models.Pocos.Role> roleManager,
                 IServiceScopeFactory scopeFactory)
         {
             _dbContext = dbContext;
             _roleManager = roleManager;
             _scopeFactory = scopeFactory;
 
-            DisplayName = (GetType()
-                .GetCustomAttributes(typeof(DisplayNameAttribute), true)
-                .SingleOrDefault() as DisplayNameAttribute).DisplayName;
+            //DisplayName = (GetType()
+            //    .GetCustomAttributes(typeof(DisplayNameAttribute), true)
+            //    .SingleOrDefault() as DisplayNameAttribute).DisplayName;
         }
         [HttpGet]
         public virtual async Task<IActionResult> Index(
@@ -55,7 +59,8 @@ namespace Microsoft.AspNetCore.Mvc
             { }
 
             ViewData["Title"] = $"{DisplayName}{actionDisplayName}";
-            ViewData["ControllerName"] = GetType().Name.Replace("Controller", "");
+            ViewData["ControllerName"] = ControllerName;
+
             return base.OnActionExecutionAsync(context, next);
         }
     }

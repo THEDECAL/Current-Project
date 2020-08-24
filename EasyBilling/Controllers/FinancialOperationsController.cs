@@ -16,7 +16,7 @@ namespace EasyBilling.Controllers
     public class FinancialOperationsController : CustomController
     {
         public FinancialOperationsController(BillingDbContext dbContext,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<Models.Pocos.Role> roleManager,
             IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
         { }
     }

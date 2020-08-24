@@ -1,1 +1,26 @@
-﻿<h3>Shared Table Data</h3>
+﻿@{
+    int counter = 1;
+    @foreach (Dictionary<string, string> row in await Model.GetDataDicAsync())
+    {
+    <tr>
+        <td>@counter</td>
+        @foreach (var field in row)
+        {
+            @if (!field.Key.Equals("Id"))
+            {
+                <td>@field.Value</td>
+            }
+        }
+
+        <td class="p-0 m-0">
+            <form asp-antiforgery="true" method="post" asp-action="Delete" class="mb-0 form-inline">
+                <input type="hidden" value="@row["Id"]" name="id" />
+                @Html.ActionLink("Изменить", "AddUpdateForm", ViewData["ControllerName"] as string,
+                    new { id = row["Id"] }, new { @class = "btn btn-raised btn-primary btn-sm m-1 px-2 py-1" })
+                <button class="btn btn-raised btn-danger btn-sm m-1 px-2 py-1" type="submit">Удалить</button>
+            </form>
+        </td>
+    </tr>
+        counter++;
+    }
+}

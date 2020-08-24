@@ -8,12 +8,9 @@
     {
     <tr>
         <th scope="row">@counter</th>
-        <td>@item.Role.Name</td>
-        <td>@item.ControllerName</td>
+        <td>@item.Role.LocalizedName</td>
+        <td>@item.Controller.LocalizedName</td>
         <td>@item.IsAvailable</td>
-        @*<td>@RoleHelper.GetRoleLocalizedName(item.Role.Name)</td>
-        <td>@await ControllerHelper.GetLocalizedName(item.ControllerName)</td>
-        <td>@(item.IsAvailable ? "Разрешено" : "Запрещено")</td>*@
         <td class="p-0 m-0">
             <form asp-antiforgery="true" method="post" asp-action="Delete" class="mb-0 form-inline">
                 <input type="hidden" value="@item.Id" name="id" />

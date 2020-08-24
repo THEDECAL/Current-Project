@@ -33,25 +33,27 @@ namespace EasyBilling.Helpers
                 }).ToDictionary(t => t.Key, t => t.Value);
             });
         }
+
         /// <summary>
         /// Проверка на существование контроллера
         /// </summary>
         /// <param name="cntrlName"></param>
         /// <returns></returns>
-        static public async Task<bool> IsExistAsync([NotNull] string cntrlName)
-        {
-            var names = await GetControllersNamesAsync();
-            return names.Keys.Any(k => k.Equals(cntrlName));
-        }
-        static public async Task<string> GetLocalizedName([NotNull] string cntrlName)
-        {
-            return await Task.Run(() =>
-            {
-                var type = Type.GetType("EasyBilling.Controllers." + cntrlName + "Controller");
-                var displayNamrAtt = type.GetCustomAttributes(typeof(DisplayNameAttribute))
-                            .FirstOrDefault() as DisplayNameAttribute;
-                return displayNamrAtt.DisplayName;
-            });
-        }
+        //static public async Task<bool> IsExistAsync([NotNull] string cntrlName)
+        //{
+        //    var names = await GetControllersNamesAsync();
+        //    return names.Keys.Any(k => k.Equals(cntrlName));
+        //}
+
+        //static public async Task<string> GetLocalizedName([NotNull] string cntrlName)
+        //{
+        //    return await Task.Run(() =>
+        //    {
+        //        var type = Type.GetType("EasyBilling.Controllers." + cntrlName + "Controller");
+        //        var displayNamrAtt = type.GetCustomAttributes(typeof(DisplayNameAttribute))
+        //                    .FirstOrDefault() as DisplayNameAttribute;
+        //        return displayNamrAtt.DisplayName;
+        //    });
+        //}
     }
 }

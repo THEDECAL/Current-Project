@@ -1,47 +1,47 @@
 ﻿using EasyBilling.Data;
 using EasyBilling.Helpers;
 using EasyBilling.Models.Pocos;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace EasyBilling.Services
 {
-    public class DbInitializer //: IDisposable
+    public class DbInitializer
     {
         private readonly BillingDbContext _dbContext;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<Models.Pocos.Role> _roleManager;
+
         public DbInitializer(IServiceScopeFactory scopeFactory)
         {
             var scope = scopeFactory.CreateScope();
             var sp = scope.ServiceProvider;
 
             _userManager = sp.GetRequiredService<UserManager<IdentityUser>>();
-            _roleManager = sp.GetRequiredService<RoleManager<IdentityRole>>();
+            _roleManager = sp.GetRequiredService<RoleManager<Models.Pocos.Role>>();
             _dbContext = sp.GetRequiredService<BillingDbContext>();
         }
         public async Task InitializeAsync()
         {
-            await Task.Run(async () =>
-            {
-                await RolesInitializeAsync();
-                await AccessRightsInitializeAsync();
-                await UsersInitializeAsync();
-            });
+            await ControllersNamesInitAsync();
+            await DeviceStatesInitAsync();
+            await DeviceTypesInitAsync();
+            await TariffsInitAsync();
+            await RolesInitAsync();
+            await AccessRightsInitAsync();
+            await UsersInitAsync();
+            await ClientsInitAsync();
         }
+
         /// <summary>
         /// Инициализация пользователей
         /// </summary>
         /// <returns></returns>
-        private async Task UsersInitializeAsync()
+        private async Task UsersInitAsync()
         {
             if (_userManager.Users.Count() == 0)
             {
@@ -69,7 +69,7 @@ namespace EasyBilling.Services
                 var result = await _userManager.CreateAsync(admin, @"AQeT.5*gehWqeAh");
                 if (result.Succeeded)
                 {
-                    var adminRole = Role.admin.ToString();
+                    var adminRole = Helpers.Role.admin.ToString();
                     await _userManager.AddToRoleAsync(admin, adminRole);
                 }
                 else
@@ -80,35 +80,34 @@ namespace EasyBilling.Services
                 }
             }
         }
+
         /// <summary>
         /// Инициализация ролей
         /// </summary>
         /// <returns></returns>
-        private async Task RolesInitializeAsync()
+        private async Task RolesInitAsync()
         {
-            //if (_roleManager.Roles.Count() == 0)
-            if (_dbContext.Roles.Count() == 0)
+            if (_roleManager.Roles.Count() == 0)
             {
-                var roles = await RoleHelper.GetRolesAsync();
-                var roleLst = new List<IdentityRole>();
-
-                foreach (var item in roles)
+                var dic = await RoleHelper.GetRolesAsync();
+                foreach (var item in dic)
                 {
-                    if (item != null)
+                    await _roleManager.CreateAsync(new Models.Pocos.Role()
                     {
-                        roleLst.Add(item);
-                        await _dbContext.AddAsync(item);
-                        //await _roleManager.CreateAsync(item);
-                    }
+                        Name = item.Key,
+                        NormalizedName = item.Key.ToUpper(),
+                        LocalizedName = item.Value
+                    });
                 }
                 await _dbContext.SaveChangesAsync();
             }
         }
+
         /// <summary>
         /// Инициализация прав доступа
         /// </summary>
         /// <returns></returns>
-        private async Task AccessRightsInitializeAsync()
+        private async Task AccessRightsInitAsync()
         {
             if (_dbContext.AccessRights.Count() == 0)
             {
@@ -122,95 +121,95 @@ namespace EasyBilling.Services
                 const string eventCtrl = "Event";
                 const string financialOperationsCtrl = "FinancialOperations";
                 #region admin
-                var tmp = Role.admin.ToString();
+                var tmp = Helpers.Role.admin.ToString();
                 var adminRole = await  _roleManager.FindByNameAsync(tmp);
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = usersCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(cassaCtrl)),
                     IsAvailable = true,
                     Role = adminRole
                 });
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = clientCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(usersCtrl)),
                     IsAvailable = true,
                     Role = adminRole
                 });
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = accessRightsCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
                     IsAvailable = true,
                     Role = adminRole
                 });
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = tariffCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(deviceCtrl)),
                     IsAvailable = true,
                     Role = adminRole
                 });
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = apiKeyCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(accessRightsCtrl)),
                     IsAvailable = true,
                     Role = adminRole
                 });
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = eventCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(tariffCtrl)),
                     IsAvailable = true,
                     Role = adminRole
                 });
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = financialOperationsCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(apiKeyCtrl)),
                     IsAvailable = true,
                     Role = adminRole
                 });
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = deviceCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(eventCtrl)),
                     IsAvailable = true,
                     Role = adminRole
                 });
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = clientCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(financialOperationsCtrl)),
                     IsAvailable = true,
                     Role = adminRole
                 });
                 #endregion
                 #region operator
                 var operatorRole = await _roleManager.FindByNameAsync(
-                    Role.@operator.ToString());
+                    Helpers.Role.@operator.ToString());
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = usersCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(usersCtrl)),
                     IsAvailable = true,
                     Role = operatorRole
                 });
                 await _dbContext.AccessRights.AddAsync(new AccessRight()
                 {
-                    ControllerName = clientCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
                     IsAvailable = true,
                     Role = operatorRole
                 });
                 #endregion
                 #region casher
                 var casherRole = await _roleManager.FindByNameAsync(
-                    Role.casher.ToString());
+                    Helpers.Role.casher.ToString());
                 _dbContext.AccessRights.Add(new AccessRight()
                 {
-                    ControllerName = cassaCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(cassaCtrl)),
                     IsAvailable = true,
                     Role = casherRole
                 });
                 #endregion
                 #region client
                 var clientRole = await _roleManager.FindByNameAsync(
-                    Role.casher.ToString());
+                    Helpers.Role.casher.ToString());
                 _dbContext.AccessRights.Add(new AccessRight()
                 {
-                    ControllerName = clientCtrl,
+                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
                     IsAvailable = true,
                     Role = clientRole
                 });
@@ -219,21 +218,99 @@ namespace EasyBilling.Services
                 await _dbContext.SaveChangesAsync();
             }
         }
+
         /// <summary>
-        ///  Инициалищация базы данных абонентов
+        /// Инициализация списка имён контроллеров
         /// </summary>
         /// <returns></returns>
-        //private async Task ClientsInitializeAsync()
-        //{
+        private async Task ControllersNamesInitAsync()
+        {
+            if (_dbContext.ControllersNames.Count() == 0)
+            {
+                var dic = await ControllerHelper.GetControllersNamesAsync();
+                foreach (var item in dic)
+                {
+                    await _dbContext.ControllersNames.AddAsync(new ControllerName()
+                    {
+                        Name = item.Key,
+                        LocalizedName = item.Value
+                    });
+                }
+                await _dbContext.SaveChangesAsync();
+            }
+        }
 
-        //}
+        /// <summary>
+        /// Инициализация типов устройства
+        /// </summary>
+        /// <returns></returns>
+        private async Task DeviceTypesInitAsync()
+        {
+            if (_dbContext.DeviceTypes.Count() == 0)
+            {
+                var dic = await DeviceHelper.GetDeviceTypes();
+                foreach (var item in dic)
+                {
+                    await _dbContext.DeviceTypes.AddAsync(new DeviceType()
+                    {
+                        Name = item.Key,
+                        LocalizedName = item.Value
+                    });
+                }
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Инициализация состояний устройства
+        /// </summary>
+        /// <returns></returns>
+        private async Task DeviceStatesInitAsync()
+        {
+            if (_dbContext.DeviceStates.Count() == 0)
+            {
+                var dic = await DeviceHelper.GetDeviceStates();
+                foreach (var item in dic)
+                {
+                    await _dbContext.DeviceStates.AddAsync(new DeviceState()
+                    {
+                        Name = item.Key,
+                        LocalizedName = item.Value
+                    });
+                }
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
         /// <summary>
         ///  Инициалищация тарифов
         /// </summary>
         /// <returns></returns>
-        //private async Task TariffsInitializeAsync()
-        //{
+        private async Task TariffsInitAsync()
+        {
+            if (_dbContext.Tariffs.Count() == 0)
+            {
+                await _dbContext.Tariffs.AddAsync(new Tariff()
+                {
+                    Name = "Стандартный",
+                    Price = 90.0,
+                    IsEnabled = true,
+                    AmounfOfDays = 28,
+                    AmountOfTraffic = 0,
+                    BandwidthInput = 100000,
+                    BandwidthOutput = 100000
+                });
+                await _dbContext.SaveChangesAsync();
+            }
+        }
 
-        //}
+        /// <summary>
+        ///  Инициалищация базы данных абонентов
+        /// </summary>
+        /// <returns></returns>
+        private async Task ClientsInitAsync()
+        {
+
+        }
     }
 }

@@ -24,7 +24,7 @@ namespace EasyBilling.Controllers
     public class AccessRightsController : CustomController, ICustomControllerCrud<AccessRight>
     {
         public AccessRightsController(BillingDbContext dbContext,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<Models.Pocos.Role> roleManager,
             IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
         { }
         [HttpGet]
@@ -40,7 +40,7 @@ namespace EasyBilling.Controllers
             {
                 var dvm = new DataViewModel<AccessRight>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
-                    includeField1: "Role",
+                    includeFields: new string[] { nameof(AccessRight.Role), nameof(AccessRight.Controller) },
                     sortType: sortType,
                     sortField: sort,
                     page: page,
@@ -63,7 +63,10 @@ namespace EasyBilling.Controllers
                 var model = new AccessRight();
                 if (id != null)
                 {
-                    model = await _dbContext.AccessRights.FindAsync(id);
+                    model = await _dbContext.AccessRights
+                        .Include(ar => ar.Role)
+                        .Include(ar => ar.Controller)
+                        .FirstOrDefaultAsync(ar => ar.Id.Equals(id));
                     if (model == null)
                         model = new AccessRight();
                     else
@@ -81,6 +84,8 @@ namespace EasyBilling.Controllers
             if (ModelState.IsValid)
             {
                 obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
+                obj.Controller = await _dbContext.ControllersNames
+                    .FirstOrDefaultAsync(c => c.Name.Equals(obj.Controller.Name));
                 await _dbContext.AccessRights.AddAsync(obj);
                 await _dbContext.SaveChangesAsync();
 
@@ -97,6 +102,8 @@ namespace EasyBilling.Controllers
             if (ModelState.IsValid)
             {
                 obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
+                obj.Controller = await _dbContext.ControllersNames
+                    .FirstOrDefaultAsync(c => c.Name.Equals(obj.Controller.Name));
                 await Task.Run(() =>
                 {
                     _dbContext.AccessRights.Update(obj);
@@ -128,21 +135,26 @@ namespace EasyBilling.Controllers
         public async Task ServerSideValidation(AccessRight obj)
         {
             TryValidateModel(obj);
-            var cntrlExist = await ControllerHelper.IsExistAsync(obj.ControllerName);
+            var cntrlExist = await _dbContext.ControllersNames
+                .AnyAsync(c => c.Name.Equals(obj.Controller.Name));
             if (!cntrlExist)
             { ModelState.AddModelError("ControllerName", "Выбранная страница не существует"); }
             var role = await _roleManager.FindByNameAsync(obj.Role.Name);
             if (role == null)
             { ModelState.AddModelError("Role", "Выбранная роль не существует"); }
-            var accessRightExisting = _dbContext.AccessRights.Include("Role")
-                .FirstOrDefault(ar => ar.Role.Name.Equals(obj.Role.Name) &&
-                ar.ControllerName.Equals(obj.ControllerName));
-            if (accessRightExisting != null)
-            { ModelState.AddModelError("", "Правило для это роли и страницы уже есть, измените его"); }
+            if (!ActionName.Equals(nameof(Update)))
+            {
+                var accessRightExisting = _dbContext.AccessRights.Include("Role")
+                    .FirstOrDefault(ar => ar.Role.Name.Equals(obj.Role.Name) &&
+                    ar.Controller.Name.Equals(obj.Controller.Name));
+                if (accessRightExisting != null)
+                { ModelState.AddModelError("", "Правило для это роли и страницы уже есть, измените его"); }
+            }
         }
 
         public async Task<IActionResult> CheckCntrlExist([NotNull] string controllerName)
-            => Json(await ControllerHelper.IsExistAsync(controllerName));
+            => Json(await _dbContext.ControllersNames
+                .FirstOrDefaultAsync(c => c.Name.Equals(controllerName)));
 
         public async Task<IActionResult> CheckRoleExist([NotNull] string role)
         {

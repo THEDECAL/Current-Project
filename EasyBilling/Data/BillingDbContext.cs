@@ -11,6 +11,9 @@ namespace EasyBilling.Data
 {
     public class BillingDbContext : IdentityDbContext<IdentityUser>
     {
+        public DbSet<ControllerName> ControllersNames { get; set; }
+        public DbSet<DeviceState> DeviceStates { get; set; }
+        public DbSet<DeviceType> DeviceTypes { get; set; }
         public DbSet<Profile> Profiles { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<Tariff> Tariffs { get; set; }

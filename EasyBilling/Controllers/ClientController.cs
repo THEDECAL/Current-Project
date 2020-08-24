@@ -13,7 +13,7 @@ namespace EasyBilling.Controllers
     public class ClientController : CustomController
     {
         public ClientController(BillingDbContext dbContext,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<Models.Pocos.Role> roleManager,
             IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
         { }
     }

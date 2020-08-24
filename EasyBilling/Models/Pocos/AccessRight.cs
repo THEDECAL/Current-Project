@@ -8,20 +8,24 @@ namespace EasyBilling.Models.Pocos
 {
     public class AccessRight
     {
-        private IdentityRole _role;
-        [DisplayName("№")]
+        private Role _role;
+        private ControllerName _controller;
+
+        [DisplayName("#")]
         public int Id { get; set; }
+
         [Required (ErrorMessage = "Не выбрана роль")]
-        [DisplayName("Роль")]
+        [DisplayName("Роль*")]
         [Remote(action: "CheckRoleExist", controller: "AccessRights", ErrorMessage = "Выбранная роль не существует")]
-        public IdentityRole Role { get => _role ?? new IdentityRole(); set => _role = value; }
-        //public IdentityRole Role { get; set; }
+        public Role Role { get => _role ?? new Role(); set => _role = value; }
+
         [Required (ErrorMessage = "Не выбрано название страницы")]
         [Remote(action: "CheckCntrlExist", controller: "AccessRights", ErrorMessage = "Выбранная страница не существует")]
-        [DisplayName("Название страницы")]
-        public string ControllerName { get; set; }
+        [DisplayName("Название страницы*")]
+        public ControllerName Controller { get => _controller ?? new ControllerName(); set => _controller = value; }
+
         [Required (ErrorMessage = "Не выбрано разрешение")]
-        [DisplayName("Разрешение")]
+        [DisplayName("Разрешение*")]
         public bool IsAvailable { get; set; }
     }
 }

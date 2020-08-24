@@ -16,7 +16,7 @@ namespace EasyBilling.Controllers
     public class HomeController : CustomController
     {
         public HomeController(BillingDbContext dbContext,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<Models.Pocos.Role> roleManager,
             IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
         { }
 

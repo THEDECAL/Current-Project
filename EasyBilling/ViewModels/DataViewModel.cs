@@ -26,8 +26,7 @@ namespace EasyBilling.ViewModels
         private int _pageSize;
         public TableHtmlHelper<T> TableHelper { get; private set; }
         public string ControllerName { get; private set; }
-        public string IncludeField1 { get; private set; }
-        public string IncludeField2 { get; private set; }
+        public string[] IncludeFields { get; private set; }
         public string SortField { get; private set; }
         public SortType SortType { get; private set; }
         public List<T> Data { get; private set; }
@@ -55,8 +54,7 @@ namespace EasyBilling.ViewModels
         public bool IsHavePreviousPage { get => (Page - 1 < 1) ? false : true; }
         public DataViewModel(IServiceScopeFactory scopeFactory,
             string controllerName,
-            string includeField1 = "",
-            string includeField2 = "",
+            string[] includeFields = null,
             string sortField = "Id",
             SortType sortType = SortType.ASC,
             int page = 1,
@@ -73,8 +71,7 @@ namespace EasyBilling.ViewModels
             TableHelper = new TableHtmlHelper<T>(this);
             SearchRequest = (searchRequest == null )?"":searchRequest.ToLower();
             ControllerName = controllerName;
-            IncludeField1 = includeField1;
-            IncludeField2 = includeField2;
+            IncludeFields = includeFields;
             SortField = sortField;
             SortType = sortType;
             PageSize = pageSize;
@@ -96,18 +93,25 @@ namespace EasyBilling.ViewModels
                 if (queryQ.Count() > 0)
                 {
                     //Подключение связанных объектов
-                    try
+                    if (IncludeFields != null && IncludeFields.Length > 0)
                     {
-                        if (!string.IsNullOrWhiteSpace(IncludeField1))
-                            queryQ = queryQ.Include(IncludeField1);
-                        else if (!string.IsNullOrWhiteSpace(IncludeField2))
-                            queryQ = queryQ.Include(IncludeField2);
-                        else if (!string.IsNullOrWhiteSpace(IncludeField1) &&
-                            !string.IsNullOrWhiteSpace(IncludeField2))
-                            queryQ = queryQ.Include(IncludeField1).Include(IncludeField2);
+                        foreach (var item in IncludeFields)
+                        {
+                            try
+                            {
+                                queryQ = queryQ.Include(item);
+                            }
+                            catch (Exception ex)
+                            { Console.WriteLine(ex.StackTrace); }
+                        }
                     }
-                    catch (Exception ex)
-                    { Console.WriteLine(ex.StackTrace); }
+                    //if (!string.IsNullOrWhiteSpace(IncludeField1))
+                    //    queryQ = queryQ.Include(IncludeField1);
+                    //else if (!string.IsNullOrWhiteSpace(IncludeField2))
+                    //    queryQ = queryQ.Include(IncludeField2);
+                    //else if (!string.IsNullOrWhiteSpace(IncludeField1) &&
+                    //    !string.IsNullOrWhiteSpace(IncludeField2))
+                    //    queryQ = queryQ.Include(IncludeField1).Include(IncludeField2);
 
 
                     IEnumerable<T> queryE = null;
@@ -146,6 +150,23 @@ namespace EasyBilling.ViewModels
             }
             catch (Exception ex)
             { Console.WriteLine(ex.StackTrace); }
+        }
+
+        public async Task<List<Dictionary<string,string>>> GetDataDicAsync()
+        {
+            return await Task.Run(() => Data.Select(o =>
+                {
+                    Type type = o.GetType();
+                    var props = type.GetProperties();
+                    var dic = new Dictionary<string, string>();
+
+                    foreach (var item in props)
+                    {
+                        var val = item.GetValue(o);
+                        dic.Add(item.Name, (val != null) ? val.ToString() : "");
+                    }
+                    return dic;
+                }).ToList());
         }
     }
 }

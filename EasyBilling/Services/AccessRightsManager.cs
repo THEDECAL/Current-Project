@@ -20,11 +20,7 @@ namespace EasyBilling.Services
     {
         private readonly BillingDbContext _dbContext;
         private readonly UserManager<IdentityUser> _userManager;
-        //public AccessRightsManager(BillingDbContext dbContext, UserManager<IdentityUser> userManager)
-        //{
-        //    _dbContext = dbContext;
-        //    _userManager = userManager;
-        //}
+
         public AccessRightsManager(IServiceScopeFactory scopeFactory)
         {
             var scope = scopeFactory.CreateScope();
@@ -33,6 +29,11 @@ namespace EasyBilling.Services
             _userManager = sp.GetRequiredService<UserManager<IdentityUser>>();
             _dbContext = sp.GetRequiredService<BillingDbContext>();
         }
+
+        /// <summary>
+        /// Получить массив всех прав
+        /// </summary>
+        /// <returns></returns>
         public async Task<AccessRight[]> GetAllAsync()
         {
             return await _dbContext.AccessRights
@@ -75,6 +76,7 @@ namespace EasyBilling.Services
                 {
                     return await _dbContext.AccessRights
                         .Include(ar => ar.Role)
+                        .Include(ar => ar.Controller)
                         .Where(ar => ar.Role.Name.Equals(roles[0]))
                         .AsNoTracking()
                         .ToArrayAsync();
@@ -95,8 +97,9 @@ namespace EasyBilling.Services
                 {
                     var rights = await _dbContext.AccessRights
                         .Include(ar => ar.Role)
+                        .Include(ar => ar.Controller)
                         .Where(ar => ar.Role.Name.Equals(roles[0]) &&
-                            ar.ControllerName.Equals(controllerName))
+                            ar.Controller.Name.Equals(controllerName))
                         .AsNoTracking()
                         .FirstOrDefaultAsync();
                     return rights;
@@ -116,8 +119,9 @@ namespace EasyBilling.Services
                     //Выбераем контроллеры в соотвествии с правами для пользователя
                     var cntrls = _dbContext.AccessRights
                         .Include(ar => ar.Role)
+                        .Include(ar => ar.Controller)
                         .Where(ar => ar.Role.Name.Equals(roles[0]) && ar.IsAvailable)
-                        .Select(ar => ar.ControllerName)
+                        .Select(ar => ar.Controller)
                         .AsNoTracking()
                         .ToArray();
 
@@ -127,16 +131,16 @@ namespace EasyBilling.Services
                     {
                         try
                         {
-                            string cntrlName = $"EasyBilling.Controllers.{item}Controller";
+                            string cntrlName = $"EasyBilling.Controllers.{item.Name}Controller";
                             var type = Type.GetType(cntrlName);
 
                             if (type.GetCustomAttribute(typeof(NoShowToMenuAttribute)) != null)
                             { continue; }
 
-                            var dnAtt = type.GetCustomAttribute(
-                                typeof(DisplayNameAttribute)) as DisplayNameAttribute;
-                            if (dnAtt != null)
-                            { menuItems.Add(item, dnAtt.DisplayName); }
+                            //var dnAtt = type.GetCustomAttribute(
+                            //    typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+                            // if (dnAtt != null)
+                            menuItems.Add(item.Name, item.LocalizedName);
                         }
                         catch (Exception)
                         { }

@@ -14,7 +14,7 @@ namespace EasyBilling.Controllers
     public class UsersController : CustomController
     {
         public UsersController(BillingDbContext dbContext,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<Models.Pocos.Role> roleManager,
             IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
         { }
     }

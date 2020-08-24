@@ -1,4 +1,5 @@
 ﻿using EasyBilling.Data;
+using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,7 @@ namespace EasyBilling.Areas.Identity
             await Task.Run(() => builder.ConfigureServices((services) =>
                 services.AddDefaultIdentity<IdentityUser>(
                     options => options.SignIn.RequireConfirmedAccount = true)
-                    .AddRoles<IdentityRole>()
+                    .AddRoles<Role>()
                     .AddEntityFrameworkStores<BillingDbContext>()));
         }
     }

@@ -19,25 +19,18 @@ namespace EasyBilling.Helpers
     };
     static public class RoleHelper
     {
-        static Dictionary<string,string> _roleNames = new Dictionary<string, string>()
-        {
-            { Role.admin.ToString(), "Администратор" },
-            { Role.@operator.ToString(), "Оператор" },
-            { Role.casher.ToString(), "Кассир" },
-            { Role.client.ToString(), "Клиент" }
-        };
+        //static public string GetRoleLocalizedName(Role role) => _roleNames.ElementAt((int)role).Value;
+        //static public string GetRoleLocalizedName([NotNull] string role) => _roleNames.GetValueOrDefault(role);
+        //static public IdentityRole GetRole(Role role) =>
+        //    new IdentityRole(role.ToString()) { NormalizedName = role.ToString().ToUpper() };
 
-        static public string GetRoleLocalizedName(Role role) => _roleNames.ElementAt((int)role).Value;
-        static public string GetRoleLocalizedName([NotNull] string role) => _roleNames.GetValueOrDefault(role);
-        static public IdentityRole GetRole(Role role) =>
-            new IdentityRole(role.ToString()) { NormalizedName = role.ToString().ToUpper() };
-
-        static async public Task<IdentityRole[]> GetRolesAsync() =>
-            await Task.Run(() =>
+        static async public Task<Dictionary<string, string>> GetRolesAsync() =>
+            await Task.Run(() => new Dictionary<string, string>()
             {
-                var enumValues = Enum.GetValues(typeof(Role))
-                    .OfType<Role>().ToList();
-                return enumValues.Select(role => GetRole(role)).ToArray();
+                { Role.admin.ToString(), "Администратор" },
+                { Role.@operator.ToString(), "Оператор" },
+                { Role.casher.ToString(), "Кассир" },
+                { Role.client.ToString(), "Клиент" }
             });
     }
 }

@@ -18,12 +18,13 @@ using Microsoft.Extensions.DependencyInjection;
 namespace EasyBilling.Controllers
 {
     [DisplayName("Тарифы")]
-    public class TariffController : CustomController/*, ICustomControllerCrud<Tariff>*/
+    public class TariffController : CustomController, ICustomControllerCrud<Tariff>
     {
         public TariffController(BillingDbContext dbContext,
-         RoleManager<IdentityRole> roleManager,
+         RoleManager<Models.Pocos.Role> roleManager,
          IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
         { }
+
         [HttpGet]
         [DisplayName("Список")]
         public override async Task<IActionResult> Index(
@@ -36,7 +37,7 @@ namespace EasyBilling.Controllers
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Tariff>(_scopeFactory,
-                    controllerName: ViewData["ControllerName"] as string,
+                    controllerName: ControllerName,
                     sortType: sortType,
                     sortField: sort,
                     page: page,
@@ -122,12 +123,11 @@ namespace EasyBilling.Controllers
         public async Task ServerSideValidation(Tariff obj)
         {
             TryValidateModel(obj);
-            var tariffExist = await _dbContext.Tariffs.AnyAsync(t => t.Name.Equals(obj.Name));
-            if (tariffExist)
-            { ModelState.AddModelError("Name", "Такое название тарифа уже существует, выберите другое"); }
+            if (!ActionName.Equals(nameof(Update))) {
+                var tariffExist = await _dbContext.Tariffs.AnyAsync(t => t.Name.Equals(obj.Name));
+                if (tariffExist)
+                { ModelState.AddModelError("Name", "Такое название тарифа уже существует, выберите другое"); }
+            }
         }
-
-        public async Task<IActionResult> CheckName([NotNull] string name)
-            => Json(await _dbContext.Tariffs.AnyAsync(t => t.Name.Equals(name)));
     }
 }
