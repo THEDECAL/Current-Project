@@ -27,7 +27,7 @@ namespace EasyBilling.Data
             : base(options)
         {
             //this.Database.EnsureDeleted();
-            //this.Database.EnsureCreated();
+            this.Database.EnsureCreated();
         }
     }
 }

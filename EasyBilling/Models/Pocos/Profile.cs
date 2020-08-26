@@ -27,15 +27,11 @@ namespace EasyBilling.Models.Pocos
         public DateTime DateBeginOfUseOfTarrif { get; set; }
         public int UsedTraffic { get; set; } = 0;
         [MaxLength(100)]
-        public string CustomField1 { get; set; } = string.Empty;
+        public string CustomProfileField1 { get; set; } = string.Empty;
         [MaxLength(100)]
-        public string CustomField2 { get; set; } = string.Empty;
+        public string CustomProfileField2 { get; set; } = string.Empty;
         [MaxLength(100)]
-        public string CustomField3 { get; set; } = string.Empty;
-        [MaxLength(100)]
-        public string CustomField4 { get; set; } = string.Empty;
-        [MaxLength(100)]
-        public string CustomField5 { get; set; } = string.Empty;
+        public string CustomProfileField3 { get; set; } = string.Empty;
         public DateTime BirthDay { get; set; }
         public DateTime DateOfCreation { get; set; } = DateTime.Now;
         public DateTime DateOfUpdate { get; set; }

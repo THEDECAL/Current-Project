@@ -53,9 +53,9 @@ namespace EasyBilling.Models.Pocos
         [DisplayName("Комментарии")]
         public string Comment { get; set; }
 
-        public string CustomField1 { get; set; }
-        public string CustomField2 { get; set; }
-        public string CustomField3 { get; set; }
+        public string CustomDeviceField1 { get; set; }
+        public string CustomDeviceField2 { get; set; }
+        public string CustomDeviceField3 { get; set; }
 
         [DisplayName("Дата создания")]
         public DateTime DateOfCreation { get; private set; } = DateTime.Now;

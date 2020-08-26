@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +21,15 @@ namespace EasyBilling.Areas.Identity
             {
                 builder.ConfigureServices((context, services) =>
                 {
-                    var currConn = context.Configuration.GetSection("CurrentUsingConnection").Value;
+                    string currConn = "DefaultConnection";
+                    var env = context.HostingEnvironment;
+                    if (env.IsDevelopment())
+                    {
+                        var conn = context.Configuration.GetSection("CurrentUsingConnection").Value;
+                        if (!string.IsNullOrWhiteSpace(conn))
+                        { currConn = conn; }
+                    }
+
                     services.AddDbContext<BillingDbContext>(options =>
                        options.UseSqlServer(context.Configuration
                        .GetConnectionString(currConn)));
