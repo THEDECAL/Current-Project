@@ -66,7 +66,7 @@ namespace EasyBilling.Services
                     }
                 };
 
-                var result = await _userManager.CreateAsync(admin, @"AQeT.5*gehWqeAh");
+                var result = await _userManager.CreateAsync(admin, "AQeT.5*gehWqeAh");
                 if (result.Succeeded)
                 {
                     var adminRole = Helpers.Role.admin.ToString();

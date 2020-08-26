@@ -21,7 +21,7 @@ namespace EasyBilling.Areas.Identity
             {
                 builder.ConfigureServices((context, services) =>
                 {
-                    string currConn = "DefaultConnection";
+                    string currConn = "AzureConnection";
                     var env = context.HostingEnvironment;
                     if (env.IsDevelopment())
                     {

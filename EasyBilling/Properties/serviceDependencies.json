@@ -1,9 +1,5 @@
 {
   "dependencies": {
-    "mssql1": {
-      "type": "mssql",
-      "connectionId": "DefaultConnection"
-    },
     "mssql2": {
       "type": "mssql",
       "connectionId": "LocalDbConnection",
@@ -21,6 +17,10 @@
       "connectionId": "WorkConnection",
       "suggestion": "true",
       "ignored": "true"
+    },
+    "mssql1": {
+      "type": "mssql",
+      "connectionId": "DefaultConnection"
     }
   }
 }
