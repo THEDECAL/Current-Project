@@ -38,7 +38,17 @@ namespace EasyBilling.Controllers
             {
                 var dvm = new DataViewModel<Device>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
-                    includeFields: new string[]{ nameof(Device.Type), nameof(Device.State) },
+                    includeFields: new string[]
+                    {
+                        nameof(Device.Type),
+                        nameof(Device.State)
+                    },
+                    excludeFields: new string[]
+                    {
+                        nameof(Device.CustomDeviceField1),
+                        nameof(Device.CustomDeviceField2),
+                        nameof(Device.CustomDeviceField3),
+                    },
                     sortType: sortType,
                     sortField: sort,
                     page: page,
@@ -81,6 +91,11 @@ namespace EasyBilling.Controllers
             await ServerSideValidation(obj);
             if (ModelState.IsValid)
             {
+                obj.State = await _dbContext.DeviceStates
+                    .FirstOrDefaultAsync(o => o.Name.Equals(obj.State.Name));
+                obj.Type = await _dbContext.DeviceTypes
+                    .FirstOrDefaultAsync(o => o.Name.Equals(obj.Type.Name));
+
                 await _dbContext.Devices.AddAsync(obj);
                 await _dbContext.SaveChangesAsync();
 
@@ -100,6 +115,7 @@ namespace EasyBilling.Controllers
                     .FirstOrDefaultAsync(s => s.Name.Equals(obj.State.Name));
                 obj.Type = await _dbContext.DeviceTypes
                     .FirstOrDefaultAsync(s => s.Name.Equals(obj.Type.Name));
+
                 await Task.Run(() =>
                 {
                     _dbContext.Devices.Update(obj);
@@ -131,15 +147,19 @@ namespace EasyBilling.Controllers
         public async Task ServerSideValidation(Device obj)
         {
             TryValidateModel(obj);
-            var deviceExist = await _dbContext.Devices
-                .AnyAsync(d => d.SerialNumber.Equals(obj.SerialNumber));
-            if (!deviceExist)
-            { ModelState.AddModelError("SerialNumber", "Устройство с таким серийным номером уже есть"); }
+            var checkType = await _dbContext.DeviceTypes
+                .AnyAsync(t => t.Name.Equals(obj.Type.Name));
+            if (!checkType)
+            { ModelState.AddModelError("Type", "Выбранный тип устройства не существует"); }
+            var checkState = await _dbContext.DeviceStates
+                .AnyAsync(t => t.Name.Equals(obj.State.Name));
+            if (!checkState)
+            { ModelState.AddModelError("State", "Выбранное состояние устройства не существует"); }
         }
 
         public async Task<IActionResult> CheckType([NotNull] string typeName)
             => Json(await _dbContext.DeviceTypes
-                .FirstOrDefaultAsync(t => t.Name.Equals(typeName)));
+                .AnyAsync(t => t.Name.Equals(typeName)));
 
         public async Task<IActionResult> CheckState([NotNull] string stateName)
             => Json(await _dbContext.DeviceStates

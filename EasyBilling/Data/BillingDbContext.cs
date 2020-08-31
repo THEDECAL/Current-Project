@@ -29,11 +29,5 @@ namespace EasyBilling.Data
             //this.Database.EnsureDeleted();
             this.Database.EnsureCreated();
         }
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            this.GetService<DbInitializer>().InitializeAsync().Wait();
-
-            base.OnModelCreating(builder);
-        }
     }
 }

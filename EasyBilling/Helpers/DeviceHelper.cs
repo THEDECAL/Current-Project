@@ -39,7 +39,7 @@ namespace EasyBilling.Helpers
          {
              {  DeviceType.Switch.ToString(), "Коммутатор" },
              {  DeviceType.MngSwitch.ToString(), "Управляемый коммутатор" },
-             {  DeviceType.Router.ToString(), "Роутер" },
+             {  DeviceType.Router.ToString(), "Маршрутизатор" },
              {  DeviceType.Hub.ToString(), "Хаб" },
              {  DeviceType.WiFi.ToString(), "Wi-Fi Роутер" },
              {  DeviceType.WiFiAp.ToString(), "Wi-Fi Точка доступа" },

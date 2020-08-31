@@ -106,3 +106,19 @@ body {
     transform: translate(-50%);
     min-width: 300px;
 }
+
+.circle-btn {
+    min-width: 2rem !important;
+    width: 2rem !important;
+    height: 2rem !important;
+}
+
+    .circle-btn img {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+        filter: invert(1);
+    }
+
+.navbar-nav .nav-link {
+    font-size: .800rem !important;
+}

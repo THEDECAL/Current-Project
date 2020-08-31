@@ -15,9 +15,17 @@
         <td class="p-0 m-0">
             <form asp-antiforgery="true" method="post" asp-action="Delete" class="mb-0 form-inline">
                 <input type="hidden" value="@row["Id"]" name="id" />
-                @Html.ActionLink("Изменить", "AddUpdateForm", ViewData["ControllerName"] as string,
+                @*@Html.ActionLink("Изменить", "AddUpdateForm", ViewData["ControllerName"] as string,
                     new { id = row["Id"] }, new { @class = "btn btn-raised btn-primary btn-sm m-1 px-2 py-1" })
-                <button class="btn btn-raised btn-danger btn-sm m-1 px-2 py-1" type="submit">Удалить</button>
+                <button class="btn btn-raised btn-danger btn-sm m-1 px-2 py-1" type="submit">Удалить</button>*@
+                <span class="btn-group-sm row" style="margin: 0 auto;">
+                    <a class="btn btn-primary bmd-btn-fab circle-btn" href="/@ViewData["ControllerName"]/AddUpdateForm/@row["Id"]">
+                        <img src="/images/edit-icon.svg" style="margin: 3px 0;">
+                    </a>
+                    <button type="submit" class="btn btn-danger bmd-btn-fab circle-btn">
+                        <img src="/images/delete-icon.svg" />
+                    </button>
+                </span>
             </form>
         </td>
     </tr>

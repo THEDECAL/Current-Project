@@ -53,4 +53,6 @@
     <Folder Include="wwwroot\lib\bootstrap-material-design\css\" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
 </Project>

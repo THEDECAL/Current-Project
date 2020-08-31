@@ -1,0 +1,120 @@
+﻿@model EasyBilling.Models.Pocos.Profile
+@inject EasyBilling.Data.BillingDbContext dbContext
+
+<input asp-for="Id" type="hidden" class="form-control" />
+
+<div class="form-group">
+    <label class="text-info">Логин*</label>
+    <input asp-for="Account.UserName" class="form-control" required/>
+    <span asp-validation-for="Account.UserName" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label class="text-info">Электронная почта*</label>
+    <input asp-for="Account.Email" class="form-control" required/>
+    <span asp-validation-for="Account.Email" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <div class="form-row">
+        <div class="col">
+            <div class="form-group">
+                <label asp-for="FirstName" class="text-info"></label>
+                <input asp-for="FirstName" type="text" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label asp-for="SecondName" class="text-info"></label>
+                <input asp-for="SecondName" type="text" class="form-control" />
+                <span asp-validation-for="SecondName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label asp-for="Patronymic" class="text-info"></label>
+                <input asp-for="Patronymic" type="text" class="form-control" />
+                <span asp-validation-for="Patronymic" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-2">
+            <div class="form-group">
+                <label asp-for="Address" class="text-info"></label>
+                <input asp-for="Address" type="text" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label asp-for="Tarrif" class="text-info"></label>
+                <select class="mt-2 custom-select form-control" asp-for="Tarrif.Id">
+                    @foreach (var item in dbContext.Tariffs.ToArray())
+                    {
+                        <option value="@item.Id" selected="@(item.Id.Equals(Model.Tarrif.Id))">
+                            @item.Name
+                        </option>
+                    }
+                </select>
+                <span asp-validation-for="Tarrif" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="text-info">Роль</label>
+        <select class="mt-2 custom-select form-control" name="roleName">
+            @{
+                var currAcc = dbContext.UserRoles.FirstOrDefault(ur => ur.UserId.Equals(Model.Account.Id));
+            }
+            @foreach (EasyBilling.Models.Pocos.Role role in dbContext.Roles.ToArray())
+            {
+                <option value="@role.Id" selected="@(role.Id.Equals(currAcc?.RoleId))">
+                    @role.LocalizedName
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <div class="switch">
+            <label class="form-check-label">
+                Разморожен
+            </label>
+            <label class="form-check-label">
+                @{
+                    string chk = (Model.IsHolded) ? "checked" : "";
+                    <input class="form-control" type="checkbox" asp-for="IsHolded" chk />
+                }
+                Заморожен
+            </label>
+            <span asp-validation-for="IsHolded" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="switch">
+            <label class="form-check-label">
+                Выключен
+            </label>
+            <label class="form-check-label">
+                @{
+                    string chkE = (Model.IsEnabled) ? "checked" : "";
+                    <input class="form-control" type="checkbox" asp-for="IsEnabled" chkE />
+                }
+                Включен
+            </label>
+            <span asp-validation-for="IsEnabled" class="text-danger"></span>
+        </div>
+    </div>
+
+</div>
+
+<div class="form-group">
+    <label asp-for="Comment" class="text-info"></label>
+    <textarea asp-for="Comment" class="form-control"></textarea>
+    <span asp-validation-for="Comment" class="text-danger"></span>
+</div>

@@ -40,21 +40,24 @@ namespace EasyBilling.HtmlHelpers
                 var props = _type.GetProperties();
                 foreach (var item in props)
                 {
-                    var dnAtt = item.GetCustomAttribute(
-                        typeof(DisplayNameAttribute)) as DisplayNameAttribute;
-                    TagBuilder th = new TagBuilder("th");
+                    if (!_data.ExcludeFields.Any(f => f.Equals(item.Name)))
+                    {
+                        var dnAtt = item.GetCustomAttribute(
+                            typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+                        TagBuilder th = new TagBuilder("th");
 
-                    TagBuilder a = new TagBuilder("a");
-                    th.Attributes.Add("scope", "col");
-                    a.Attributes.Add("href",
-                        GetHref(sort: item.Name,
-                                sortType: _data.SortType,
-                                page: _data.Page,
-                                pageSize: _data.PageSize));
-                    a.AddCssClass("text-white");
-                    a.InnerHtml.Append((dnAtt != null) ? dnAtt.DisplayName : item.Name);
-                    th.InnerHtml.AppendHtml(a);
-                    tr.InnerHtml.AppendHtml(th);
+                        TagBuilder a = new TagBuilder("a");
+                        th.Attributes.Add("scope", "col");
+                        a.Attributes.Add("href",
+                            GetHref(sort: item.Name,
+                                    sortType: _data.SortType,
+                                    page: _data.Page,
+                                    pageSize: _data.PageSize));
+                        a.AddCssClass("text-white");
+                        a.InnerHtml.Append((dnAtt != null) ? dnAtt.DisplayName : item.Name);
+                        th.InnerHtml.AppendHtml(a);
+                        tr.InnerHtml.AppendHtml(th);
+                    }
                 }
 
                 TagBuilder thActions = new TagBuilder("th");
@@ -178,7 +181,7 @@ namespace EasyBilling.HtmlHelpers
                 TagBuilder form = new TagBuilder("form");
                 form.AddCssClass("form-inline row justify-content-center");
                 form.Attributes.Add("method", "get");
-                form.Attributes.Add("style", "width: 1000px;");
+                form.Attributes.Add("style", "width: 1000px; margin: auto; margin-bottom: 10px;");
 
                 TagBuilder a = new TagBuilder("a");
                 a.AddCssClass("btn btn-raised btn-success mt-5 mr-3");

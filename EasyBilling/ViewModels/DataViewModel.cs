@@ -27,6 +27,7 @@ namespace EasyBilling.ViewModels
         public TableHtmlHelper<T> TableHelper { get; private set; }
         public string ControllerName { get; private set; }
         public string[] IncludeFields { get; private set; }
+        public string[] ExcludeFields { get; private set; }
         public string SortField { get; private set; }
         public SortType SortType { get; private set; }
         public List<T> Data { get; private set; }
@@ -52,9 +53,11 @@ namespace EasyBilling.ViewModels
         }
         public bool IsHaveNextPage { get => (Page + 1 > AmountPage) ? false : true; }
         public bool IsHavePreviousPage { get => (Page - 1 < 1) ? false : true; }
+
         public DataViewModel(IServiceScopeFactory scopeFactory,
             string controllerName,
             string[] includeFields = null,
+            string[] excludeFields = null,
             string sortField = "Id",
             SortType sortType = SortType.ASC,
             int page = 1,
@@ -71,7 +74,8 @@ namespace EasyBilling.ViewModels
             TableHelper = new TableHtmlHelper<T>(this);
             SearchRequest = (searchRequest == null )?"":searchRequest.ToLower();
             ControllerName = controllerName;
-            IncludeFields = includeFields;
+            IncludeFields = includeFields ?? new string[0];
+            ExcludeFields = excludeFields ?? new string[0];
             SortField = sortField;
             SortType = sortType;
             PageSize = pageSize;
@@ -93,17 +97,14 @@ namespace EasyBilling.ViewModels
                 if (queryQ.Count() > 0)
                 {
                     //Подключение связанных объектов
-                    if (IncludeFields != null && IncludeFields.Length > 0)
+                    foreach (var item in IncludeFields)
                     {
-                        foreach (var item in IncludeFields)
+                        try
                         {
-                            try
-                            {
-                                queryQ = queryQ.Include(item);
-                            }
-                            catch (Exception ex)
-                            { Console.WriteLine(ex.StackTrace); }
+                            queryQ = queryQ.Include(item);
                         }
+                        catch (Exception ex)
+                        { Console.WriteLine(ex.StackTrace); }
                     }
                     //if (!string.IsNullOrWhiteSpace(IncludeField1))
                     //    queryQ = queryQ.Include(IncludeField1);
@@ -162,8 +163,11 @@ namespace EasyBilling.ViewModels
 
                     foreach (var item in props)
                     {
-                        var val = item.GetValue(o);
-                        dic.Add(item.Name, (val != null) ? val.ToString() : "");
+                        if (!ExcludeFields.Any(f => f.Equals(item.Name)))
+                        {
+                            var val = item.GetValue(o);
+                            dic.Add(item.Name, (val != null) ? val.ToString() : "");
+                        }
                     }
                     return dic;
                 }).ToList());
