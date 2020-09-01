@@ -49,5 +49,7 @@ namespace EasyBilling.Models.Pocos
         [DisplayName("Активность*")]
         [Required(ErrorMessage = "Не указана активность")]
         public bool IsEnabled { get; set; } = true;
+
+        public override string ToString() => this.Name;
     }
 }

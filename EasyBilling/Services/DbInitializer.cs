@@ -51,7 +51,7 @@ namespace EasyBilling.Services
                     FirstName = "Администратор",
                     SecondName = "Биллинга",
                     Address = "Пушкина 9-15",
-                    DateOfCreation = DateTime.Now,
+                    Tariff = await _dbContext.Tariffs.FirstOrDefaultAsync(),
                     Account = admin = new IdentityUser()
                     {
                         UserName = "admin",
@@ -68,6 +68,7 @@ namespace EasyBilling.Services
                     var adminRole = Helpers.Role.admin.ToString();
                     await _userManager.AddToRoleAsync(admin, adminRole);
                     await _dbContext.Profiles.AddAsync(adminProfile);
+                    await _dbContext.SaveChangesAsync();
                 }
                 else
                 {
@@ -75,8 +76,6 @@ namespace EasyBilling.Services
                         $"не связалась с {admin.UserName}," + 
                         "произошла ошибка.");
                 }
-
-                await _dbContext.SaveChangesAsync();
             }
         }
 

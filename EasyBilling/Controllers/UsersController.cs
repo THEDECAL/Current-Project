@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using EasyBilling.Attributes;
 using EasyBilling.Data;
@@ -10,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyBilling.Controllers
@@ -23,7 +26,9 @@ namespace EasyBilling.Controllers
             RoleManager<Models.Pocos.Role> roleManager,
             UserManager<IdentityUser> userManager,
             IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
-        { }
+        {
+            _userManager = userManager;
+        }
 
         [HttpGet]
         [DisplayName("Список")]
@@ -40,7 +45,7 @@ namespace EasyBilling.Controllers
                     controllerName: ViewData["ControllerName"] as string,
                     includeFields: new string[]
                     {
-                        nameof(Profile.Tarrif),
+                        nameof(Profile.Tariff),
                         nameof(Profile.Account)
                     },
                     excludeFields: new string[]
@@ -49,6 +54,9 @@ namespace EasyBilling.Controllers
                         nameof(Profile.Comment),
                         nameof(Profile.AmountOfCash),
                         nameof(Profile.LastLogin),
+                        nameof(Profile.DateOfUpdate),
+                        nameof(Profile.DateBeginOfUseOfTarrif),
+                        nameof(Profile.UsedTraffic),
                         nameof(Profile.CustomProfileField1),
                         nameof(Profile.CustomProfileField2),
                         nameof(Profile.CustomProfileField3)
@@ -77,6 +85,7 @@ namespace EasyBilling.Controllers
                 {
                     model = await _dbContext.Profiles
                         .Include(o => o.Account)
+                        .Include(o => o.Tariff)
                         .FirstOrDefaultAsync(o => o.Id.Equals(id));
                     if (model == null)
                         model = new Profile();
@@ -89,15 +98,18 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Profile obj, string roleId)
+        public async Task<IActionResult> Create(Profile obj, string roleName, int tariffId)
         {
-            await ServerSideValidation(obj, roleId);
+            await ServerSideValidation(obj, roleName, tariffId);
             if (ModelState.IsValid)
             {
+                obj.Tariff = await _dbContext.Tariffs
+                    .FirstOrDefaultAsync(t => t.Id.Equals(tariffId));
+
                 var result = await _userManager.CreateAsync(obj.Account);
                 if (result.Succeeded)
                 {
-                    var role = await _roleManager.FindByIdAsync(roleId);
+                    var role = await _roleManager.FindByNameAsync(roleName);
                     await _userManager.AddToRoleAsync(obj.Account, role.Name);
                 }
 
@@ -111,17 +123,18 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Update(Profile obj, string roleId)
+        public async Task<IActionResult> Update(Profile obj, string roleName, int tariffId)
         {
-            await ServerSideValidation(obj, roleId);
+            await ServerSideValidation(obj, roleName, tariffId);
             if (ModelState.IsValid)
             {
                 obj.Account = await _dbContext.Users
                     .FirstOrDefaultAsync(u => u.Id.Equals(obj.Account.Id));
-                var role = await _roleManager.FindByIdAsync(roleId);
-                var oldRoles = await _dbContext.UserRoles
-                    .Where(u => u.UserId.Equals(obj.Account.Id)).ToArrayAsync();
-                _dbContext.UserRoles.RemoveRange(oldRoles);
+                obj.Tariff = await _dbContext.Tariffs
+                    .FirstOrDefaultAsync(t => t.Id.Equals(tariffId));
+
+                var role = await _roleManager.FindByNameAsync(roleName);
+                await _userManager.RemoveFromRoleAsync(obj.Account, role.Name);
                 await _userManager.AddToRoleAsync(obj.Account, role.Name);
 
                 await Task.Run(() =>
@@ -140,12 +153,16 @@ namespace EasyBilling.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int? id = null)
         {
-            var obj = await _dbContext.Devices.FindAsync(id);
+            var profile = await _dbContext.Profiles
+                .Include(p => p.Account)
+                .FirstOrDefaultAsync(p => p.Id.Equals(id.Value));
+
             await Task.Run(() =>
             {
-                if (obj != null)
+                if (profile != null)
                 {
-                    _dbContext.Devices.Remove(obj);
+                    _dbContext.Users.Remove(profile.Account);
+                    _dbContext.Profiles.Remove(profile);
                     _dbContext.SaveChanges();
                 }
             });
@@ -153,24 +170,52 @@ namespace EasyBilling.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task ServerSideValidation(Profile obj, string roleId)
+        public async Task ServerSideValidation(Profile obj, string roleName, int tariffId)
         {
             TryValidateModel(obj);
+            ModelState.Remove("Tariff.Name");
+
+
+            var isUserNameExist = await _dbContext.Users
+                .AnyAsync(u => u.UserName.Equals(obj.Account.UserName));
+            var isEmailExist = await _dbContext.Users
+                    .AnyAsync(u => u.Email.Equals(obj.Account.Email));
+            if (ActionName.Equals(nameof(Create)))
+            {
+                if (isUserNameExist)
+                { ModelState.AddModelError("Account.UserName", "Введённый логин уже существует, выберите другой"); }
+                if (isUserNameExist)
+                { ModelState.AddModelError("Account.Email", "Введённый почтовый адрес уже сущесвует, выберите другой"); }
+            }
+            else
+            {
+                var accExisting = await _dbContext.Users
+                    .FirstOrDefaultAsync(u => u.UserName.Equals(obj.Account.Id));
+                if (accExisting != null)
+                {
+                    if (!accExisting.UserName.Equals(obj.Account.UserName) && isUserNameExist)
+                    { ModelState.AddModelError("Account.UserName", "Введённый логин уже существует, выберите другой"); }
+                    if (!accExisting.Email.Equals(obj.Account.Email) && isEmailExist)
+                    { ModelState.AddModelError("Account.Email", "Введённый почтовый адрес уже сущесвует, выберите другой"); }
+                }
+                { ModelState.AddModelError("", "Аккаунт профиля не найден"); }
+            }
+
+            var pattern = @"^(?=.*[a-z0-9])[a-z][a-z\d.-]{0,19}$";
+            var regexCheck = Regex.IsMatch(obj.Account.UserName, pattern);
+            if (!regexCheck)
+            { ModelState.AddModelError("Account.UserName",
+                "Логин должен соответствовать латинским маленьким буквам и быть не длинее 19 символов"); }
+
+            var isTariffExist = await _dbContext.Tariffs
+                .AnyAsync(t => t.Id.Equals(tariffId));
+            if (!isTariffExist)
+            { ModelState.AddModelError("Tariff", "Выбранного тарифа не существует"); }
 
             var isRoleExist = await _dbContext.Roles
-                .AnyAsync(r => r.Id.Equals(roleId));
+                .AnyAsync(r => r.Name.Equals(roleName));
             if(!isRoleExist)
-            { ModelState.AddModelError("", "Такой роли не существует"); }
-
-            var isAccLoginExist = await _dbContext.Users
-                .AnyAsync(u => u.UserName.Equals(obj.Account.UserName));
-            if (isAccLoginExist)
-            { ModelState.AddModelError("Account.UserName", "Такой логин уже существует"); }
-
-            var isAccEmailExist = await _dbContext.Users
-                .AnyAsync(u => u.Email.Equals(obj.Account.Email));
-            if (isAccEmailExist)
-            { ModelState.AddModelError("Account.Email", "Такой электронный адрес уже зарегестрирован"); }
+            { ModelState.AddModelError("", "Выбранной роли не существует"); }
         }
     }
 }

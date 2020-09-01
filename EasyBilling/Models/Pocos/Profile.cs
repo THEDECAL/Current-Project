@@ -39,7 +39,8 @@ namespace EasyBilling.Models.Pocos
 
         [DisplayName("Тариф*")]
         [Required]
-        public Tariff Tarrif { get => _tariff ?? new Tariff(); set => _tariff = value; }
+        //[Remote(action: "CheckTariff", controller: "Users", ErrorMessage = "Выбранный тариф не существует")]
+        public Tariff Tariff { get => _tariff ?? new Tariff(); set => _tariff = value; }
 
         [DisplayName("Дата начала использования тарифа")]
         [Required]

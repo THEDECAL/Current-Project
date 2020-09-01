@@ -147,10 +147,12 @@ namespace EasyBilling.Controllers
         public async Task ServerSideValidation(Device obj)
         {
             TryValidateModel(obj);
+
             var checkType = await _dbContext.DeviceTypes
                 .AnyAsync(t => t.Name.Equals(obj.Type.Name));
             if (!checkType)
             { ModelState.AddModelError("Type", "Выбранный тип устройства не существует"); }
+
             var checkState = await _dbContext.DeviceStates
                 .AnyAsync(t => t.Name.Equals(obj.State.Name));
             if (!checkState)

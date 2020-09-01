@@ -123,9 +123,19 @@ namespace EasyBilling.Controllers
         public async Task ServerSideValidation(Tariff obj)
         {
             TryValidateModel(obj);
-            if (!ActionName.Equals(nameof(Update))) {
-                var tariffExist = await _dbContext.Tariffs.AnyAsync(t => t.Name.Equals(obj.Name));
-                if (tariffExist)
+
+            var isTariffExist = await _dbContext.Tariffs
+                .AnyAsync(t => t.Name.Equals(obj.Name));
+            if (ActionName.Equals(nameof(Create)))
+            {
+                if (isTariffExist)
+                { ModelState.AddModelError("Name", "Такое название тарифа уже существует, выберите другое"); }
+            }
+            else
+            {
+                var tariffExisting = await _dbContext.Tariffs
+                    .FirstOrDefaultAsync(t => t.Id.Equals(obj.Id));
+                if(!tariffExisting.Name.Equals(obj.Name) && isTariffExist)
                 { ModelState.AddModelError("Name", "Такое название тарифа уже существует, выберите другое"); }
             }
         }
