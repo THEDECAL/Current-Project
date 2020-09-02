@@ -19,8 +19,6 @@ namespace EasyBilling.Data
         public DbSet<Tariff> Tariffs { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<AccessRight> AccessRights { get; set; }
-        public DbSet<CashOutlay> CashOutlays { get; set; }
-        public DbSet<ApiKey> ApiKeys { get; set; }
         public DbSet<EventLog> EventLogs { get; set; }
 
         public BillingDbContext(DbContextOptions<BillingDbContext> options)

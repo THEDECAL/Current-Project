@@ -1,0 +1,24 @@
+﻿@{
+    int counter = 1;
+    @foreach (Dictionary<string, string> row in await Model.GetDataDicAsync())
+    {
+        <tr>
+            <td class="align-middle">@counter</td>
+            @foreach (var field in row)
+            {
+                @if (!field.Key.Equals("Id"))
+                {
+                    <td class="align-middle">@field.Value</td>
+                }
+            }
+
+            <td class="p-0 m-0 align-middle">
+                <a class='btn btn-info btn-sm btn-raised' href='/Cassa/AddUpdateForm/@row["Id"]'>
+                    Внести оплату
+                    @*<img src="/images/delete-icon.svg" />*@
+                </a>
+            </td>
+        </tr>
+        counter++;
+    }
+}

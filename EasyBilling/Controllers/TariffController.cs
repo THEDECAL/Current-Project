@@ -92,9 +92,12 @@ namespace EasyBilling.Controllers
             await ServerSideValidation(obj);
             if (ModelState.IsValid)
             {
+                var objExisting = await _dbContext.Tariffs
+                    .FirstOrDefaultAsync(t => t.Id.Equals(obj.Id));
+
                 await Task.Run(() =>
                 {
-                    _dbContext.Tariffs.Update(obj);
+                    _dbContext.Entry(objExisting).CurrentValues.SetValues(obj);
                     _dbContext.SaveChanges();
                 });
 

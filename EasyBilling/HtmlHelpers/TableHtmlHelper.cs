@@ -174,7 +174,7 @@ namespace EasyBilling.HtmlHelpers
         /// Получить Html код панели поиска, добавления...
         /// </summary>
         /// <returns></returns>
-        public async Task<HtmlString> GetControlPanelAsync()
+        public async Task<HtmlString> GetControlPanelAsync(bool isShowBtnAdd = true)
         {
             return await Task.Run(async () =>
             {
@@ -183,11 +183,14 @@ namespace EasyBilling.HtmlHelpers
                 form.Attributes.Add("method", "get");
                 form.Attributes.Add("style", "width: 1000px; margin: auto; margin-bottom: 10px;");
 
-                TagBuilder a = new TagBuilder("a");
-                a.AddCssClass("btn btn-raised btn-success mt-5 mr-3");
-                a.Attributes.Add("href", $"/{_data.ControllerName}/AddUpdateForm");
-                a.InnerHtml.Append("Добавить");
-                form.InnerHtml.AppendHtml(a);
+                if (isShowBtnAdd)
+                {
+                    TagBuilder a = new TagBuilder("a");
+                    a.AddCssClass("btn btn-raised btn-success mt-5 mr-3");
+                    a.Attributes.Add("href", $"/{_data.ControllerName}/AddUpdateForm");
+                    a.InnerHtml.Append("Добавить");
+                    form.InnerHtml.AppendHtml(a);
+                }
 
                 TagBuilder div = new TagBuilder("div");
                 div.AddCssClass("form-group");
@@ -226,6 +229,6 @@ namespace EasyBilling.HtmlHelpers
             });
         }
         private string GetHref(string sort, SortType sortType, int page, int pageSize)
-            => $"/{_type.Name}s?sort={sort}&sortype={(int)sortType}&page={page}&pageSize={pageSize}&search={_data.SearchRequest}";
+            => $"/{_data.ControllerName}?sort={sort}&sortype={(int)sortType}&page={page}&pageSize={pageSize}&search={_data.SearchRequest}";
     }
 }

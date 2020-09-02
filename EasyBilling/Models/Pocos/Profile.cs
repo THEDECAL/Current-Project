@@ -33,7 +33,7 @@ namespace EasyBilling.Models.Pocos
         [Required]
         public string Address { get; set; }
 
-        [DisplayName("Сумма денег")]
+        [DisplayName("Счёт")]
         [Required]
         public double AmountOfCash { get; set; } = 0;
 
@@ -72,5 +72,8 @@ namespace EasyBilling.Models.Pocos
 
         [DisplayName("Комментарий")]
         public string Comment { get; set; }
+
+        public override string ToString()
+            => $"{this.FirstName} {this.SecondName} {this.Patronymic}";
     }
 }

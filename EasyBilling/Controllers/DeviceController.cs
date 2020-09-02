@@ -86,6 +86,7 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Device obj)
         {
             await ServerSideValidation(obj);
@@ -106,6 +107,7 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(Device obj)
         {
             await ServerSideValidation(obj);
@@ -129,6 +131,7 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int? id = null)
         {
             var obj = await _dbContext.Devices.FindAsync(id);

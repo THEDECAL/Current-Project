@@ -98,6 +98,7 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Profile obj, string roleName, int tariffId)
         {
             await ServerSideValidation(obj, roleName, tariffId);
@@ -123,13 +124,17 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(Profile obj, string roleName, int tariffId)
         {
             await ServerSideValidation(obj, roleName, tariffId);
             if (ModelState.IsValid)
             {
-                obj.Account = await _dbContext.Users
+                var accountExisting = await _dbContext.Users
                     .FirstOrDefaultAsync(u => u.Id.Equals(obj.Account.Id));
+                accountExisting.UserName = obj.Account.UserName;
+                accountExisting.Email = obj.Account.Email;
+                obj.Account = accountExisting;
                 obj.Tariff = await _dbContext.Tariffs
                     .FirstOrDefaultAsync(t => t.Id.Equals(tariffId));
 
@@ -151,6 +156,7 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int? id = null)
         {
             var profile = await _dbContext.Profiles
@@ -190,7 +196,7 @@ namespace EasyBilling.Controllers
             else
             {
                 var accExisting = await _dbContext.Users
-                    .FirstOrDefaultAsync(u => u.UserName.Equals(obj.Account.Id));
+                    .FirstOrDefaultAsync(u => u.Id.Equals(obj.Account.Id));
                 if (accExisting != null)
                 {
                     if (!accExisting.UserName.Equals(obj.Account.UserName) && isUserNameExist)
@@ -198,6 +204,7 @@ namespace EasyBilling.Controllers
                     if (!accExisting.Email.Equals(obj.Account.Email) && isEmailExist)
                     { ModelState.AddModelError("Account.Email", "Введённый почтовый адрес уже сущесвует, выберите другой"); }
                 }
+                else
                 { ModelState.AddModelError("", "Аккаунт профиля не найден"); }
             }
 

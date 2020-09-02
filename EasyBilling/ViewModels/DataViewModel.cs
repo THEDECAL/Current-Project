@@ -89,8 +89,12 @@ namespace EasyBilling.ViewModels
         private void GetData()
         {
             var searchFunc = new Func<T, bool>((o) =>
-                    o.GetType().GetProperties().Any(p => p.GetValue(o, null)
-                        .ToString().ToLower().Contains(SearchRequest.ToLower())));
+                    o.GetType().GetProperties().Any(p => {
+                        var value = p.GetValue(o, null);
+                        return (value == null)
+                            ? false
+                            : value.ToString().ToLower().Contains(SearchRequest.ToLower());
+                        }));
             try
             {
                 IQueryable<T> queryQ = _dbSet.AsQueryable();
