@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,9 +13,11 @@ namespace EasyBilling.Services
 {
     public class DbInitializer
     {
+        private readonly Random _random;
         private readonly BillingDbContext _dbContext;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<Models.Pocos.Role> _roleManager;
+        private const string _password = @"AQeT.5*gehWqeAh";
 
         public DbInitializer(IServiceScopeFactory scopeFactory)
         {
@@ -24,6 +27,7 @@ namespace EasyBilling.Services
             _userManager = sp.GetRequiredService<UserManager<IdentityUser>>();
             _roleManager = sp.GetRequiredService<RoleManager<Models.Pocos.Role>>();
             _dbContext = sp.GetRequiredService<BillingDbContext>();
+            _random = new Random();
         }
         public async Task InitializeAsync()
         {
@@ -33,6 +37,7 @@ namespace EasyBilling.Services
             await TariffsInitAsync();
             await RolesInitAsync();
             await AccessRightsInitAsync();
+            await DevicesInitAsync();
             await UsersInitAsync();
             await ClientsInitAsync();
         }
@@ -45,14 +50,14 @@ namespace EasyBilling.Services
         {
             if (_userManager.Users.Count() == 0)
             {
-                IdentityUser admin = null;
                 Profile adminProfile = new Profile()
                 {
                     FirstName = "Администратор",
                     SecondName = "Биллинга",
                     Address = "Пушкина 9-15",
-                    Tariff = await _dbContext.Tariffs.FirstOrDefaultAsync(),
-                    Account = admin = new IdentityUser()
+                    Tariff = await _dbContext.Tariffs
+                        .FirstOrDefaultAsync(t => t.Name.Equals("Коллегиальный")),
+                    Account = new IdentityUser()
                     {
                         UserName = "admin",
                         Email = "admin@localhost",
@@ -61,20 +66,63 @@ namespace EasyBilling.Services
                         LockoutEnabled = true
                     }
                 };
-
-                var result = await _userManager.CreateAsync(admin, "AQeT.5*gehWqeAh");
+                var result = await _userManager.CreateAsync(adminProfile.Account, _password);
                 if (result.Succeeded)
                 {
                     var adminRole = Helpers.Role.admin.ToString();
-                    await _userManager.AddToRoleAsync(admin, adminRole);
+                    await _userManager.AddToRoleAsync(adminProfile.Account, adminRole);
                     await _dbContext.Profiles.AddAsync(adminProfile);
                     await _dbContext.SaveChangesAsync();
                 }
-                else
+
+                Profile operatorProfile = new Profile()
                 {
-                    Console.WriteLine($"Роль {adminProfile}" +
-                        $"не связалась с {admin.UserName}," + 
-                        "произошла ошибка.");
+                    FirstName = "Оператор",
+                    SecondName = "Биллинга",
+                    Address = "Пушкина 9-15",
+                    Tariff = await _dbContext.Tariffs
+                        .FirstOrDefaultAsync(t => t.Name.Equals("Коллегиальный")),
+                    Account = new IdentityUser()
+                    {
+                        UserName = "operator",
+                        Email = "operator@localhost",
+                        PhoneNumber = "099-999-99-99",
+                        EmailConfirmed = true,
+                        LockoutEnabled = true
+                    }
+                };
+                result = await _userManager.CreateAsync(operatorProfile.Account, _password);
+                if (result.Succeeded)
+                {
+                    var operatorRole = Helpers.Role.@operator.ToString();
+                    await _userManager.AddToRoleAsync(operatorProfile.Account, operatorRole);
+                    await _dbContext.Profiles.AddAsync(operatorProfile);
+                    await _dbContext.SaveChangesAsync();
+                }
+
+                Profile casherProfile = new Profile()
+                {
+                    FirstName = "Кассир",
+                    SecondName = "Биллинга",
+                    Address = "Пушкина 9-15",
+                    Tariff = await _dbContext.Tariffs
+                        .FirstOrDefaultAsync(t => t.Name.Equals("Коллегиальный")),
+                    Account = new IdentityUser()
+                    {
+                        UserName = "casher",
+                        Email = "casher@localhost",
+                        PhoneNumber = "099-999-99-99",
+                        EmailConfirmed = true,
+                        LockoutEnabled = true
+                    }
+                };
+                result = await _userManager.CreateAsync(casherProfile.Account, _password);
+                if (result.Succeeded)
+                {
+                    var casherRole = Helpers.Role.casher.ToString();
+                    await _userManager.AddToRoleAsync(casherProfile.Account, casherRole);
+                    await _dbContext.Profiles.AddAsync(casherProfile);
+                    await _dbContext.SaveChangesAsync();
                 }
             }
         }
@@ -112,69 +160,72 @@ namespace EasyBilling.Services
                 const string cassaCtrl = "Cassa";
                 const string usersCtrl = "Users";
                 const string clientCtrl = "Client";
-                const string deviceCtrl = "Device";
-                const string accessRightsCtrl = "AccessRights";
-                const string tariffCtrl = "Tariff";
-                const string apiKeyCtrl = "APIKey";
-                const string eventCtrl = "Event";
-                const string financialOperationsCtrl = "FinancialOperations";
+                //const string deviceCtrl = "Device";
+                //const string accessRightsCtrl = "AccessRights";
+                //const string tariffCtrl = "Tariff";
+                //const string eventCtrl = "Event";
+                //const string financialOperationsCtrl = "FinancialOperations";
                 #region admin
                 var tmp = Helpers.Role.admin.ToString();
                 var adminRole = await  _roleManager.FindByNameAsync(tmp);
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
+
+                foreach (var item in _dbContext.ControllersNames.ToArray())
                 {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(cassaCtrl)),
-                    IsAvailable = true,
-                    Role = adminRole
-                });
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(usersCtrl)),
-                    IsAvailable = true,
-                    Role = adminRole
-                });
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
-                    IsAvailable = true,
-                    Role = adminRole
-                });
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(deviceCtrl)),
-                    IsAvailable = true,
-                    Role = adminRole
-                });
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(accessRightsCtrl)),
-                    IsAvailable = true,
-                    Role = adminRole
-                });
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(tariffCtrl)),
-                    IsAvailable = true,
-                    Role = adminRole
-                });
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(apiKeyCtrl)),
-                    IsAvailable = true,
-                    Role = adminRole
-                });
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(eventCtrl)),
-                    IsAvailable = true,
-                    Role = adminRole
-                });
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(financialOperationsCtrl)),
-                    IsAvailable = true,
-                    Role = adminRole
-                });
+                    await _dbContext.AccessRights.AddAsync(new AccessRight()
+                    {
+                        Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(item.Name)),
+                        IsAvailable = true,
+                        Role = adminRole
+                    });
+                }
+                //await _dbContext.AccessRights.AddAsync(new AccessRight()
+                //{
+                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(usersCtrl)),
+                //    IsAvailable = true,
+                //    Role = adminRole
+                //});
+                //await _dbContext.AccessRights.AddAsync(new AccessRight()
+                //{
+                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
+                //    IsAvailable = true,
+                //    Role = adminRole
+                //});
+                //await _dbContext.AccessRights.AddAsync(new AccessRight()
+                //{
+                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(deviceCtrl)),
+                //    IsAvailable = true,
+                //    Role = adminRole
+                //});
+                //await _dbContext.AccessRights.AddAsync(new AccessRight()
+                //{
+                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(accessRightsCtrl)),
+                //    IsAvailable = true,
+                //    Role = adminRole
+                //});
+                //await _dbContext.AccessRights.AddAsync(new AccessRight()
+                //{
+                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(tariffCtrl)),
+                //    IsAvailable = true,
+                //    Role = adminRole
+                //});
+                //await _dbContext.AccessRights.AddAsync(new AccessRight()
+                //{
+                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(apiKeyCtrl)),
+                //    IsAvailable = true,
+                //    Role = adminRole
+                //});
+                //await _dbContext.AccessRights.AddAsync(new AccessRight()
+                //{
+                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(eventCtrl)),
+                //    IsAvailable = true,
+                //    Role = adminRole
+                //});
+                //await _dbContext.AccessRights.AddAsync(new AccessRight()
+                //{
+                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(financialOperationsCtrl)),
+                //    IsAvailable = true,
+                //    Role = adminRole
+                //});
                 #endregion
                 #region operator
                 var operatorRole = await _roleManager.FindByNameAsync(
@@ -280,6 +331,47 @@ namespace EasyBilling.Services
             }
         }
 
+        private async Task DevicesInitAsync()
+        {
+            if (_dbContext.Devices.Count() == 0)
+            {
+                var brandArray = new string[]
+                { "HP", "Dell", "Samsung", "Sony", "Philips", "Supermicro", "LG", "Acer", "Asus", "Lenovo"};
+
+                for (int i = 0; i < 100; i++)
+                {
+                    var model = new char[_random.Next(5, 10)]
+                        .Where(c =>
+                        {
+                            c = (char)_random.Next(65, 91);
+                            return true;
+                        }).ToArray();
+
+                    var sn = new char[_random.Next(10, 20)]
+                        .Where(c =>
+                        {
+                            c = (char)_random.Next(65, 91);
+                            return true;
+                        }).ToArray();
+
+                    var device = new Device()
+                    {
+                        Brand = brandArray[_random.Next(0, brandArray.Count())],
+                        Model = $"{model}-{_random.Next(100, 999)}",
+                        SerialNumber = sn.ToString(),
+                        State = _dbContext.DeviceStates
+                            .ElementAtOrDefault(_random.Next(0, _dbContext.DeviceStates.Count())),
+                        Type = _dbContext.DeviceTypes
+                            .ElementAtOrDefault(_random.Next(0, _dbContext.DeviceTypes.Count()))
+                    };
+
+                    await _dbContext.Devices.AddAsync(device);
+                }
+
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
         /// <summary>
         ///  Инициалищация тарифов
         /// </summary>
@@ -290,14 +382,45 @@ namespace EasyBilling.Services
             {
                 await _dbContext.Tariffs.AddAsync(new Tariff()
                 {
+                    Name = "Беспроводной",
+                    Price = 90.0,
+                    IsEnabled = true,
+                    AmounfOfDays = 28,
+                    AmountOfTraffic = 409600,
+                    BandwidthInput = 25000,
+                    BandwidthOutput = 25000
+                });
+                await _dbContext.Tariffs.AddAsync(new Tariff()
+                {
                     Name = "Стандартный",
                     Price = 90.0,
+                    IsEnabled = true,
+                    AmounfOfDays = 28,
+                    AmountOfTraffic = 0,
+                    BandwidthInput = 50000,
+                    BandwidthOutput = 50000
+                });
+                await _dbContext.Tariffs.AddAsync(new Tariff()
+                {
+                    Name = "Скоростной",
+                    Price = 150.0,
                     IsEnabled = true,
                     AmounfOfDays = 28,
                     AmountOfTraffic = 0,
                     BandwidthInput = 100000,
                     BandwidthOutput = 100000
                 });
+                await _dbContext.Tariffs.AddAsync(new Tariff()
+                {
+                    Name = "Коллегиальный",
+                    Price = 0,
+                    IsEnabled = true,
+                    AmounfOfDays = 0,
+                    AmountOfTraffic = 0,
+                    BandwidthInput = 100000,
+                    BandwidthOutput = 100000
+                });
+
                 await _dbContext.SaveChangesAsync();
             }
         }
@@ -308,7 +431,55 @@ namespace EasyBilling.Services
         /// <returns></returns>
         private async Task ClientsInitAsync()
         {
+            var streetsArray = new string[]
+                { "Харьковская", "Яворницкого", "Победы", "Донецкая", "Мира", "Соборная", "Центральная", "Тараса-Шевченко", "Петрова", "Лермонтова" };
+            var fnamesArray = new string[]
+                { "Игорь", "Николай", "Иван", "Рудик", "Анатолий", "Екатерина", "Светлана", "Пётр", "Григорий", "Елена", "Анна", "Ирина", "Василий", "Роман", "Сергей", "Никита" };
+            var snamesArray = new string[]
+                { "Щедренко", "Ивановко", "Выпренко", "Зоря", "Кальмуш", "Шпак", "Дыркач", "Соленко", "Головач", "Чёрный", "Косынко", "Лысенко", "Юдиненко", "Колаченко", "Строгач", "Карго", "Зинер", "Зиберт"};
 
+            var clientRole = Helpers.Role.client.ToString();
+
+            for (int i = 0; i < 10; i++)
+            {
+                await Task.Run(async () =>
+                {
+                    for (int j = 0; j < 1000; j++)
+                    {
+                        var email = new char[_random.Next(10, 15)]
+                            .Where(c =>
+                            {
+                                c = (char)_random.Next(65, 91);
+                                return true;
+                            }).ToArray();
+
+                        var profile = new Profile()
+                        {
+                            Account = new IdentityUser()
+                            {
+                                UserName = $"abon{(i + 1) * (j + 1)}",
+                                Email = email + "@gmail.com",
+                                PhoneNumber = "099-999-99-99",
+                                EmailConfirmed = true,
+                                LockoutEnabled = true
+                            },
+                            FirstName = fnamesArray[_random.Next(0, fnamesArray.Count())],
+                            SecondName = snamesArray[_random.Next(0, snamesArray.Count())],
+                            Address = $"{streetsArray[_random.Next(0, streetsArray.Count())]} {_random.Next(1, 100)}-{_random.Next(1, 100)}",
+                            Tariff = _dbContext.Tariffs.ElementAt(_random.Next(0, _dbContext.Tariffs.Count()))
+                        };
+
+                        var result = await _userManager.CreateAsync(profile.Account, _password);
+                        if (result.Succeeded)
+                        {
+                            _userManager.AddToRoleAsync(profile.Account, clientRole).Wait();
+                            _dbContext.Profiles.Add(profile);
+                        }
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+                });
+            }
         }
     }
 }
