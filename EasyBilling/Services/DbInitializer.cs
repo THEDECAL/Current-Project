@@ -427,7 +427,7 @@ namespace EasyBilling.Services
         /// <returns></returns>
         private async Task ClientsInitAsync()
         {
-            if (_dbContext.Profiles.Count() == 0)
+            if (_dbContext.Profiles.Count() == 3)
             {
                 var streetsArray = new string[]
                     { "Харьковская", "Яворницкого", "Победы", "Донецкая", "Мира", "Соборная", "Центральная", "Тараса-Шевченко", "Петрова", "Лермонтова" };
