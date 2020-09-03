@@ -46,7 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Client\" />
     <Folder Include="Views\Event\" />
     <Folder Include="wwwroot\lib\bootstrap-material-design\css\" />
   </ItemGroup>

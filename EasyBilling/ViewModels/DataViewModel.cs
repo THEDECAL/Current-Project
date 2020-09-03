@@ -24,6 +24,7 @@ namespace EasyBilling.ViewModels
         private Type _type;
         private int _page;
         private int _pageSize;
+        private Func<T, bool> _filter;
         public TableHtmlHelper<T> TableHelper { get; private set; }
         public string ControllerName { get; private set; }
         public string[] IncludeFields { get; private set; }
@@ -56,6 +57,7 @@ namespace EasyBilling.ViewModels
 
         public DataViewModel(IServiceScopeFactory scopeFactory,
             string controllerName,
+            Func<T, bool> filter = null,
             string[] includeFields = null,
             string[] excludeFields = null,
             string sortField = "Id",
@@ -66,11 +68,11 @@ namespace EasyBilling.ViewModels
         {
             var scope = scopeFactory.CreateScope();
             var sp = scope.ServiceProvider;
-
             var dbContext = sp.GetRequiredService<BillingDbContext>();
-            _dbSet = dbContext.Set<T>();
 
+            _dbSet = dbContext.Set<T>();
             _type = typeof(T);
+            _filter = filter;
             TableHelper = new TableHtmlHelper<T>(this);
             SearchRequest = (searchRequest == null )?"":searchRequest.ToLower();
             ControllerName = controllerName;
@@ -110,20 +112,16 @@ namespace EasyBilling.ViewModels
                         catch (Exception ex)
                         { Console.WriteLine(ex.StackTrace); }
                     }
-                    //if (!string.IsNullOrWhiteSpace(IncludeField1))
-                    //    queryQ = queryQ.Include(IncludeField1);
-                    //else if (!string.IsNullOrWhiteSpace(IncludeField2))
-                    //    queryQ = queryQ.Include(IncludeField2);
-                    //else if (!string.IsNullOrWhiteSpace(IncludeField1) &&
-                    //    !string.IsNullOrWhiteSpace(IncludeField2))
-                    //    queryQ = queryQ.Include(IncludeField1).Include(IncludeField2);
-
 
                     IEnumerable<T> queryE = null;
-                    //Выбераем поисковый запрос
+                    //Выбераем поисковый запрос и фильтруем
                     try
                     {
-                        queryE = queryQ.Where(searchFunc);
+                        if (_filter == null)
+                            queryE = queryQ.Where(searchFunc);
+                        else
+                            queryE = queryQ.Where(_filter).Where(searchFunc);
+
                         AmountPage = (int)Math.Ceiling(queryE.Count() / (double)PageSize);
                     }
                     catch (Exception ex)

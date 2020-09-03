@@ -46,8 +46,10 @@ namespace EasyBilling.Models.Pocos
         [DisplayName("Дата изменения")]
         public DateTime? DateOfUpdate { get; set; }
 
-        [DisplayName("Активность*")]
-        [Required(ErrorMessage = "Не указана активность")]
+        [DisplayName("Отображать у клиента")]
+        public bool IsPublish { get; set; } = true;
+
+        [DisplayName("Активность")]
         public bool IsEnabled { get; set; } = true;
 
         public override string ToString() => this.Name;

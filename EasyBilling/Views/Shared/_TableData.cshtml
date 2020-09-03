@@ -19,10 +19,10 @@
                         new { id = row["Id"] }, new { @class = "btn btn-raised btn-primary btn-sm m-1 px-2 py-1" })
                     <button class="btn btn-raised btn-danger btn-sm m-1 px-2 py-1" type="submit">Удалить</button>*@
                     <span class="btn-group-sm row" style="margin: 0 auto;">
-                        <a class="btn btn-primary bmd-btn-fab circle-btn" href="/@ViewData["ControllerName"]/AddUpdateForm/@row["Id"]">
+                        <a class="btn btn-primary bmd-btn-fab circle-btn" href="/@ViewData["ControllerName"]/AddUpdateForm/@row["Id"]" title="Изменить">
                             <img src="/images/edit-icon.svg" style="margin: 3px 0;">
                         </a>
-                        <button type="submit" class="btn btn-danger bmd-btn-fab circle-btn">
+                        <button type="submit" class="btn btn-danger bmd-btn-fab circle-btn" title="Удалить">
                             <img src="/images/delete-icon.svg" />
                         </button>
                     </span>

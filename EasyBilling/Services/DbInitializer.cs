@@ -331,6 +331,10 @@ namespace EasyBilling.Services
             }
         }
 
+        /// <summary>
+        /// Инициализация списка устройств
+        /// </summary>
+        /// <returns></returns>
         private async Task DevicesInitAsync()
         {
             if (_dbContext.Devices.Count() == 0)
@@ -340,29 +344,20 @@ namespace EasyBilling.Services
 
                 for (int i = 0; i < 100; i++)
                 {
-                    var model = new char[_random.Next(5, 10)]
-                        .Where(c =>
-                        {
-                            c = (char)_random.Next(65, 91);
-                            return true;
-                        }).ToArray();
-
-                    var sn = new char[_random.Next(10, 20)]
-                        .Where(c =>
-                        {
-                            c = (char)_random.Next(65, 91);
-                            return true;
-                        }).ToArray();
+                    var model = await GenerateHelper.GetStringAsync(_random.Next(5, 11));
+                    var sn = await GenerateHelper.GetStringAsync(_random.Next(10, 21), false, true, true);
+                    var state = await _dbContext.DeviceStates.OrderBy(o => Guid.NewGuid()).FirstOrDefaultAsync();
+                    var type = await _dbContext.DeviceTypes.OrderBy(o => Guid.NewGuid()).FirstOrDefaultAsync();
+                    var name = type.LocalizedName + ' ' + GenerateHelper.GetString(_random.Next(1, 5), false, false, true);
 
                     var device = new Device()
                     {
+                        Name = name,
                         Brand = brandArray[_random.Next(0, brandArray.Count())],
                         Model = $"{model}-{_random.Next(100, 999)}",
-                        SerialNumber = sn.ToString(),
-                        State = _dbContext.DeviceStates
-                            .ElementAtOrDefault(_random.Next(0, _dbContext.DeviceStates.Count())),
-                        Type = _dbContext.DeviceTypes
-                            .ElementAtOrDefault(_random.Next(0, _dbContext.DeviceTypes.Count()))
+                        SerialNumber = sn,
+                        State = state,
+                        Type = type
                     };
 
                     await _dbContext.Devices.AddAsync(device);
@@ -415,11 +410,12 @@ namespace EasyBilling.Services
                     Name = "Коллегиальный",
                     Price = 0,
                     IsEnabled = true,
+                    IsPublish = false,
                     AmounfOfDays = 0,
                     AmountOfTraffic = 0,
                     BandwidthInput = 100000,
                     BandwidthOutput = 100000
-                });
+                }); ;
 
                 await _dbContext.SaveChangesAsync();
             }
@@ -431,54 +427,58 @@ namespace EasyBilling.Services
         /// <returns></returns>
         private async Task ClientsInitAsync()
         {
-            var streetsArray = new string[]
-                { "Харьковская", "Яворницкого", "Победы", "Донецкая", "Мира", "Соборная", "Центральная", "Тараса-Шевченко", "Петрова", "Лермонтова" };
-            var fnamesArray = new string[]
-                { "Игорь", "Николай", "Иван", "Рудик", "Анатолий", "Екатерина", "Светлана", "Пётр", "Григорий", "Елена", "Анна", "Ирина", "Василий", "Роман", "Сергей", "Никита" };
-            var snamesArray = new string[]
-                { "Щедренко", "Ивановко", "Выпренко", "Зоря", "Кальмуш", "Шпак", "Дыркач", "Соленко", "Головач", "Чёрный", "Косынко", "Лысенко", "Юдиненко", "Колаченко", "Строгач", "Карго", "Зинер", "Зиберт"};
-
-            var clientRole = Helpers.Role.client.ToString();
-
-            for (int i = 0; i < 10; i++)
+            if (_dbContext.Profiles.Count() == 0)
             {
-                await Task.Run(async () =>
+                var streetsArray = new string[]
+                    { "Харьковская", "Яворницкого", "Победы", "Донецкая", "Мира", "Соборная", "Центральная", "Тараса-Шевченко", "Петрова", "Лермонтова" };
+                var fnamesArray = new string[]
+                    { "Игорь", "Николай", "Иван", "Рудик", "Анатолий", "Екатерина", "Светлана", "Пётр", "Григорий", "Елена", "Анна", "Ирина", "Василий", "Роман", "Сергей", "Никита" };
+                var snamesArray = new string[]
+                    { "Щедренко", "Ивановко", "Выпренко", "Зоря", "Кальмуш", "Шпак", "Дыркач", "Соленко", "Головач", "Чёрный", "Косынко", "Лысенко", "Юдиненко", "Колаченко", "Строгач", "Карго", "Зинер", "Зиберт"};
+
+                var clientRole = Helpers.Role.client.ToString();
+
+                for (int i = 0; i < 10; i++)
                 {
-                    for (int j = 0; j < 1000; j++)
+                    await Task.Run(async () =>
                     {
-                        var email = new char[_random.Next(10, 15)]
-                            .Where(c =>
-                            {
-                                c = (char)_random.Next(65, 91);
-                                return true;
-                            }).ToArray();
-
-                        var profile = new Profile()
+                        for (int j = 0; j < 100; j++)
                         {
-                            Account = new IdentityUser()
-                            {
-                                UserName = $"abon{(i + 1) * (j + 1)}",
-                                Email = email + "@gmail.com",
-                                PhoneNumber = "099-999-99-99",
-                                EmailConfirmed = true,
-                                LockoutEnabled = true
-                            },
-                            FirstName = fnamesArray[_random.Next(0, fnamesArray.Count())],
-                            SecondName = snamesArray[_random.Next(0, snamesArray.Count())],
-                            Address = $"{streetsArray[_random.Next(0, streetsArray.Count())]} {_random.Next(1, 100)}-{_random.Next(1, 100)}",
-                            Tariff = _dbContext.Tariffs.ElementAt(_random.Next(0, _dbContext.Tariffs.Count()))
-                        };
+                            var username = $"abon{(i + 1) * (j + 1)}";
+                            var email = await GenerateHelper.GetStringAsync(_random.Next(10, 16)) + "@gmail.com";
+                            var fname = fnamesArray[_random.Next(0, fnamesArray.Count())];
+                            var sname = snamesArray[_random.Next(0, snamesArray.Count())];
+                            var address = $"{streetsArray[_random.Next(0, streetsArray.Count())]} {_random.Next(1, 100)}-{_random.Next(1, 100)}";
+                            var tariff = await _dbContext.Tariffs.Where(t => t.IsPublish)
+                                .OrderBy(o => Guid.NewGuid()).FirstOrDefaultAsync();
 
-                        var result = await _userManager.CreateAsync(profile.Account, _password);
-                        if (result.Succeeded)
-                        {
-                            _userManager.AddToRoleAsync(profile.Account, clientRole).Wait();
-                            _dbContext.Profiles.Add(profile);
+                            var profile = new Profile()
+                            {
+                                Account = new IdentityUser()
+                                {
+                                    UserName = username,
+                                    Email = email,
+                                    PhoneNumber = "099-999-99-99",
+                                    EmailConfirmed = true,
+                                    LockoutEnabled = true
+                                },
+                                FirstName = fname,
+                                SecondName = sname,
+                                Address = address,
+                                Tariff = tariff
+                            };
+
+                            var result = await _userManager.CreateAsync(profile.Account, _password);
+                            if (result.Succeeded)
+                            {
+                                _userManager.AddToRoleAsync(profile.Account, clientRole).Wait();
+                                _dbContext.Profiles.Add(profile);
+                            }
                         }
-                    }
 
-                    await _dbContext.SaveChangesAsync();
-                });
+                        await _dbContext.SaveChangesAsync();
+                    });
+                }
             }
         }
     }
