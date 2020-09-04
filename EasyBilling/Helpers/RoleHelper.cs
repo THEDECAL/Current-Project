@@ -19,18 +19,19 @@ namespace EasyBilling.Helpers
     };
     static public class RoleHelper
     {
-        //static public string GetRoleLocalizedName(Role role) => _roleNames.ElementAt((int)role).Value;
-        //static public string GetRoleLocalizedName([NotNull] string role) => _roleNames.GetValueOrDefault(role);
-        //static public IdentityRole GetRole(Role role) =>
-        //    new IdentityRole(role.ToString()) { NormalizedName = role.ToString().ToUpper() };
-
-        static async public Task<Dictionary<string, string>> GetRolesAsync() =>
-            await Task.Run(() => new Dictionary<string, string>()
+        /// <summary>
+        /// Получение словаря ролей где key = Role,
+        /// value[0] = локализированное имя
+        /// value[1] = Контроллер по умолчанию
+        /// </summary>
+        /// <returns></returns>
+        static async public Task<Dictionary<string, string[]>> GetRolesAsync() =>
+            await Task.Run(() => new Dictionary<string, string[]>()
             {
-                { Role.admin.ToString(), "Администратор" },
-                { Role.@operator.ToString(), "Оператор" },
-                { Role.casher.ToString(), "Кассир" },
-                { Role.client.ToString(), "Клиент" }
+                { Role.admin.ToString(), new string[]{ "Администратор", "Users" } },
+                { Role.@operator.ToString(), new string[]{ "Оператор", "Users" } },
+                { Role.casher.ToString(), new string[]{ "Кассир", "Cassa" } },
+                { Role.client.ToString(), new string[]{ "Клиент", "Client" } }
             });
     }
 }

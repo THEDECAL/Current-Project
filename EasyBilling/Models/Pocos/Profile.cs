@@ -74,6 +74,6 @@ namespace EasyBilling.Models.Pocos
         public string Comment { get; set; }
 
         public override string ToString()
-            => $"{this.FirstName} {this.SecondName} {this.Patronymic}";
+            => $"{this.FirstName} {this.SecondName} {this.Patronymic} ({Account.UserName})";
     }
 }

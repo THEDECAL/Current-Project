@@ -18,7 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace EasyBilling.Controllers
 {
     [DisplayName("Устройства")]
-    public class DeviceController : CustomController, ICustomControllerCrud<Device>
+    public class DeviceController : CustomController
     {
         public DeviceController(BillingDbContext dbContext,
             RoleManager<Models.Pocos.Role> roleManager,
@@ -27,17 +27,13 @@ namespace EasyBilling.Controllers
 
         [HttpGet]
         [DisplayName("Список")]
-        public async override Task<IActionResult> Index(
-            string sort = "Id",
-            SortType sortType = SortType.ASC,
-            int page = 1,
-            int pageSize = 10,
-            string search = "")
+        public async override Task<IActionResult> Index(ControlPanelSettings settings = null)
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Device>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
+                    settings: settings,
                     includeFields: new string[]
                     {
                         nameof(Device.Type),
@@ -48,12 +44,7 @@ namespace EasyBilling.Controllers
                         nameof(Device.CustomDeviceField1),
                         nameof(Device.CustomDeviceField2),
                         nameof(Device.CustomDeviceField3),
-                    },
-                    sortType: sortType,
-                    sortField: sort,
-                    page: page,
-                    pageSize: pageSize,
-                    searchRequest: search
+                    }
                 );
 
                 return View("CustomIndex", model: dvm);

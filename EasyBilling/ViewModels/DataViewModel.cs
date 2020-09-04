@@ -1,5 +1,6 @@
 ﻿using EasyBilling.Data;
 using EasyBilling.HtmlHelpers;
+using EasyBilling.Models;
 using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,52 +20,53 @@ namespace EasyBilling.ViewModels
     public enum SortType { ASC, DESC }
     public class DataViewModel<T> where T : class
     {
-        const int MAX_PAGE_SIZE = 100;
         private readonly DbSet<T> _dbSet;
         private Type _type;
-        private int _page;
-        private int _pageSize;
+        //private int _page;
+        //private int _pageSize;
         private Func<T, bool> _filter;
         public TableHtmlHelper<T> TableHelper { get; private set; }
         public string ControllerName { get; private set; }
+        public ControlPanelSettings Settings { get; private set; }
         public string[] IncludeFields { get; private set; }
         public string[] ExcludeFields { get; private set; }
-        public string SortField { get; private set; }
-        public SortType SortType { get; private set; }
+        //public string SortField { get; private set; }
+        //public SortType SortType { get; private set; }
         public List<T> Data { get; private set; }
         public int AmountPage { get; private set; }
-        public string SearchRequest { get; private set; }
-        public int Page
-        {
-            get => _page;
-            private set
-            {
-                if (value > 0 && value <= AmountPage)
-                    _page = value;
-            }
-        }
-        public int PageSize
-        {
-            get => _pageSize;
-            private set
-            {
-                if (value <= MAX_PAGE_SIZE)
-                    _pageSize = value;
-            }
-        }
-        public bool IsHaveNextPage { get => (Page + 1 > AmountPage) ? false : true; }
-        public bool IsHavePreviousPage { get => (Page - 1 < 1) ? false : true; }
+        //public string SearchRequest { get; private set; }
+        //public int Page
+        //{
+        //    get => _page;
+        //    private set
+        //    {
+        //        if (value > 0 && value <= AmountPage)
+        //            _page = value;
+        //    }
+        //}
+        //public int PageSize
+        //{
+        //    get => _pageSize;
+        //    private set
+        //    {
+        //        if (value <= MAX_PAGE_SIZE)
+        //            _pageSize = value;
+        //    }
+        //}
+        public bool IsHaveNextPage { get => ( Settings.CurrentPage + 1 > AmountPage) ? false : true; }
+        public bool IsHavePreviousPage { get => ( Settings.CurrentPage - 1 < 1) ? false : true; }
 
         public DataViewModel(IServiceScopeFactory scopeFactory,
             string controllerName,
+            ControlPanelSettings settings,
             Func<T, bool> filter = null,
             string[] includeFields = null,
-            string[] excludeFields = null,
-            string sortField = "Id",
-            SortType sortType = SortType.ASC,
-            int page = 1,
-            int pageSize = 10,
-            string searchRequest = "")
+            string[] excludeFields = null)
+            //string sortField = "Id",
+            //SortType sortType = SortType.ASC,
+            //int page = 1,
+            //int pageSize = 10,
+            //string searchRequest = "")
         {
             var scope = scopeFactory.CreateScope();
             var sp = scope.ServiceProvider;
@@ -74,16 +76,21 @@ namespace EasyBilling.ViewModels
             _type = typeof(T);
             _filter = filter;
             TableHelper = new TableHtmlHelper<T>(this);
-            SearchRequest = (searchRequest == null )?"":searchRequest.ToLower();
             ControllerName = controllerName;
+            Settings = settings ?? new ControlPanelSettings();
             IncludeFields = includeFields ?? new string[0];
             ExcludeFields = excludeFields ?? new string[0];
-            SortField = sortField;
-            SortType = sortType;
-            PageSize = pageSize;
-            AmountPage = (int)Math.Ceiling(_dbSet.Count() / (double)PageSize);
+            //SearchRequest = (searchRequest == null )?"":searchRequest.ToLower();
+            //IncludeFields = includeFields ?? new string[0];
+            //ExcludeFields = excludeFields ?? new string[0];
+            //SortField = sortField;
+            //SortType = sortType;
+            //PageSize = pageSize;
+            AmountPage = (int)Math.Ceiling(_dbSet.Count() / (double)Settings.PageRowsCount);
+            Settings.CurrentPage = (Settings.CurrentPage > 0 && Settings.CurrentPage <= AmountPage)
+                ? Settings.CurrentPage : 1;
             Data = new List<T>();
-            Page = page;
+            //Page = page;
 
             GetData();
         }
@@ -95,7 +102,7 @@ namespace EasyBilling.ViewModels
                         var value = p.GetValue(o, null);
                         return (value == null)
                             ? false
-                            : value.ToString().ToLower().Contains(SearchRequest.ToLower());
+                            : value.ToString().ToLower().Contains(Settings.SearchText.ToLower());
                         }));
             try
             {
@@ -122,7 +129,7 @@ namespace EasyBilling.ViewModels
                         else
                             queryE = queryQ.Where(_filter).Where(searchFunc);
 
-                        AmountPage = (int)Math.Ceiling(queryE.Count() / (double)PageSize);
+                        AmountPage = (int)Math.Ceiling(queryE.Count() / (double)Settings.PageRowsCount);
                     }
                     catch (Exception ex)
                     { Console.WriteLine(ex.StackTrace); }
@@ -132,9 +139,9 @@ namespace EasyBilling.ViewModels
                     {
                         var prop = _type.GetProperties()
                             .FirstOrDefault(p => p.Name.ToLower()
-                            .Equals(SortField.ToLower()));
+                            .Equals(Settings.SortField.ToLower()));
 
-                        if (SortType == SortType.DESC)
+                        if (Settings.SortType == SortType.DESC)
                             queryE = queryE.OrderByDescending(p => prop.GetValue(p, null).ToString()).ToList();
                         else
                             queryE = queryE.OrderBy(p => prop.GetValue(p, null).ToString()).ToList();
@@ -145,7 +152,7 @@ namespace EasyBilling.ViewModels
                     //Выбераем данные для текущей страницы (пагинация)
                     try
                     {
-                        Data.AddRange(queryE.Skip((Page - 1) * PageSize).Take(PageSize).ToList());
+                        Data.AddRange(queryE.Skip((Settings.CurrentPage - 1) * Settings.PageRowsCount).Take(Settings.PageRowsCount).ToList());
                     }
                     catch (Exception ex)
                     { Console.WriteLine(ex.StackTrace); }

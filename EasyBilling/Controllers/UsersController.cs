@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using EasyBilling.Attributes;
 using EasyBilling.Data;
+using EasyBilling.Models;
 using EasyBilling.Models.Pocos;
 using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -32,17 +33,13 @@ namespace EasyBilling.Controllers
 
         [HttpGet]
         [DisplayName("Список")]
-        public async override Task<IActionResult> Index(
-            string sort = "Id",
-            SortType sortType = SortType.ASC,
-            int page = 1,
-            int pageSize = 10,
-            string search = "")
+        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Profile>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
+                    settings: settings,
                     includeFields: new string[]
                     {
                         nameof(Profile.Tariff),
@@ -60,12 +57,7 @@ namespace EasyBilling.Controllers
                         nameof(Profile.CustomProfileField1),
                         nameof(Profile.CustomProfileField2),
                         nameof(Profile.CustomProfileField3)
-                    },
-                    sortType: sortType,
-                    sortField: sort,
-                    page: page,
-                    pageSize: pageSize,
-                    searchRequest: search
+                    }
                 );
 
                 return View("CustomIndex", model: dvm);

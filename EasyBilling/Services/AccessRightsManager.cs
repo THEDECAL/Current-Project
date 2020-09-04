@@ -66,6 +66,14 @@ namespace EasyBilling.Services
             throw new ArgumentNullException();
         }
 
+        public async Task<Role> GetRoleAsync(string userName)
+        {
+            var roles = await GetRolesAsync(userName);
+            return await _dbContext.Roles
+                .Include(r => (r as Role).DefaultControllerName)
+                .FirstOrDefaultAsync(r => r.Name.Equals(roles.FirstOrDefault())) as Role;
+        }
+
         public async Task<AccessRight[]> GetRights([NotNull] string userName)
         {
             if (!string.IsNullOrWhiteSpace(userName))
@@ -137,9 +145,6 @@ namespace EasyBilling.Services
                             if (type.GetCustomAttribute(typeof(NoShowToMenuAttribute)) != null)
                             { continue; }
 
-                            //var dnAtt = type.GetCustomAttribute(
-                            //    typeof(DisplayNameAttribute)) as DisplayNameAttribute;
-                            // if (dnAtt != null)
                             menuItems.Add(item.Name, item.LocalizedName);
                         }
                         catch (Exception)

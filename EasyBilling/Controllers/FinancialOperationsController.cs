@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EasyBilling.Attributes;
 using EasyBilling.Data;
+using EasyBilling.Models;
 using EasyBilling.Models.Pocos;
 using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -25,27 +26,21 @@ namespace EasyBilling.Controllers
 
         [HttpGet]
         [DisplayName("Список")]
-        public async override Task<IActionResult> Index(
-            string sort = "Id",
-            SortType sortType = SortType.ASC,
-            int page = 1,
-            int pageSize = 10,
-            string search = "")
+        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Payment>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
+                    settings: settings,
                     includeFields: new string[]
                     {
                         nameof(Payment.SourceProfile),
-                        nameof(Payment.DestinationProfile)
-                    },
-                    sortType: sortType,
-                    sortField: sort,
-                    page: page,
-                    pageSize: pageSize,
-                    searchRequest: search
+                        nameof(Payment.DestinationProfile),
+                        nameof(Payment.Role),
+                        "SourceProfile.Account",
+                        "DestinationProfile.Account"
+                    }
                 );
 
                 return View("CustomIndex", model: dvm);

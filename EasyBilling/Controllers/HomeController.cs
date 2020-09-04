@@ -8,22 +8,31 @@ using System.ComponentModel;
 using EasyBilling.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
+using EasyBilling.Services;
+using EasyBilling.ViewModels;
 
 namespace EasyBilling.Controllers
 {
+    [Authorize]
+    [CheckAccessRights]
     [NoShowToMenu]
     [DisplayName("Главная")]
-    public class HomeController : CustomController
+    public class HomeController : Controller
     {
-        public HomeController(BillingDbContext dbContext,
-            RoleManager<Models.Pocos.Role> roleManager,
-            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
-        { }
-
-        public IActionResult Privacy()
+        private AccessRightsManager _rightsManager;
+        public HomeController(AccessRightsManager rightsManager)
         {
-            return View();
+            _rightsManager = rightsManager;
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+            => await Task.Run(async () =>
+            {
+                var role = await _rightsManager.GetRoleAsync(User.Identity.Name);
+                return RedirectToAction("Index", role.DefaultControllerName.Name);
+            });
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

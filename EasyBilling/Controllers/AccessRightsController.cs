@@ -21,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace EasyBilling.Controllers
 {
     [DisplayName("Права доступа")]
-    public class AccessRightsController : CustomController, ICustomControllerCrud<AccessRight>
+    public class AccessRightsController : CustomController
     {
         public AccessRightsController(BillingDbContext dbContext,
             RoleManager<Models.Pocos.Role> roleManager,
@@ -29,23 +29,14 @@ namespace EasyBilling.Controllers
         { }
         [HttpGet]
         [DisplayName("Список")]
-        public override async Task<IActionResult> Index(
-            string sort = "Id",
-            SortType sortType = SortType.ASC,
-            int page = 1,
-            int pageSize = 10,
-            string search = "")
+        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<AccessRight>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
-                    includeFields: new string[] { nameof(AccessRight.Role), nameof(AccessRight.Controller) },
-                    sortType: sortType,
-                    sortField: sort,
-                    page: page,
-                    pageSize: pageSize,
-                    searchRequest: search
+                    settings: settings,
+                    includeFields: new string[] { nameof(AccessRight.Role), nameof(AccessRight.Controller) }
                 );
 
                 return View("CustomIndex", model: dvm);

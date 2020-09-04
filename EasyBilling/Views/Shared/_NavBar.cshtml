@@ -12,9 +12,6 @@
             </button>
             <div class="navbar-collapse collapse">
                 <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark menu-item" asp-area="" asp-controller="Home" asp-action="Index">Главная</a>
-                    </li>
                     @{
                         var menuItems = await arm.GetMenuItemsByRole(User.Identity.Name);
                         foreach (var item in menuItems)

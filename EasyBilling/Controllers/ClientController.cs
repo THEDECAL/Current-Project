@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System;
+using EasyBilling.Models;
 
 namespace EasyBilling.Controllers
 {
@@ -23,12 +24,7 @@ namespace EasyBilling.Controllers
         { }
 
         [HttpGet]
-        public override async Task<IActionResult> Index(
-            string sort = "Id",
-            SortType sortType = SortType.ASC,
-            int page = 1,
-            int pageSize = 10,
-            string search = "")
+        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
         {
             var profile = await _dbContext.Profiles
                 .Include(p => p.Account)
@@ -41,26 +37,25 @@ namespace EasyBilling.Controllers
             {
                 var dvm = new DataViewModel<Payment>(_scopeFactory,
                     controllerName: ControllerName,
+                    settings: settings,
                     filter: filter,
                     includeFields: new string[]
                     {
-                        nameof(Payment.DestinationProfile),
-                        nameof(Payment.SourceProfile)
+                        nameof(Payment.SourceProfile),
+                        nameof(Payment.DestinationProfile)
                     },
-                    sortType: sortType,
-                    sortField: sort,
-                    page: page,
-                    pageSize: pageSize,
-                    searchRequest: search
+                    excludeFields: new string[]
+                    {
+                        nameof(Payment.DestinationProfile)
+                    }
                 );
 
-                return View("CustomIndex", model: ( dvm, profile ));
+                return View("CustomIndex", model: (dvm, profile));
             });
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChnageHoldState(bool state)
+        public async Task<IActionResult> ChnageHoldState()
         {
             var profile = await _dbContext.Profiles
                 .Include(p => p.Account)
@@ -70,13 +65,37 @@ namespace EasyBilling.Controllers
             {
                 if (profile != null)
                 {
-                    profile.IsHolded = state;
+                    profile.IsHolded = !profile.IsHolded;
 
                     _dbContext.Update(profile);
                     _dbContext.SaveChanges();
                 }
 
                 return Redirect("Index");
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeTariff(int? tariffId = null)
+        {
+            return await Task.Run(async () =>
+            {
+                var tariff = await _dbContext.Tariffs
+                    .FirstOrDefaultAsync(t => t.Id.Equals(tariffId));
+
+                if (tariff != null)
+                {
+                    var profile = await _dbContext.Profiles
+                        .Include(p => p.Account)
+                        .FirstOrDefaultAsync(p => p.Account.UserName.Equals(User.Identity.Name));
+
+                    profile.Tariff = tariff;
+
+                    _dbContext.Update(profile);
+                    await _dbContext.SaveChangesAsync();
+                }
+
+                return RedirectToAction("Index");
             });
         }
     }

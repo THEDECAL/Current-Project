@@ -6,7 +6,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using EasyBilling.Attributes;
 using EasyBilling.Data;
+using EasyBilling.Models;
 using EasyBilling.Models.Pocos;
+using EasyBilling.Services;
 using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,24 +21,25 @@ namespace EasyBilling.Controllers
     [DisplayName("Касса")]
     public class CassaController : CustomController
     {
+        private AccessRightsManager _rightsManager;
+
         public CassaController(BillingDbContext dbContext,
             RoleManager<Models.Pocos.Role> roleManager,
+            AccessRightsManager rightsManager,
             IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
-        { }
+        {
+            _rightsManager = rightsManager;
+        }
 
         [HttpGet]
         [DisplayName("Список")]
-        public async override Task<IActionResult> Index(
-            string sort = "Id",
-            SortType sortType = SortType.ASC,
-            int page = 1,
-            int pageSize = 10,
-            string search = "")
+        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Profile>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
+                    settings: settings,
                     includeFields: new string[]
                     {
                         nameof(Profile.Tariff),
@@ -53,12 +56,7 @@ namespace EasyBilling.Controllers
                         nameof(Profile.CustomProfileField1),
                         nameof(Profile.CustomProfileField2),
                         nameof(Profile.CustomProfileField3)
-                    },
-                    sortType: sortType,
-                    sortField: sort,
-                    page: page,
-                    pageSize: pageSize,
-                    searchRequest: search
+                    }
                 );
 
                 return View("CustomIndex", model: dvm);
@@ -99,6 +97,7 @@ namespace EasyBilling.Controllers
             obj.SourceProfile = await _dbContext.Profiles
                 .Include(p => p.Account)
                 .FirstOrDefaultAsync(p => p.Account.UserName.Equals(User.Identity.Name));
+            obj.Role = await _rightsManager.GetRoleAsync(User.Identity.Name);
 
             await ServerSideValidation(obj);
             if (ModelState.IsValid)
@@ -130,6 +129,9 @@ namespace EasyBilling.Controllers
 
             if (obj.DestinationProfile == null || obj.SourceProfile == null)
             { ModelState.AddModelError("", "Получатель или отправитель оплаты отсутствует"); }
+
+            if (obj.Role == null)
+            { ModelState.AddModelError("", "Не известна ваша роль"); }
         }
     }
 }

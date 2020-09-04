@@ -1,5 +1,6 @@
 ﻿using EasyBilling.Attributes;
 using EasyBilling.Data;
+using EasyBilling.Models;
 using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -33,18 +34,11 @@ namespace Microsoft.AspNetCore.Mvc
             _dbContext = dbContext;
             _roleManager = roleManager;
             _scopeFactory = scopeFactory;
-
-            //DisplayName = (GetType()
-            //    .GetCustomAttributes(typeof(DisplayNameAttribute), true)
-            //    .SingleOrDefault() as DisplayNameAttribute).DisplayName;
         }
+
         [HttpGet]
-        public virtual async Task<IActionResult> Index(
-            string sort = "Id",
-            SortType sortType = SortType.ASC,
-            int page = 1,
-            int pageSize = 10,
-            string search = "") => await Task.Run(() => View());
+        public virtual async Task<IActionResult> Index(ControlPanelSettings settings = null)
+            => await Task.Run(() => View());
 
         public override Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {

@@ -18,7 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace EasyBilling.Controllers
 {
     [DisplayName("Тарифы")]
-    public class TariffController : CustomController, ICustomControllerCrud<Tariff>
+    public class TariffController : CustomController
     {
         public TariffController(BillingDbContext dbContext,
          RoleManager<Models.Pocos.Role> roleManager,
@@ -27,22 +27,13 @@ namespace EasyBilling.Controllers
 
         [HttpGet]
         [DisplayName("Список")]
-        public override async Task<IActionResult> Index(
-            string sort = "Id",
-            SortType sortType = SortType.ASC,
-            int page = 1,
-            int pageSize = 10,
-            string search = "")
+        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Tariff>(_scopeFactory,
                     controllerName: ControllerName,
-                    sortType: sortType,
-                    sortField: sort,
-                    page: page,
-                    pageSize: pageSize,
-                    searchRequest: search
+                    settings: settings
                 );
 
                 return View("CustomIndex", model: dvm);

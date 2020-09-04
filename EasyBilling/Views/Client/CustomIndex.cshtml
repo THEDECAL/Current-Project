@@ -67,7 +67,7 @@
         </div>
 
         <div class="row justify-content-center">
-            <form class="mb-0" method="post" asp-action="ChangeHoldState" asp-antiforgery="true">
+            <form class="mb-0" method="post" asp-action="ChnageHoldState">
                 <button class="btn btn-raised @(Model.profile.IsHolded ? "btn-success" : "btn-info")" type="submit">@(Model.profile.IsHolded ? "Разморозить" : "Заморозить")</button>
             </form>
         </div>
@@ -80,15 +80,20 @@
 
             <div class="card">
                 <div id="heading@(item.Id)" class="card-header">
-                    <h5 class="m-0 row justify-content-between">
-                        <button data-toggle="collapse" data-target="#collapse@(item.Id)" aria-expanded="@isCurrTariff.ToString().ToLower()" aria-controls="collapseOne" class="btn collapsed">
-                            @item.Name&nbsp;
-                            @if (isCurrTariff)
-                            { <span class="badge badge-success">Ваш тариф</span> }
-                        </button>
-                        @if(!isCurrTariff)
-                        { <button class="btn btn-sm btn-info btn-raised">Сменить тариф</button> }
-                    </h5>
+                    <form method="post" asp-action="ChangeTariff">
+                        <h5 class="m-0 row justify-content-between">
+                            <button type="button" data-toggle="collapse" data-target="#collapse@(item.Id)" aria-expanded="@isCurrTariff.ToString().ToLower()" aria-controls="collapseOne" class="btn collapsed">
+                                @item.Name&nbsp;
+                                @if (isCurrTariff)
+                                {<span class="badge badge-success">Ваш тариф</span>}
+                            </button>
+                            @if (!isCurrTariff)
+                            {
+                                <input type="hidden" name="tariffId" value="@item.Id" />
+                                <button type="submit" class="btn btn-sm btn-info btn-raised">Сменить тариф</button>
+                            }
+                        </h5>
+                    </form>
                 </div>
 
                 <div id="collapse@(item.Id)" class="collapse" aria-labelledby="heading@(item.Id)" data-parent="#accordion" style="">
@@ -145,9 +150,25 @@
     @if (Model.dvm.Data.Count > 0)
     {
         <table class="table table-striped table-sm">
-            @await Model.dvm.TableHelper.GetTableHeadAsync()
+            @await Model.dvm.TableHelper.GetTableHeadAsync(false)
             <tbody>
-                @await Html.PartialAsync("_TableData")
+                @{
+                    int counter = 1;
+                    @foreach (Dictionary<string, string> row in await Model.dvm.GetDataDicAsync())
+                    {
+                        <tr>
+                            <td class="align-middle">@counter</td>
+                            @foreach (var field in row)
+                            {
+                                @if (!field.Key.Equals("Id"))
+                                {
+                                    <td class="align-middle">@field.Value</td>
+                                }
+                            }
+                        </tr>
+                        counter++;
+                    }
+                }
             </tbody>
         </table>
         @await Model.dvm.TableHelper.GetPaginationPanelAsync()

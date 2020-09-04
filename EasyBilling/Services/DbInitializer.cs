@@ -40,6 +40,7 @@ namespace EasyBilling.Services
             await DevicesInitAsync();
             await UsersInitAsync();
             await ClientsInitAsync();
+            await PaymentsInitAsync();
         }
 
         /// <summary>
@@ -136,13 +137,18 @@ namespace EasyBilling.Services
             if (_roleManager.Roles.Count() == 0)
             {
                 var dic = await RoleHelper.GetRolesAsync();
+
                 foreach (var item in dic)
                 {
+                    var cntrlName = await _dbContext.ControllersNames
+                        .FirstOrDefaultAsync(cn => cn.Name.Equals(item.Value[1]));
+
                     await _roleManager.CreateAsync(new Models.Pocos.Role()
                     {
                         Name = item.Key,
                         NormalizedName = item.Key.ToUpper(),
-                        LocalizedName = item.Value
+                        LocalizedName = item.Value[0],
+                        DefaultControllerName = cntrlName
                     });
                 }
                 await _dbContext.SaveChangesAsync();
@@ -160,11 +166,7 @@ namespace EasyBilling.Services
                 const string cassaCtrl = "Cassa";
                 const string usersCtrl = "Users";
                 const string clientCtrl = "Client";
-                //const string deviceCtrl = "Device";
-                //const string accessRightsCtrl = "AccessRights";
-                //const string tariffCtrl = "Tariff";
-                //const string eventCtrl = "Event";
-                //const string financialOperationsCtrl = "FinancialOperations";
+
                 #region admin
                 var tmp = Helpers.Role.admin.ToString();
                 var adminRole = await  _roleManager.FindByNameAsync(tmp);
@@ -173,59 +175,11 @@ namespace EasyBilling.Services
                 {
                     await _dbContext.AccessRights.AddAsync(new AccessRight()
                     {
-                        Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(item.Name)),
+                        Controller = item,
                         IsAvailable = true,
                         Role = adminRole
                     });
                 }
-                //await _dbContext.AccessRights.AddAsync(new AccessRight()
-                //{
-                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(usersCtrl)),
-                //    IsAvailable = true,
-                //    Role = adminRole
-                //});
-                //await _dbContext.AccessRights.AddAsync(new AccessRight()
-                //{
-                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
-                //    IsAvailable = true,
-                //    Role = adminRole
-                //});
-                //await _dbContext.AccessRights.AddAsync(new AccessRight()
-                //{
-                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(deviceCtrl)),
-                //    IsAvailable = true,
-                //    Role = adminRole
-                //});
-                //await _dbContext.AccessRights.AddAsync(new AccessRight()
-                //{
-                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(accessRightsCtrl)),
-                //    IsAvailable = true,
-                //    Role = adminRole
-                //});
-                //await _dbContext.AccessRights.AddAsync(new AccessRight()
-                //{
-                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(tariffCtrl)),
-                //    IsAvailable = true,
-                //    Role = adminRole
-                //});
-                //await _dbContext.AccessRights.AddAsync(new AccessRight()
-                //{
-                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(apiKeyCtrl)),
-                //    IsAvailable = true,
-                //    Role = adminRole
-                //});
-                //await _dbContext.AccessRights.AddAsync(new AccessRight()
-                //{
-                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(eventCtrl)),
-                //    IsAvailable = true,
-                //    Role = adminRole
-                //});
-                //await _dbContext.AccessRights.AddAsync(new AccessRight()
-                //{
-                //    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(financialOperationsCtrl)),
-                //    IsAvailable = true,
-                //    Role = adminRole
-                //});
                 #endregion
                 #region operator
                 var operatorRole = await _roleManager.FindByNameAsync(
@@ -255,10 +209,11 @@ namespace EasyBilling.Services
                 #endregion
                 #region client
                 var clientRole = await _roleManager.FindByNameAsync(
-                    Helpers.Role.casher.ToString());
+                    Helpers.Role.client.ToString());
                 _dbContext.AccessRights.Add(new AccessRight()
                 {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
+                    Controller = await _dbContext.ControllersNames
+                        .FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
                     IsAvailable = true,
                     Role = clientRole
                 });
@@ -479,6 +434,51 @@ namespace EasyBilling.Services
                         await _dbContext.SaveChangesAsync();
                     });
                 }
+            }
+        }
+
+        /// <summary>
+        /// Инициализация оплат
+        /// </summary>
+        /// <returns></returns>
+        private async Task PaymentsInitAsync()
+        {
+            if (_dbContext.Payments.Count() == 0)
+            {
+                var casherRole = await _roleManager.FindByNameAsync("casher");
+                var cahserUserRole = await _dbContext.UserRoles
+                    .FirstOrDefaultAsync(ur => ur.RoleId.Equals(casherRole.Id));
+                var casherProfile = await _dbContext.Profiles
+                    .Include(p => p.Account)
+                    .FirstOrDefaultAsync(p => p.Account.Id.Equals(cahserUserRole.UserId));
+
+                for (int i = 0; i < 200; i++)
+                {
+                    var profileToPaymet = await _dbContext.Profiles
+                        .Include(p => p.Tariff)
+                        .Where(p => !p.Tariff.Name.Equals("Коллегиальный"))
+                        .OrderBy(o => Guid.NewGuid())
+                        .FirstOrDefaultAsync();
+
+                    var payment = new Payment()
+                    {
+                        SourceProfile = casherProfile,
+                        DestinationProfile = profileToPaymet,
+                        Role = casherRole,
+                        Amount = profileToPaymet.Tariff.Price + 10,
+                        Comment = "Инициализатор"
+                    };
+
+                    profileToPaymet.AmountOfCash += payment.Amount;
+
+                    await Task.Run(() =>
+                    {
+                        _dbContext.Update(profileToPaymet);
+                        _dbContext.Add(payment);
+                    });
+                }
+
+                await _dbContext.SaveChangesAsync();
             }
         }
     }
