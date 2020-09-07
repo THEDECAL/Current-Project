@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using EasyBilling.Models;
+using EasyBilling.Models.Pocos;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -17,43 +20,38 @@ namespace EasyBilling.Helpers
         /// value = Локализированное имя контроллера
         /// </summary>
         /// <returns></returns>
-        static public async Task<Dictionary<string, string>> GetControllersNamesAsync()
-        {
-            return await Task.Run(() =>
-            {
-                return Assembly.GetAssembly(typeof(CustomController)).GetTypes()
-                .Where(type => type.IsSubclassOf(typeof(CustomController)) &&
-                    !type.Name.Equals("HomeController")).
-                Select(type =>
+        static public async Task<Dictionary<string, string>> GetCtrlsNamesAsync()
+            => await Task.Run(()
+                => Assembly.GetAssembly(typeof(CustomController)).GetTypes()
+                .Where(type => type.IsSubclassOf(typeof(CustomController)))
+                .Select(type =>
                 {
-                    var displayNamrAtt = type.GetCustomAttributes(typeof(DisplayNameAttribute))
-                                .FirstOrDefault() as DisplayNameAttribute;
-                    return KeyValuePair.Create(
-                        type.Name.Replace("Controller", ""), displayNamrAtt.DisplayName);
-                }).ToDictionary(t => t.Key, t => t.Value);
-            });
-        }
+                    var dNameAttr = type.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
+                    return (type.Name, dNameAttr ?? "");
+                }).ToDictionary(t => t.Item1, t => t.Item2));
 
         /// <summary>
-        /// Проверка на существование контроллера
+        /// Получение списка разрешений дейсвтий по  заданному имени контроллера
         /// </summary>
         /// <param name="cntrlName"></param>
         /// <returns></returns>
-        //static public async Task<bool> IsExistAsync([NotNull] string cntrlName)
-        //{
-        //    var names = await GetControllersNamesAsync();
-        //    return names.Keys.Any(k => k.Equals(cntrlName));
-        //}
+        static public async Task<ObservableCollection<ActionRight>> GetActionsRightsAsync(string cntrlName)
+            => await Task.Run(() =>
+            {
+                var className = $"EasyBilling.Controllers.{cntrlName}";
+                var type = Type.GetType(className);
+                var methods = type.GetMethods().Where(m =>
+                    m.GetCustomAttributes()
+                    .Any(a => a.GetType().Equals(typeof(HttpGetAttribute)) ||
+                        a.GetType().Equals(typeof(HttpPostAttribute))))
+                    .ToArray();
+                var actRghts = methods.Select(a =>
+                {
+                    var dNameAttr = a.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
+                    return new ActionRight(a.Name, dNameAttr ?? "", true);
+                }).ToList();
 
-        //static public async Task<string> GetLocalizedName([NotNull] string cntrlName)
-        //{
-        //    return await Task.Run(() =>
-        //    {
-        //        var type = Type.GetType("EasyBilling.Controllers." + cntrlName + "Controller");
-        //        var displayNamrAtt = type.GetCustomAttributes(typeof(DisplayNameAttribute))
-        //                    .FirstOrDefault() as DisplayNameAttribute;
-        //        return displayNamrAtt.DisplayName;
-        //    });
-        //}
+                return new ObservableCollection<ActionRight>(actRghts);
+            });
     }
 }

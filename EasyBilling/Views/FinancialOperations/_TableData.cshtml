@@ -15,7 +15,7 @@
             <td class="p-0 m-0 align-middle">
                 <form asp-antiforgery="true" method="post" asp-action="Delete" class="mb-0 form-inline">
                     <input type="hidden" value="@row["Id"]" name="id" />
-                    <button type="submit" class="btn btn-danger bmd-btn-fab circle-btn">
+                    <button type="submit" class="btn btn-danger bmd-btn-fab circle-btn" asp-action="Delete">
                         <img src="/images/delete-icon.svg" />
                     </button>
                 </form>

@@ -21,25 +21,19 @@ namespace EasyBilling.Controllers
     [DisplayName("Пользователи")]
     public class UsersController : CustomController
     {
-        private UserManager<IdentityUser> _userManager;
-
-        public UsersController(BillingDbContext dbContext,
-            RoleManager<Models.Pocos.Role> roleManager,
-            UserManager<IdentityUser> userManager,
-            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
+        public UsersController(BillingDbContext dbContext, RoleManager<Role> roleManager, UserManager<IdentityUser> userManager, IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
         {
-            _userManager = userManager;
         }
 
         [HttpGet]
         [DisplayName("Список")]
-        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
+        public override async Task<IActionResult> Index()
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Profile>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
-                    settings: settings,
+                    settings: Settings,
                     includeFields: new string[]
                     {
                         nameof(Profile.Tariff),
@@ -79,7 +73,7 @@ namespace EasyBilling.Controllers
                         .Include(o => o.Account)
                         .Include(o => o.Tariff)
                         .FirstOrDefaultAsync(o => o.Id.Equals(id));
-                    if (model == null)
+                        if (model == null)
                         model = new Profile();
                     else
                         ViewData["ActionPage"] = nameof(Update);
@@ -90,7 +84,6 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Profile obj, string roleName, int tariffId)
         {
             await ServerSideValidation(obj, roleName, tariffId);
@@ -116,7 +109,6 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(Profile obj, string roleName, int tariffId)
         {
             await ServerSideValidation(obj, roleName, tariffId);
@@ -136,8 +128,7 @@ namespace EasyBilling.Controllers
 
                 await Task.Run(() =>
                 {
-                    _dbContext.Users.Update(obj.Account);
-                    _dbContext.Profiles.Update(obj);
+                    _dbContext.Update(obj);
                     _dbContext.SaveChanges();
                 });
 
@@ -148,7 +139,6 @@ namespace EasyBilling.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int? id = null)
         {
             var profile = await _dbContext.Profiles

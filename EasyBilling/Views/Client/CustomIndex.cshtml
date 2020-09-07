@@ -67,8 +67,10 @@
         </div>
 
         <div class="row justify-content-center">
-            <form class="mb-0" method="post" asp-action="ChnageHoldState">
-                <button class="btn btn-raised @(Model.profile.IsHolded ? "btn-success" : "btn-info")" type="submit">@(Model.profile.IsHolded ? "Разморозить" : "Заморозить")</button>
+            <form class="mb-0" method="post" asp-action="ChnageHoldState" id="hold-state">
+                <button class="btn btn-raised @(Model.profile.IsHolded ? "btn-success" : "btn-info")" form="hold-state" type="submit">
+                    @(Model.profile.IsHolded ? "Разморозить" : "Заморозить")
+                </button>
             </form>
         </div>
     </div>
@@ -80,7 +82,7 @@
 
             <div class="card">
                 <div id="heading@(item.Id)" class="card-header">
-                    <form method="post" asp-action="ChangeTariff">
+                    <form method="post" asp-action="ChangeTariff" id="tariff">
                         <h5 class="m-0 row justify-content-between">
                             <button type="button" data-toggle="collapse" data-target="#collapse@(item.Id)" aria-expanded="@isCurrTariff.ToString().ToLower()" aria-controls="collapseOne" class="btn collapsed">
                                 @item.Name&nbsp;
@@ -90,7 +92,7 @@
                             @if (!isCurrTariff)
                             {
                                 <input type="hidden" name="tariffId" value="@item.Id" />
-                                <button type="submit" class="btn btn-sm btn-info btn-raised">Сменить тариф</button>
+                                <button type="submit" class="btn btn-sm btn-info btn-raised" form="tariff">Сменить тариф</button>
                             }
                         </h5>
                     </form>
@@ -103,7 +105,7 @@
                                 <div class="col">
                                     <div class="form-group mb-0">
                                         <label class="text-info" asp-for="profile.Tariff.Price"></label>
-                                        <input class="form-control" value="@(item.Price)" type="text" readonly style="font-size: 1.5rem; padding: 5px; text-align: center;"/>
+                                        <input class="form-control" value="@(item.Price)" type="text" readonly style="font-size: 1.5rem; padding: 5px; text-align: center;" />
                                     </div>
                                 </div>
                                 <div class="col">
@@ -128,11 +130,11 @@
                                 </div>
                             </div>
                         </div>
-                        @if(item.AmountOfTraffic != 0)
+                        @if (item.AmountOfTraffic != 0)
                         {
                             <div class="form-group mb-0">
                                 <label class="text-info" asp-for="profile.Tariff.AmountOfTraffic">Объём трафика</label>
-                                <input class="form-control bg-white" value="@trafficConvert(item.AmountOfTraffic)" type="text" readonly/>
+                                <input class="form-control bg-white" value="@trafficConvert(item.AmountOfTraffic)" type="text" readonly />
                             </div>
                         }
                     </div>

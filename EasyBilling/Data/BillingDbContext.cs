@@ -2,10 +2,15 @@
 using EasyBilling.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EasyBilling.Data
 {
@@ -24,7 +29,6 @@ namespace EasyBilling.Data
         public BillingDbContext(DbContextOptions<BillingDbContext> options)
             : base(options)
         {
-            //this.Database.EnsureDeleted();
             this.Database.EnsureCreated();
         }
     }

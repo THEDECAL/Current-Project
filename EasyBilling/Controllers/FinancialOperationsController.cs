@@ -19,20 +19,19 @@ namespace EasyBilling.Controllers
     [DisplayName("Финансовые операции")]
     public class FinancialOperationsController : CustomController
     {
-        public FinancialOperationsController(BillingDbContext dbContext,
-            RoleManager<Models.Pocos.Role> roleManager,
-            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
-        { }
+        public FinancialOperationsController(BillingDbContext dbContext, RoleManager<Role> roleManager, UserManager<IdentityUser> userManager, IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
+        {
+        }
 
         [HttpGet]
         [DisplayName("Список")]
-        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
+        public override async Task<IActionResult> Index()
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Payment>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
-                    settings: settings,
+                    settings: Settings,
                     includeFields: new string[]
                     {
                         nameof(Payment.SourceProfile),

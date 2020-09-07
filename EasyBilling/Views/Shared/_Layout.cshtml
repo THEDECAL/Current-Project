@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
+    <input type="hidden" value="@ViewData["ControllerName"]" id="ControllerName" />
+    "
     <div class="container">
         <partial name="_NavBar" />
 
@@ -31,7 +33,8 @@
     <script src="~/lib/bootstrap-material-design/assets/js/src/application.js"></script>
     <script src="~/lib/bootstrap-material-design/assets/js/ie10-viewport-bug-workaround.js"></script>
     <script src="~/lib/bootstrap-material-design/assets/js/ie-emulation-modes-warning.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/site.js"></script>
+    <script src="~/js/cpanel-settings.js"></script>
     <script>$(document).ready(function () { $('body').bootstrapMaterialDesign(); });</script>
     <partial name="_ValidationScriptsPartial" />
 </body>

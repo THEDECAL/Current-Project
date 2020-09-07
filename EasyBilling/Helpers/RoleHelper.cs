@@ -28,10 +28,10 @@ namespace EasyBilling.Helpers
         static async public Task<Dictionary<string, string[]>> GetRolesAsync() =>
             await Task.Run(() => new Dictionary<string, string[]>()
             {
-                { Role.admin.ToString(), new string[]{ "Администратор", "Users" } },
-                { Role.@operator.ToString(), new string[]{ "Оператор", "Users" } },
-                { Role.casher.ToString(), new string[]{ "Кассир", "Cassa" } },
-                { Role.client.ToString(), new string[]{ "Клиент", "Client" } }
+                { Role.admin.ToString(), new string[]{ "Администратор", "UsersController" } },
+                { Role.@operator.ToString(), new string[]{ "Оператор", "UsersController" } },
+                { Role.casher.ToString(), new string[]{ "Кассир", "CassaController" } },
+                { Role.client.ToString(), new string[]{ "Клиент", "ClientController" } }
             });
     }
 }

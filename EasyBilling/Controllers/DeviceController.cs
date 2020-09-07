@@ -20,20 +20,19 @@ namespace EasyBilling.Controllers
     [DisplayName("Устройства")]
     public class DeviceController : CustomController
     {
-        public DeviceController(BillingDbContext dbContext,
-            RoleManager<Models.Pocos.Role> roleManager,
-            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
-        { }
+        public DeviceController(BillingDbContext dbContext, RoleManager<Role> roleManager, UserManager<IdentityUser> userManager, IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
+        {
+        }
 
         [HttpGet]
         [DisplayName("Список")]
-        public async override Task<IActionResult> Index(ControlPanelSettings settings = null)
+        public async override Task<IActionResult> Index()
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Device>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
-                    settings: settings,
+                    settings: Settings,
                     includeFields: new string[]
                     {
                         nameof(Device.Type),

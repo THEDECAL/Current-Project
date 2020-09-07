@@ -23,19 +23,19 @@ namespace EasyBilling.Controllers
     [DisplayName("Права доступа")]
     public class AccessRightsController : CustomController
     {
-        public AccessRightsController(BillingDbContext dbContext,
-            RoleManager<Models.Pocos.Role> roleManager,
-            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
-        { }
+        public AccessRightsController(BillingDbContext dbContext, RoleManager<Models.Pocos.Role> roleManager, UserManager<IdentityUser> userManager, IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
+        {
+        }
+
         [HttpGet]
         [DisplayName("Список")]
-        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
+        public override async Task<IActionResult> Index()
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<AccessRight>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
-                    settings: settings,
+                    settings: Settings,
                     includeFields: new string[] { nameof(AccessRight.Role), nameof(AccessRight.Controller) }
                 );
 
@@ -68,6 +68,7 @@ namespace EasyBilling.Controllers
             });
         }
 
+        [DisplayName(("Создать"))]
         [HttpPost]
         public async Task<IActionResult> Create(AccessRight obj)
         {
@@ -86,6 +87,7 @@ namespace EasyBilling.Controllers
             return await AddUpdateForm();
         }
 
+        [DisplayName(("Изменить"))]
         [HttpPost]
         public async Task<IActionResult> Update(AccessRight obj)
         {
@@ -107,6 +109,7 @@ namespace EasyBilling.Controllers
             return await AddUpdateForm(obj.Id);
         }
 
+        [DisplayName(("Удалить"))]
         [HttpPost]
         public async Task<IActionResult> Delete(int? id)
         {

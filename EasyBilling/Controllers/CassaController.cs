@@ -24,22 +24,23 @@ namespace EasyBilling.Controllers
         private AccessRightsManager _rightsManager;
 
         public CassaController(BillingDbContext dbContext,
-            RoleManager<Models.Pocos.Role> roleManager,
+            RoleManager<Role> roleManager,
+            UserManager<IdentityUser> userManager,
             AccessRightsManager rightsManager,
-            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
+            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
         {
             _rightsManager = rightsManager;
         }
 
         [HttpGet]
         [DisplayName("Список")]
-        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
+        public override async Task<IActionResult> Index()
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Profile>(_scopeFactory,
                     controllerName: ViewData["ControllerName"] as string,
-                    settings: settings,
+                    settings: Settings,
                     includeFields: new string[]
                     {
                         nameof(Profile.Tariff),

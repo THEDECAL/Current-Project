@@ -18,13 +18,13 @@ namespace EasyBilling.Attributes
             //Приведение к типу для получения функций и действий контроллера
             var ad = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)
                 context.ActionDescriptor;
-            var controllerName = ad.ControllerName;
+            var controllerName = ad.ControllerName + "Controller";
 
             AccessRight accessRights = _arm.GetRights(context.HttpContext.User.Identity.Name,
                 controllerName).Result;
             //При каких условиях давать доступ
-            if (controllerName.Equals("Home") ||
-                accessRights != null && accessRights.IsAvailable)
+            if (controllerName.Equals("HomeController") ||
+                (accessRights != null && accessRights.IsAvailable))
                 return;
 
             context.HttpContext.Response.Redirect($"/Home/ErrorAccess");

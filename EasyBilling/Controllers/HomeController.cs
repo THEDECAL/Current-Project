@@ -15,8 +15,7 @@ using EasyBilling.ViewModels;
 namespace EasyBilling.Controllers
 {
     [Authorize]
-    [CheckAccessRights]
-    [NoShowToMenu]
+    [NoShowInMenu]
     [DisplayName("Главная")]
     public class HomeController : Controller
     {
@@ -31,7 +30,7 @@ namespace EasyBilling.Controllers
             => await Task.Run(async () =>
             {
                 var role = await _rightsManager.GetRoleAsync(User.Identity.Name);
-                return RedirectToAction("Index", role.DefaultControllerName.Name);
+                return RedirectToAction("Index", role.DefaultControllerName.Name.Replace("Controller",""));
             });
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

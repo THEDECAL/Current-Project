@@ -14,17 +14,16 @@ using EasyBilling.Models;
 
 namespace EasyBilling.Controllers
 {
-    [NoShowToMenu]
+    [NoShowInMenu]
     [DisplayName("Клиент")]
     public class ClientController : CustomController
     {
-        public ClientController(BillingDbContext dbContext,
-            RoleManager<Models.Pocos.Role> roleManager,
-            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
-        { }
+        public ClientController(BillingDbContext dbContext, RoleManager<Role> roleManager, UserManager<IdentityUser> userManager, IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
+        {
+        }
 
         [HttpGet]
-        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
+        public override async Task<IActionResult> Index()
         {
             var profile = await _dbContext.Profiles
                 .Include(p => p.Account)
@@ -37,7 +36,7 @@ namespace EasyBilling.Controllers
             {
                 var dvm = new DataViewModel<Payment>(_scopeFactory,
                     controllerName: ControllerName,
-                    settings: settings,
+                    settings: Settings,
                     filter: filter,
                     includeFields: new string[]
                     {

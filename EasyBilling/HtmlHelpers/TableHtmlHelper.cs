@@ -1,4 +1,5 @@
 ﻿using EasyBilling.Helpers;
+using EasyBilling.Models;
 using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -44,29 +45,30 @@ namespace EasyBilling.HtmlHelpers
                     {
                         var dnAtt = item.GetCustomAttribute(
                             typeof(DisplayNameAttribute)) as DisplayNameAttribute;
-                        TagBuilder th = new TagBuilder("th");
 
-                        TagBuilder a = new TagBuilder("a");
+                        TagBuilder th = new TagBuilder("th");
                         th.Attributes.Add("scope", "col");
-                        a.Attributes.Add("href",
-                            GetHref(sort: item.Name,
-                                    sortType: _data.Settings.SortType,
-                                    page: _data.Settings.CurrentPage,
-                                    pageSize: _data.Settings.PageRowsCount));
-                        a.AddCssClass("text-white");
-                        a.InnerHtml.Append((dnAtt != null) ? dnAtt.DisplayName : item.Name);
-                        th.InnerHtml.AppendHtml(a);
+
+                        TagBuilder aFieldLink = new TagBuilder("a");
+                        aFieldLink.AddCssClass("text-white btn btn-link btn-sm sort-field");
+                        aFieldLink.Attributes.Add("href",$"/{_data.ControllerName}");
+                        aFieldLink.Attributes.Add("value", item.Name);
+                        aFieldLink.InnerHtml.Append((dnAtt != null) ? dnAtt.DisplayName : item.Name);
+                        th.InnerHtml.AppendHtml(aFieldLink);
                         tr.InnerHtml.AppendHtml(th);
                     }
                 }
 
                 if (isShowActions)
                 {
-                    TagBuilder thActions = new TagBuilder("th");
-                    thActions.AddCssClass("text-white");
-                    thActions.Attributes.Add("scope", "col");
-                    thActions.InnerHtml.Append("Действия");
-                    tr.InnerHtml.AppendHtml(thActions);
+                    TagBuilder th = new TagBuilder("th");
+                    th.Attributes.Add("scope", "col");
+
+                    TagBuilder aAct = new TagBuilder("a");
+                    aAct.AddCssClass("text-white btn btn-link btn-sm sort-field");
+                    aAct.InnerHtml.Append("Действия");
+                    th.InnerHtml.AppendHtml(aAct);
+                    tr.InnerHtml.AppendHtml(th);
                 }
 
                 return await GetHtmlStringAsync(thead);
@@ -92,21 +94,22 @@ namespace EasyBilling.HtmlHelpers
                 if (!_data.IsHavePreviousPage)
                 {
                     TagBuilder span = new TagBuilder("span");
-                    span.Attributes.Add("class", "page-link");
+                    span.AddCssClass("page-link");
                     span.InnerHtml.Append(textPrevious);
                     liPrev.InnerHtml.AppendHtml(span);
                 }
                 else
                 {
-                    TagBuilder a = new TagBuilder("a");
-                    a.Attributes.Add("class", "page-link");
-                    a.Attributes.Add("href",
-                        GetHref(sort: _data.Settings.SortField,
-                            sortType: _data.Settings.SortType,
-                            page: _data.Settings.CurrentPage - 1,
-                            pageSize: _data.Settings.PageRowsCount));
-                    a.InnerHtml.Append(textPrevious);
-                    liPrev.InnerHtml.AppendHtml(a);
+                    TagBuilder aPrev = new TagBuilder("a");
+                    var valPrev = (_data.Settings.CurrentPage - 1).ToString();
+                    aPrev.AddCssClass("page-link page-control-panel");
+                    aPrev.Attributes.Add("href", $"/{_data.ControllerName}");
+                    //aPrev.Attributes.Add("type", "submit");
+                    //btnPrev.Attributes.Add("formaction", '/' + _data.ControllerName);
+                    //aPrev.Attributes.Add("name", "Pagination" + valPrev);
+                    aPrev.Attributes.Add("value", valPrev);
+                    aPrev.InnerHtml.Append(textPrevious);
+                    liPrev.InnerHtml.AppendHtml(aPrev);
                 }
 
                 TagBuilder liNext = new TagBuilder("li");
@@ -121,15 +124,16 @@ namespace EasyBilling.HtmlHelpers
                 }
                 else
                 {
-                    TagBuilder a = new TagBuilder("a");
-                    a.Attributes.Add("class", "page-link");
-                    a.Attributes.Add("href",
-                        GetHref(sort: _data.Settings.SortField,
-                            sortType: _data.Settings.SortType,
-                            page: _data.Settings.CurrentPage + 1,
-                            pageSize: _data.Settings.PageRowsCount));
-                    a.InnerHtml.Append(textNext);
-                    liNext.InnerHtml.AppendHtml(a);
+                    TagBuilder aNext = new TagBuilder("a");
+                    var valNext = (_data.Settings.CurrentPage + 1).ToString();
+                    aNext.AddCssClass("page-link page-control-panel");
+                    aNext.Attributes.Add("href",$"/{_data.ControllerName}");
+                    //aNext.Attributes.Add("type", "submit");
+                    //aNext.Attributes.Add("name", "Pagination" + valNext);
+                    //btnNext.Attributes.Add("formaction", '/' + _data.ControllerName);
+                    aNext.Attributes.Add("value", valNext);
+                    aNext.InnerHtml.Append(textNext);
+                    liNext.InnerHtml.AppendHtml(aNext);
                 }
 
                 ul.InnerHtml.AppendHtml(liPrev);
@@ -153,16 +157,14 @@ namespace EasyBilling.HtmlHelpers
                         }
                         else
                         {
-                            TagBuilder a = new TagBuilder("a");
-                            a.Attributes.Add("class", "page-link");
-                            a.Attributes.Add("href",
-                                GetHref(sort: _data.Settings.SortField,
-                                    sortType: _data.Settings.SortType,
-                                    page: pageNum,
-                                    pageSize: _data.Settings.CurrentPage));
-
-                            a.InnerHtml.Append(pageNum.ToString());
-                            li.InnerHtml.AppendHtml(a);
+                            TagBuilder aPageNum = new TagBuilder("a");
+                            aPageNum.AddCssClass("page-link page-control-panel");
+                            aPageNum.Attributes.Add("href", $"/{_data.ControllerName}");
+                            //btn.Attributes.Add("type", "submit");
+                            //btn.Attributes.Add("name", pageNum.ToString());
+                            aPageNum.Attributes.Add("value", pageNum.ToString());
+                            aPageNum.InnerHtml.Append(pageNum.ToString());
+                            li.InnerHtml.AppendHtml(aPageNum);
                         }
                     }
                     else break;
@@ -181,10 +183,10 @@ namespace EasyBilling.HtmlHelpers
         {
             return await Task.Run(async () =>
             {
-                TagBuilder form = new TagBuilder("form");
-                form.AddCssClass("form-inline row justify-content-center");
-                form.Attributes.Add("method", "get");
-                form.Attributes.Add("style", "width: 1000px; margin: auto; margin-bottom: 10px;");
+                TagBuilder div = new TagBuilder("div");
+                div.AddCssClass("form-inline row justify-content-center");
+                div.Attributes.Add("method", "get");
+                div.Attributes.Add("style", "width: 1000px; margin: auto; margin-bottom: 10px;");
 
                 if (isShowBtnAdd)
                 {
@@ -192,40 +194,40 @@ namespace EasyBilling.HtmlHelpers
                     a.AddCssClass("btn btn-raised btn-success mt-5 mr-3");
                     a.Attributes.Add("href", $"/{_data.ControllerName}/AddUpdateForm");
                     a.InnerHtml.Append("Добавить");
-                    form.InnerHtml.AppendHtml(a);
+                    div.InnerHtml.AppendHtml(a);
                 }
 
-                TagBuilder div = new TagBuilder("div");
-                div.AddCssClass("form-group");
-                form.InnerHtml.AppendHtml(div);
+                TagBuilder fgrp = new TagBuilder("div");
+                fgrp.AddCssClass("form-group");
+                div.InnerHtml.AppendHtml(fgrp);
 
                 TagBuilder input = new TagBuilder("input");
                 input.AddCssClass("form-control");
                 input.Attributes.Add("type", "text");
-                input.Attributes.Add("name", "SearchText");
+                input.Attributes.Add("id", nameof(ControlPanelSettings.SearchText));
                 input.Attributes.Add("placeholder", "Поиск по всем полям");
                 input.Attributes.Add("style", "width: 500px");
                 input.Attributes.Add("value", _data.Settings.SearchText);
-                div.InnerHtml.AppendHtml(input);
+                fgrp.InnerHtml.AppendHtml(input);
 
                 TagBuilder btn = new TagBuilder("button");
                 btn.AddCssClass("btn btn-primary mt-5");
                 btn.Attributes.Add("type", "submit");
+                btn.Attributes.Add("id", "StartSearch");
                 btn.InnerHtml.Append("Поиск");
-                form.InnerHtml.AppendHtml(btn);
+                div.InnerHtml.AppendHtml(btn);
 
-                form.InnerHtml.AppendFormat($"<input type='hidden' name='CurrentPage' value='{_data.Settings.CurrentPage}' />");
-                form.InnerHtml.AppendFormat($"<input type='hidden' name='PageRowsCount' value='{_data.Settings.PageRowsCount}' />");
-                form.InnerHtml.AppendFormat($"<input type='hidden' name='SortField' value='{_data.Settings.SortField}' />");
-                form.InnerHtml.AppendFormat($"<input type='hidden' name='SortType' value='{(int)_data.Settings.SortType}' />");
+                div.InnerHtml.AppendFormat($"<input type='hidden' id='{nameof(ControlPanelSettings.PageRowsCount)}' value='{_data.Settings.PageRowsCount}' />");
+                div.InnerHtml.AppendFormat($"<input type='hidden' id='{nameof(ControlPanelSettings.SortType)}' value='{(int)_data.Settings.SortType}' />");
 
-                return await GetHtmlStringAsync(form);
+                return await GetHtmlStringAsync(div);
             });
         }
         private async Task<HtmlString> GetHtmlStringAsync(TagBuilder builder)
         {
             return await Task.Run(() =>
             {
+                //builder.InnerHtml.AppendFormat(@"<script src='/js/cpanel_settings.js' type='text/javascript'></script>");
                 var writer = new StringWriter();
                 builder.WriteTo(writer, HtmlEncoder.Default);
                 return new HtmlString(writer.ToString());

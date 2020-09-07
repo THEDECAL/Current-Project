@@ -20,20 +20,19 @@ namespace EasyBilling.Controllers
     [DisplayName("Тарифы")]
     public class TariffController : CustomController
     {
-        public TariffController(BillingDbContext dbContext,
-         RoleManager<Models.Pocos.Role> roleManager,
-         IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
-        { }
+        public TariffController(BillingDbContext dbContext, RoleManager<Role> roleManager, UserManager<IdentityUser> userManager, IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
+        {
+        }
 
         [HttpGet]
         [DisplayName("Список")]
-        public override async Task<IActionResult> Index(ControlPanelSettings settings = null)
+        public override async Task<IActionResult> Index()
         {
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Tariff>(_scopeFactory,
                     controllerName: ControllerName,
-                    settings: settings
+                    settings: Settings
                 );
 
                 return View("CustomIndex", model: dvm);

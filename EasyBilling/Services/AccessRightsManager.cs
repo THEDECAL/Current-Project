@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace EasyBilling.Services
 {
-    public class AccessRightsManager //: IDisposable
+    public class AccessRightsManager
     {
         private readonly BillingDbContext _dbContext;
         private readonly UserManager<IdentityUser> _userManager;
@@ -51,6 +51,7 @@ namespace EasyBilling.Services
 
         private async Task<IList<string>> GetRolesAsync([NotNull] IdentityUser acc)
             => await _userManager.GetRolesAsync(acc);
+
         private async Task<IList<string>> GetRolesAsync([NotNull] string userName)
         {
             if (!string.IsNullOrWhiteSpace(userName))
@@ -139,13 +140,13 @@ namespace EasyBilling.Services
                     {
                         try
                         {
-                            string cntrlName = $"EasyBilling.Controllers.{item.Name}Controller";
+                            string cntrlName = $"EasyBilling.Controllers.{item.Name}";
                             var type = Type.GetType(cntrlName);
 
-                            if (type.GetCustomAttribute(typeof(NoShowToMenuAttribute)) != null)
+                            if (type.GetCustomAttribute(typeof(NoShowInMenuAttribute)) != null)
                             { continue; }
 
-                            menuItems.Add(item.Name, item.LocalizedName);
+                            menuItems.Add(item.Name.Replace("Controller", ""), item.LocalizedName);
                         }
                         catch (Exception)
                         { }

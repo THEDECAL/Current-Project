@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -163,63 +164,41 @@ namespace EasyBilling.Services
         {
             if (_dbContext.AccessRights.Count() == 0)
             {
-                const string cassaCtrl = "Cassa";
-                const string usersCtrl = "Users";
-                const string clientCtrl = "Client";
-
-                #region admin
-                var tmp = Helpers.Role.admin.ToString();
-                var adminRole = await  _roleManager.FindByNameAsync(tmp);
+                var adminRole = await _roleManager
+                    .FindByNameAsync(Helpers.Role.admin.ToString());
+                var operatorRole = await _roleManager
+                    .FindByNameAsync(Helpers.Role.@operator.ToString());
+                var casherRole = await _roleManager
+                    .FindByNameAsync(Helpers.Role.casher.ToString());
+                var clientRole = await _roleManager
+                    .FindByNameAsync(Helpers.Role.client.ToString());
 
                 foreach (var item in _dbContext.ControllersNames.ToArray())
                 {
-                    await _dbContext.AccessRights.AddAsync(new AccessRight()
-                    {
-                        Controller = item,
-                        IsAvailable = true,
-                        Role = adminRole
-                    });
-                }
-                #endregion
-                #region operator
-                var operatorRole = await _roleManager.FindByNameAsync(
-                    Helpers.Role.@operator.ToString());
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(usersCtrl)),
-                    IsAvailable = true,
-                    Role = operatorRole
-                });
-                await _dbContext.AccessRights.AddAsync(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
-                    IsAvailable = true,
-                    Role = operatorRole
-                });
-                #endregion
-                #region casher
-                var casherRole = await _roleManager.FindByNameAsync(
-                    Helpers.Role.casher.ToString());
-                _dbContext.AccessRights.Add(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames.FirstOrDefaultAsync(c => c.Name.Equals(cassaCtrl)),
-                    IsAvailable = true,
-                    Role = casherRole
-                });
-                #endregion
-                #region client
-                var clientRole = await _roleManager.FindByNameAsync(
-                    Helpers.Role.client.ToString());
-                _dbContext.AccessRights.Add(new AccessRight()
-                {
-                    Controller = await _dbContext.ControllersNames
-                        .FirstOrDefaultAsync(c => c.Name.Equals(clientCtrl)),
-                    IsAvailable = true,
-                    Role = clientRole
-                });
-                #endregion
+                    var rights = await ControllerHelper
+                        .GetActionsRightsAsync(item.Name);
 
-                await _dbContext.SaveChangesAsync();
+                    if (item.Name.Equals("UsersController"))
+                    {
+                        await _dbContext.AccessRights
+                            .AddAsync(new AccessRight(operatorRole, item, rights, true));
+                    }
+                    else if (item.Name.Equals("CassaController"))
+                    {
+                        await _dbContext.AccessRights
+                            .AddAsync(new AccessRight(casherRole, item, rights, true));
+                    }
+                    else if (item.Name.Equals("ClientController"))
+                    {
+                        await _dbContext.AccessRights
+                            .AddAsync(new AccessRight(clientRole, item, rights, true));
+                    }
+
+                    await _dbContext.AccessRights
+                        .AddAsync(new AccessRight(adminRole, item, rights, true));
+                    await _dbContext.SaveChangesAsync();
+                }
+
             }
         }
 
@@ -231,7 +210,7 @@ namespace EasyBilling.Services
         {
             if (_dbContext.ControllersNames.Count() == 0)
             {
-                var dic = await ControllerHelper.GetControllersNamesAsync();
+                var dic = await ControllerHelper.GetCtrlsNamesAsync();
                 foreach (var item in dic)
                 {
                     await _dbContext.ControllersNames.AddAsync(new ControllerName()

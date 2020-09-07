@@ -14,11 +14,8 @@ namespace EasyBilling.Controllers
     [DisplayName("Роли")]
     public class RolesController : CustomController
     {
-        public RolesController(BillingDbContext dbContext,
-            RoleManager<Role> roleManager,
-            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, scopeFactory)
-        { }
-
-        
+        public RolesController(BillingDbContext dbContext, RoleManager<Role> roleManager, UserManager<IdentityUser> userManager, IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
+        {
+        }
     }
 }
