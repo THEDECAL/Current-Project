@@ -193,8 +193,11 @@ namespace EasyBilling.Services
                         var cRights = await ControllerHelper
                             .GetActionsRightsAsync(item.Name);
                         var accr = new AccessRight(clientRole, item, cRights, true);
+
                         var actGet = accr.Rights.FirstOrDefault(a => a.Name.Equals("Get"));
+                        var actGetIdx = accr.Rights.IndexOf(actGet);
                         actGet.IsAvailable = false;
+                        accr.Rights[actGetIdx] = actGet;
 
                         await _dbContext.AccessRights.AddAsync(accr);
                     }

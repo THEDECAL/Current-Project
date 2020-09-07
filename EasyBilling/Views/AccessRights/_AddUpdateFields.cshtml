@@ -39,13 +39,16 @@
 
 <div class="mb-0 form-group">
     <label asp-for="Rights" class="text-info"></label>
-    @{var i = 0;}
+    @{ var i = 0; }
     @foreach (var cntrl in cntrlsNames)
     {
+        int slctIdx = 0;
         bool isSelectedController = Model.Controller.Name.Equals(cntrl.Name);
+        if (isSelectedController) slctIdx = i;
         var actionsrights = isSelectedController ? Model.Rights
             : await ControllerHelper.GetActionsRightsAsync(cntrl.Name);
-        var displayStyle = (isSelectedController || i == 0) ? "block" : "none";
+        var displayStyle = (i == slctIdx) ? "block" : "none";
+
         <div class="mt-2" id="#@cntrl.Name" style="display: @displayStyle">
             @{var j = 0;}
             @foreach (var action in actionsrights)

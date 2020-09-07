@@ -50,9 +50,8 @@ namespace EasyBilling.Models.Pocos
         public string ActionsRightsJson
         {
             get => _actionsRightsJson;
-            set { _actionsRightsJson = value ?? ""; DeserializeRights(); }
+            set { _actionsRightsJson = value ?? ""; /*DeserializeRights();*/ }
         }
-
 
         [DisplayName("Действия")]
         [NoShowInTable]

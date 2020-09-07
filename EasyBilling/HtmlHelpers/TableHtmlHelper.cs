@@ -186,7 +186,7 @@ namespace EasyBilling.HtmlHelpers
                 {
                     TagBuilder a = new TagBuilder("a");
                     a.AddCssClass("btn btn-raised btn-success mt-5 mr-3");
-                    a.Attributes.Add("href", $"/{_data.UrlPath}/AddUpdateForm");
+                    a.Attributes.Add("href", $"{_data.UrlPath}/AddUpdateForm");
                     a.InnerHtml.Append("Добавить");
                     div.InnerHtml.AppendHtml(a);
                 }
