@@ -22,6 +22,7 @@ namespace EasyBilling.Controllers
         {
         }
 
+        [DisplayName("Абонетский кабинет")]
         [HttpGet]
         public override async Task<IActionResult> Index()
         {
@@ -35,8 +36,8 @@ namespace EasyBilling.Controllers
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Payment>(_scopeFactory,
-                    controllerName: ControllerName,
                     settings: Settings,
+                    urlPath: HttpContext.Request.Path,
                     filter: filter,
                     includeFields: new string[]
                     {
@@ -53,6 +54,41 @@ namespace EasyBilling.Controllers
             });
         }
 
+        [DisplayName("Абонетский кабинет по ID")]
+        [HttpGet]
+        public async Task<IActionResult> Get(int id)
+            => await Task.Run(async () => 
+            {
+            var profile = await _dbContext.Profiles
+                .Include(p => p.Account)
+                .Include(p => p.Tariff)
+                .FirstOrDefaultAsync(p => p.Id.Equals(id));
+
+            if (profile == null)
+                return View("Index");
+
+            var filter = new Func<Payment, bool>((o)
+                => o.DestinationProfile.Id.Equals(profile.Id));
+
+                var dvm = new DataViewModel<Payment>(_scopeFactory,
+                    settings: Settings,
+                    urlPath: HttpContext.Request.Path,
+                    filter: filter,
+                    includeFields: new string[]
+                    {
+                        nameof(Payment.SourceProfile),
+                        nameof(Payment.DestinationProfile)
+                    },
+                    excludeFields: new string[]
+                    {
+                        nameof(Payment.DestinationProfile)
+                    }
+                );
+
+                return View("CustomIndex", model: (dvm, profile));
+            });
+
+        [DisplayName("Смена состояния заморозки")]
         [HttpPost]
         public async Task<IActionResult> ChnageHoldState()
         {
@@ -74,6 +110,7 @@ namespace EasyBilling.Controllers
             });
         }
 
+        [DisplayName("Смена тарифа")]
         [HttpPost]
         public async Task<IActionResult> ChangeTariff(int? tariffId = null)
         {

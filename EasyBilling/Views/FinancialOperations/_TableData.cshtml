@@ -2,7 +2,7 @@
     int counter = 1;
     @foreach (Dictionary<string, string> row in await Model.GetDataDicAsync())
     {
-        <tr>
+        <tr class="text-center">
             <td class="align-middle">@counter</td>
             @foreach (var field in row)
             {
@@ -12,10 +12,11 @@
                 }
             }
 
-            <td class="p-0 m-0 align-middle">
-                <form asp-antiforgery="true" method="post" asp-action="Delete" class="mb-0 form-inline">
+            <td class="align-middle">
+                <form asp-antiforgery="true" method="post" asp-action="Delete" class="m-0 form-inline">
                     <input type="hidden" value="@row["Id"]" name="id" />
-                    <button type="submit" class="btn btn-danger bmd-btn-fab circle-btn" asp-action="Delete">
+
+                    <button type="submit" class="m-1 btn btn-danger bmd-btn-fab circle-btn">
                         <img src="/images/delete-icon.svg" />
                     </button>
                 </form>

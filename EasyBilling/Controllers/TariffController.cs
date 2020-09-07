@@ -31,7 +31,7 @@ namespace EasyBilling.Controllers
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Tariff>(_scopeFactory,
-                    controllerName: ControllerName,
+                    urlPath: HttpContext.Request.Path,
                     settings: Settings
                 );
 
@@ -61,8 +61,8 @@ namespace EasyBilling.Controllers
             });
         }
 
+        [DisplayName("Создать")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Tariff obj)
         {
             await ServerSideValidation(obj);
@@ -77,8 +77,8 @@ namespace EasyBilling.Controllers
             return await AddUpdateForm();
         }
 
+        [DisplayName("Изменить")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(Tariff obj)
         {
             await ServerSideValidation(obj);
@@ -99,8 +99,8 @@ namespace EasyBilling.Controllers
             return await AddUpdateForm(obj.Id);
         }
 
+        [DisplayName("Удалить")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int? id = null)
         {
             var obj = await _dbContext.Tariffs.FindAsync(id);

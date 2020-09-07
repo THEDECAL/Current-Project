@@ -11,8 +11,8 @@ namespace EasyBilling.Models.Pocos
         public int Id { get; set; }
 
         [Required]
-        public string Name { get; set; }
-        public string LocalizedName { get; set; }
+        public string Name { get; set; } = "";
+        public string LocalizedName { get; set; } = "";
 
         public override string ToString() => (string.IsNullOrWhiteSpace(LocalizedName)) ? Name : LocalizedName;
     }

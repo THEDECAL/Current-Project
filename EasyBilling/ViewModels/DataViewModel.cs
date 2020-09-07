@@ -1,4 +1,5 @@
-﻿using EasyBilling.Data;
+﻿using EasyBilling.Attributes;
+using EasyBilling.Data;
 using EasyBilling.HtmlHelpers;
 using EasyBilling.Models;
 using EasyBilling.Models.Pocos;
@@ -26,7 +27,8 @@ namespace EasyBilling.ViewModels
         //private int _pageSize;
         private Func<T, bool> _filter;
         public TableHtmlHelper<T> TableHelper { get; private set; }
-        public string ControllerName { get; private set; }
+        //public string ControllerName { get; private set; }
+        public string UrlPath { get; }
         public ControlPanelSettings Settings { get; private set; }
         public string[] IncludeFields { get; private set; }
         public string[] ExcludeFields { get; private set; }
@@ -57,16 +59,12 @@ namespace EasyBilling.ViewModels
         public bool IsHavePreviousPage { get => ( Settings.CurrentPage - 1 < 1) ? false : true; }
 
         public DataViewModel(IServiceScopeFactory scopeFactory,
-            string controllerName,
+            //string controllerName,
             ControlPanelSettings settings,
+            string urlPath,
             Func<T, bool> filter = null,
             string[] includeFields = null,
             string[] excludeFields = null)
-            //string sortField = "Id",
-            //SortType sortType = SortType.ASC,
-            //int page = 1,
-            //int pageSize = 10,
-            //string searchRequest = "")
         {
             var scope = scopeFactory.CreateScope();
             var sp = scope.ServiceProvider;
@@ -76,21 +74,15 @@ namespace EasyBilling.ViewModels
             _type = typeof(T);
             _filter = filter;
             TableHelper = new TableHtmlHelper<T>(this);
-            ControllerName = controllerName;
+            //ControllerName = controllerName;
+            UrlPath = urlPath;
             Settings = settings ?? new ControlPanelSettings();
             IncludeFields = includeFields ?? new string[0];
             ExcludeFields = excludeFields ?? new string[0];
-            //SearchRequest = (searchRequest == null )?"":searchRequest.ToLower();
-            //IncludeFields = includeFields ?? new string[0];
-            //ExcludeFields = excludeFields ?? new string[0];
-            //SortField = sortField;
-            //SortType = sortType;
-            //PageSize = pageSize;
             AmountPage = (int)Math.Ceiling(_dbSet.Count() / (double)Settings.PageRowsCount);
             Settings.CurrentPage = (Settings.CurrentPage > 0 && Settings.CurrentPage <= AmountPage)
                 ? Settings.CurrentPage : 1;
             Data = new List<T>();
-            //Page = page;
 
             GetData();
         }
@@ -106,7 +98,7 @@ namespace EasyBilling.ViewModels
                         }));
             try
             {
-                IQueryable<T> queryQ = _dbSet.AsQueryable();
+                IQueryable<T> queryQ = _dbSet.AsQueryable().AsNoTracking();
                 if (queryQ.Count() > 0)
                 {
                     //Подключение связанных объектов
@@ -172,7 +164,9 @@ namespace EasyBilling.ViewModels
 
                     foreach (var item in props)
                     {
-                        if (!ExcludeFields.Any(f => f.Equals(item.Name)))
+                        var noShowAttr = item.GetCustomAttribute<NoShowInTableAttribute>();
+                        if (!ExcludeFields.Any(f => f.Equals(item.Name)) &&
+                            noShowAttr == null)
                         {
                             var val = item.GetValue(o);
                             dic.Add(item.Name, (val != null) ? val.ToString() : "");

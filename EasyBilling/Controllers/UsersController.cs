@@ -32,7 +32,7 @@ namespace EasyBilling.Controllers
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Profile>(_scopeFactory,
-                    controllerName: ViewData["ControllerName"] as string,
+                    urlPath: HttpContext.Request.Path,
                     settings: Settings,
                     includeFields: new string[]
                     {
@@ -83,6 +83,7 @@ namespace EasyBilling.Controllers
             });
         }
 
+        [DisplayName("Создать")]
         [HttpPost]
         public async Task<IActionResult> Create(Profile obj, string roleName, int tariffId)
         {
@@ -108,6 +109,7 @@ namespace EasyBilling.Controllers
             return await AddUpdateForm();
         }
 
+        [DisplayName("Изменить")]
         [HttpPost]
         public async Task<IActionResult> Update(Profile obj, string roleName, int tariffId)
         {
@@ -138,6 +140,7 @@ namespace EasyBilling.Controllers
             return await AddUpdateForm(obj.Id);
         }
 
+        [DisplayName("Удалить")]
         [HttpPost]
         public async Task<IActionResult> Delete(int? id = null)
         {

@@ -13,7 +13,7 @@ namespace EasyBilling.Models
     {
         public string Name { get; }
         public string LocalizedName { get; }
-        public bool IsAvailable { get; set;  } = false;
+        public bool IsAvailable { get; set;  } = true;
 
         public ActionRight(
             [NotNull] string name = "",
@@ -25,7 +25,6 @@ namespace EasyBilling.Models
         }
 
         public override string ToString()
-            => (!string.IsNullOrWhiteSpace(LocalizedName) ? LocalizedName : Name)
-                + ": " + IsAvailable.ToString() + ';';
+            => (!string.IsNullOrWhiteSpace(LocalizedName) ? LocalizedName : Name) + "; ";
     }
 }

@@ -34,8 +34,8 @@ namespace EasyBilling.Controllers
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<AccessRight>(_scopeFactory,
-                    controllerName: ViewData["ControllerName"] as string,
                     settings: Settings,
+                    urlPath: HttpContext.Request.Path,
                     includeFields: new string[] { nameof(AccessRight.Role), nameof(AccessRight.Controller) }
                 );
 

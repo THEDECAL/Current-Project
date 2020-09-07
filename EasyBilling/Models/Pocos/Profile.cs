@@ -62,11 +62,11 @@ namespace EasyBilling.Models.Pocos
         [DisplayName("Дата последнего входа")]
         public DateTime LastLogin { get; set; }
 
-        [DisplayName("Состояние заморозки")]
+        [DisplayName("Заморожен?")]
         [Required]
         public bool IsHolded { get; set; } = false;
 
-        [DisplayName("Состояние активности")]
+        [DisplayName("Включен?")]
         [Required]
         public bool IsEnabled { get; set; } = true;
 

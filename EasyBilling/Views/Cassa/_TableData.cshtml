@@ -2,7 +2,7 @@
     int counter = 1;
     @foreach (Dictionary<string, string> row in await Model.GetDataDicAsync())
     {
-        <tr>
+        <tr class="text-center">
             <td class="align-middle">@counter</td>
             @foreach (var field in row)
             {
@@ -12,10 +12,9 @@
                 }
             }
 
-            <td class="p-0 m-0 align-middle">
+            <td class="align-middle">
                 <a class='btn btn-info btn-sm btn-raised' href='/Cassa/AddUpdateForm/@row["Id"]'>
                     Внести оплату
-                    @*<img src="/images/delete-icon.svg" />*@
                 </a>
             </td>
         </tr>

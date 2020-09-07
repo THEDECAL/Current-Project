@@ -39,8 +39,8 @@ namespace EasyBilling.Controllers
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Profile>(_scopeFactory,
-                    controllerName: ViewData["ControllerName"] as string,
                     settings: Settings,
+                    urlPath: HttpContext.Request.Path,
                     includeFields: new string[]
                     {
                         nameof(Profile.Tariff),
@@ -82,8 +82,8 @@ namespace EasyBilling.Controllers
             });
         }
 
+        [DisplayName("Создать")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Payment obj, int? dstId, string sum)
         {
             try
@@ -124,15 +124,16 @@ namespace EasyBilling.Controllers
         }
 
         public async Task ServerSideValidation(Payment obj)
-        {
-            if (obj.Amount <= 0)
-            { ModelState.AddModelError("", "Сумма должна быть больше 0"); }
+            => await Task.Run(() =>
+            {
+                if (obj.Amount <= 0)
+                { ModelState.AddModelError("", "Сумма должна быть больше 0"); }
 
-            if (obj.DestinationProfile == null || obj.SourceProfile == null)
-            { ModelState.AddModelError("", "Получатель или отправитель оплаты отсутствует"); }
+                if (obj.DestinationProfile == null || obj.SourceProfile == null)
+                { ModelState.AddModelError("", "Получатель или отправитель оплаты отсутствует"); }
 
-            if (obj.Role == null)
-            { ModelState.AddModelError("", "Не известна ваша роль"); }
-        }
+                if (obj.Role == null)
+                { ModelState.AddModelError("", "Не известна ваша роль"); }
+            });
     }
 }

@@ -190,12 +190,18 @@ namespace EasyBilling.Services
                     }
                     else if (item.Name.Equals("ClientController"))
                     {
-                        await _dbContext.AccessRights
-                            .AddAsync(new AccessRight(clientRole, item, rights, true));
+                        var cRights = await ControllerHelper
+                            .GetActionsRightsAsync(item.Name);
+                        var accr = new AccessRight(clientRole, item, cRights, true);
+                        var actGet = accr.Rights.FirstOrDefault(a => a.Name.Equals("Get"));
+                        actGet.IsAvailable = false;
+
+                        await _dbContext.AccessRights.AddAsync(accr);
                     }
 
-                    await _dbContext.AccessRights
-                        .AddAsync(new AccessRight(adminRole, item, rights, true));
+                    var ar = new AccessRight(adminRole, item, rights, true);
+
+                    await _dbContext.AccessRights.AddAsync(ar);
                     await _dbContext.SaveChangesAsync();
                 }
 

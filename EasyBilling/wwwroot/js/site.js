@@ -1,4 +1,24 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿var currCntrlName = null;
 
-// Write your JavaScript code.
+$(document).ready(() => {
+    bindToAccessRightsOnClick();
+});
+
+
+function bindToAccessRightsOnClick() {
+    console.log("Method 'bindToAccessRightsOnClick' sucessfully ran");
+    var cntrlSlct = document.getElementById("Controller_Name");
+    currCntrlName = cntrlSlct.selectedOptions[0].value;
+    cntrlSlct.onchange = function ()
+    {
+        var slctCntrlName = cntrlSlct.selectedOptions[0].value;
+        var currActDiv = document.getElementById(`#${currCntrlName}`);
+        var slctActDiv = document.getElementById(`#${slctCntrlName}`);
+
+        currActDiv.style.display = "none";
+        slctActDiv.style.display = "block";
+
+        currCntrlName = slctCntrlName;
+    }
+    console.log("Method 'bindToAccessRightsOnClick' sucessfully made");
+}

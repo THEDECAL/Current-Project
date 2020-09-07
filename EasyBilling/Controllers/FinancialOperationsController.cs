@@ -30,7 +30,7 @@ namespace EasyBilling.Controllers
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Payment>(_scopeFactory,
-                    controllerName: ViewData["ControllerName"] as string,
+                    urlPath: HttpContext.Request.Path,
                     settings: Settings,
                     includeFields: new string[]
                     {
@@ -46,6 +46,7 @@ namespace EasyBilling.Controllers
             });
         }
 
+        [DisplayName("Удалить")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int? id = null)

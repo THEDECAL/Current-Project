@@ -31,8 +31,8 @@ namespace EasyBilling.Controllers
             return await Task.Run(() =>
             {
                 var dvm = new DataViewModel<Device>(_scopeFactory,
-                    controllerName: ViewData["ControllerName"] as string,
                     settings: Settings,
+                    urlPath: HttpContext.Request.Path,
                     includeFields: new string[]
                     {
                         nameof(Device.Type),
@@ -75,8 +75,8 @@ namespace EasyBilling.Controllers
             });
         }
 
+        [DisplayName("Создать")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Device obj)
         {
             await ServerSideValidation(obj);
@@ -96,8 +96,8 @@ namespace EasyBilling.Controllers
             return await AddUpdateForm();
         }
 
+        [DisplayName("Изменить")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(Device obj)
         {
             await ServerSideValidation(obj);
@@ -120,8 +120,8 @@ namespace EasyBilling.Controllers
             return await AddUpdateForm(obj.Id);
         }
 
+        [DisplayName("Удалить")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int? id = null)
         {
             var obj = await _dbContext.Devices.FindAsync(id);

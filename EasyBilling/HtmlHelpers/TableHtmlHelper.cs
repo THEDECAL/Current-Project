@@ -1,4 +1,5 @@
-﻿using EasyBilling.Helpers;
+﻿using EasyBilling.Attributes;
+using EasyBilling.Helpers;
 using EasyBilling.Models;
 using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Html;
@@ -41,17 +42,18 @@ namespace EasyBilling.HtmlHelpers
                 var props = _type.GetProperties();
                 foreach (var item in props)
                 {
-                    if (!_data.ExcludeFields.Any(f => f.Equals(item.Name)))
+                    var noShowAtt = item.GetCustomAttribute<NoShowInTableAttribute>();
+                    if (!_data.ExcludeFields.Any(f => f.Equals(item.Name)) &&
+                        noShowAtt == null)
                     {
-                        var dnAtt = item.GetCustomAttribute(
-                            typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+                        var dnAtt = item.GetCustomAttribute<DisplayNameAttribute>();
 
                         TagBuilder th = new TagBuilder("th");
                         th.Attributes.Add("scope", "col");
 
                         TagBuilder aFieldLink = new TagBuilder("a");
                         aFieldLink.AddCssClass("text-white btn btn-link btn-sm sort-field");
-                        aFieldLink.Attributes.Add("href",$"/{_data.ControllerName}");
+                        aFieldLink.Attributes.Add("href", _data.UrlPath);
                         aFieldLink.Attributes.Add("value", item.Name);
                         aFieldLink.InnerHtml.Append((dnAtt != null) ? dnAtt.DisplayName : item.Name);
                         th.InnerHtml.AppendHtml(aFieldLink);
@@ -103,10 +105,7 @@ namespace EasyBilling.HtmlHelpers
                     TagBuilder aPrev = new TagBuilder("a");
                     var valPrev = (_data.Settings.CurrentPage - 1).ToString();
                     aPrev.AddCssClass("page-link page-control-panel");
-                    aPrev.Attributes.Add("href", $"/{_data.ControllerName}");
-                    //aPrev.Attributes.Add("type", "submit");
-                    //btnPrev.Attributes.Add("formaction", '/' + _data.ControllerName);
-                    //aPrev.Attributes.Add("name", "Pagination" + valPrev);
+                    aPrev.Attributes.Add("href", _data.UrlPath);
                     aPrev.Attributes.Add("value", valPrev);
                     aPrev.InnerHtml.Append(textPrevious);
                     liPrev.InnerHtml.AppendHtml(aPrev);
@@ -127,10 +126,7 @@ namespace EasyBilling.HtmlHelpers
                     TagBuilder aNext = new TagBuilder("a");
                     var valNext = (_data.Settings.CurrentPage + 1).ToString();
                     aNext.AddCssClass("page-link page-control-panel");
-                    aNext.Attributes.Add("href",$"/{_data.ControllerName}");
-                    //aNext.Attributes.Add("type", "submit");
-                    //aNext.Attributes.Add("name", "Pagination" + valNext);
-                    //btnNext.Attributes.Add("formaction", '/' + _data.ControllerName);
+                    aNext.Attributes.Add("href", _data.UrlPath);
                     aNext.Attributes.Add("value", valNext);
                     aNext.InnerHtml.Append(textNext);
                     liNext.InnerHtml.AppendHtml(aNext);
@@ -159,9 +155,7 @@ namespace EasyBilling.HtmlHelpers
                         {
                             TagBuilder aPageNum = new TagBuilder("a");
                             aPageNum.AddCssClass("page-link page-control-panel");
-                            aPageNum.Attributes.Add("href", $"/{_data.ControllerName}");
-                            //btn.Attributes.Add("type", "submit");
-                            //btn.Attributes.Add("name", pageNum.ToString());
+                            aPageNum.Attributes.Add("href", _data.UrlPath);
                             aPageNum.Attributes.Add("value", pageNum.ToString());
                             aPageNum.InnerHtml.Append(pageNum.ToString());
                             li.InnerHtml.AppendHtml(aPageNum);
@@ -192,7 +186,7 @@ namespace EasyBilling.HtmlHelpers
                 {
                     TagBuilder a = new TagBuilder("a");
                     a.AddCssClass("btn btn-raised btn-success mt-5 mr-3");
-                    a.Attributes.Add("href", $"/{_data.ControllerName}/AddUpdateForm");
+                    a.Attributes.Add("href", $"/{_data.UrlPath}/AddUpdateForm");
                     a.InnerHtml.Append("Добавить");
                     div.InnerHtml.AppendHtml(a);
                 }
@@ -210,12 +204,13 @@ namespace EasyBilling.HtmlHelpers
                 input.Attributes.Add("value", _data.Settings.SearchText);
                 fgrp.InnerHtml.AppendHtml(input);
 
-                TagBuilder btn = new TagBuilder("button");
-                btn.AddCssClass("btn btn-primary mt-5");
-                btn.Attributes.Add("type", "submit");
-                btn.Attributes.Add("id", "StartSearch");
-                btn.InnerHtml.Append("Поиск");
-                div.InnerHtml.AppendHtml(btn);
+                TagBuilder aSearch = new TagBuilder("a");
+                aSearch.AddCssClass("btn btn-primary mt-5");
+                aSearch.Attributes.Add("href", _data.UrlPath);
+                //btn.Attributes.Add("type", "submit");
+                aSearch.Attributes.Add("id", "StartSearch");
+                aSearch.InnerHtml.Append("Поиск");
+                div.InnerHtml.AppendHtml(aSearch);
 
                 div.InnerHtml.AppendFormat($"<input type='hidden' id='{nameof(ControlPanelSettings.PageRowsCount)}' value='{_data.Settings.PageRowsCount}' />");
                 div.InnerHtml.AppendFormat($"<input type='hidden' id='{nameof(ControlPanelSettings.SortType)}' value='{(int)_data.Settings.SortType}' />");
@@ -233,7 +228,5 @@ namespace EasyBilling.HtmlHelpers
                 return new HtmlString(writer.ToString());
             });
         }
-        private string GetHref(string sort, SortType sortType, int page, int pageSize)
-            => $"/{_data.ControllerName}?SortField={sort}&SorType={(int)sortType}&CurrentPage={page}&PageRowsCount={pageSize}&SearchText={_data.Settings.SearchText}";
     }
 }

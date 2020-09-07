@@ -49,119 +49,131 @@ namespace EasyBilling.Models.Pocos
         [NoShowInTable]
         public string ActionsRightsJson
         {
-            get => SerializeRights();
-            set { _actionsRightsJson = value ?? ""; DeserializeRightsAsync().Wait(); }
+            get => _actionsRightsJson;
+            set { _actionsRightsJson = value ?? ""; DeserializeRights(); }
         }
 
+
+        [DisplayName("Действия")]
         [NoShowInTable]
         [NotMapped]
-        public ObservableCollection<ActionRight> Rights { get => _rights; set => _rights = value ?? _rights; }
+        public ObservableCollection<ActionRight> Rights
+        {
+            get
+            {
+                if (_rights.Count() == 0)
+                {
+                    DeserializeRights();
+                }
+                return _rights;
+            }
+            set => _rights = value ?? _rights;
+        }
 
-        [DisplayName("Разрешения действий")]
+        [DisplayName("Разрешенные действия")]
         [NotMapped]
-        public string RigthsString { get; private set; }
+        public string RigthsString
+        {
+            get
+            {
+                var sb = new StringBuilder();
+                foreach (var item in Rights)
+                {
+                    if (item.IsAvailable)
+                    {
+                       sb.Append(item.ToString());
+                    }
+                }
+                return sb.ToString();
+            }
+        }
 
-        public AccessRight() { }
+        public AccessRight()
+        {
+            DeserializeRights();
+
+            Rights.CollectionChanged +=
+                new NotifyCollectionChangedEventHandler((o, e) =>
+                {
+                    SerializeRights();
+                });
+        }
 
         public AccessRight(
             Role role = null,
             ControllerName controller = null,
             ObservableCollection<ActionRight> rights = null,
-            bool isAvailable = false)
+            bool isAvailable = false):this()
         {
             Role = role;
             Controller = controller;
             IsAvailable = isAvailable;
 
-            AddRangeRightsAsync(rights).Wait();
-
-            Rights.CollectionChanged +=
-                new NotifyCollectionChangedEventHandler(async (o, e)
-                    => await SerializeRightsAsync());
+            AddRangeRights(rights);
         }
 
-        private async Task<string> SerializeRightsAsync()
-            => await Task.Run(() => SerializeRights());
-
-        private string SerializeRights()
+        private void SerializeRights()
         {
             try
             {
-                return JsonConvert.SerializeObject(Rights);
+                _actionsRightsJson = JsonConvert.SerializeObject(Rights);
             }
             catch (JsonException ex)
             { Console.WriteLine(ex.StackTrace); }
-
-            return "";
         }
 
-        private async Task UpdateRightsString()
-            => await Task.Run(() =>
+        private void DeserializeRights()
+        {
+            try
             {
-                var sb = new StringBuilder();
-                foreach (var item in Rights)
-                {
-                    sb.Append(item.ToString());
-                }
-                RigthsString = sb.ToString();
-            });
+                var rights = JsonConvert.DeserializeObject
+                    <ObservableCollection<ActionRight>>(_actionsRightsJson);
 
-        private async Task DeserializeRightsAsync()
-            => await Task.Run(async () =>
-            {
-                try
-                {
-                    var rights = JsonConvert.DeserializeObject
-                        <ObservableCollection<ActionRight>>(_actionsRightsJson);
-
-                    if (rights != null)
-                    {
-                        await AddRangeRightsAsync(rights);
-                        await UpdateRightsString();
-                    }
-                }
-                catch (Exception ex)
-                { Console.WriteLine(ex.StackTrace); }
-            });
-
-        public async Task AddRangeRightsAsync(IList<ActionRight> rights)
-            => await Task.Run(() =>
-            {
                 if (rights != null)
                 {
-                    foreach (var item in rights)
-                    {
-                        Rights.Append(item);
-                    }
-                    return;
-                }
-                throw new ArgumentNullException();
-            });
-
-        public async Task<ActionRight> GetRightAsync(string actionName)
-            => await Task.Run(() =>
-            {
-                if (!string.IsNullOrWhiteSpace(actionName))
-                {
-                    return Rights.FirstOrDefault(r => r.Name.Equals(actionName));
-                }
-                throw new ArgumentNullException();
-            });
-
-        public async Task UpdateRightAsync(ActionRight right)
-        => await Task.Run(async () =>
-        {
-            if (right != null)
-            {
-                var oldRight = await GetRightAsync(right.Name);
-                int? index = Rights.IndexOf(oldRight);
-                if (index != null)
-                {
-                    Rights.Insert(index.Value, right);
-                    return;
+                    AddRangeRights(rights);
                 }
             }
+            catch (Exception ex)
+            { Console.WriteLine(ex.StackTrace); }
+        }
+
+        public void AddRangeRights(IList<ActionRight> rights)
+        {
+            if (rights != null)
+            {
+                foreach (var item in rights)
+                {
+                    _rights.Add(item);
+                }
+                SerializeRights();
+                return;
+            }
             throw new ArgumentNullException();
-        });
+        }
+
+        //public ActionRight GetRight(string actionName)
+        //{
+        //    if (!string.IsNullOrWhiteSpace(actionName))
+        //    {
+        //        return Rights.FirstOrDefault(r => r.Name.Equals(actionName));
+        //    }
+        //    throw new ArgumentNullException();
+        //}
+
+        //public void SetRight(string actionName)
+        //{
+        //    if (right != null)
+        //    {
+        //        var oldRight = GetRight(actionName);
+        //        int index = Rights.IndexOf(oldRight);
+        //        if (index != -1)
+        //        {
+        //            Rights.Insert(index, actionName);
+        //            return;
+        //        }
+        //    }
+        //    throw new ArgumentNullException();
+        //}
     }
 }

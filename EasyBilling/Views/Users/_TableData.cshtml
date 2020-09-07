@@ -18,6 +18,9 @@
                     <input type="hidden" value="@row["Id"]" name="id" />
 
                     <span class="btn-group" style="margin: 0 auto;">
+                        <a class="btn btn-primary bmd-btn-fab circle-btn" href="/Client/Get/@row["Id"]" title="Смотреть">
+                            <img src="/images/search-icon.svg" style="margin: 3px 0;">
+                        </a>
                         <a class="btn btn-primary bmd-btn-fab circle-btn" href="/@ViewData["ControllerName"]/AddUpdateForm/@row["Id"]" title="Изменить">
                             <img src="/images/edit-icon.svg" style="margin: 3px 0;">
                         </a>
