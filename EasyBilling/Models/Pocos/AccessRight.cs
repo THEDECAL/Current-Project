@@ -1,4 +1,5 @@
 ﻿using EasyBilling.Attributes;
+using EasyBilling.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Operations;
@@ -23,7 +24,7 @@ namespace EasyBilling.Models.Pocos
 {
     public class AccessRight
     {
-        private ObservableCollection<ActionRight> _rights = new ObservableCollection<ActionRight>();
+        private List<ActionRight> _rights = new List<ActionRight>();
         private Role _role = new Role();
         private ControllerName _controller = new ControllerName();
         private string _actionsRightsJson = "";
@@ -34,12 +35,20 @@ namespace EasyBilling.Models.Pocos
         [Required(ErrorMessage = "Не выбрана роль")]
         [DisplayName("Роль*")]
         [Remote(action: "CheckRoleExist", controller: "AccessRights", ErrorMessage = "Выбранная роль не существует")]
-        public Role Role { get => _role; set => _role = value ?? _role; }
+        public Role Role { get => _role; set => _role = value; }
 
         [Required(ErrorMessage = "Не выбрано название страницы")]
         [Remote(action: "CheckCntrlExist", controller: "AccessRights", ErrorMessage = "Выбранная страница не существует")]
         [DisplayName("Название страницы*")]
-        public ControllerName Controller { get => _controller; set => _controller = value ?? _controller; }
+        public ControllerName Controller
+        {
+            get => _controller;
+            set
+            {
+                _controller = value;
+                InitActionRightsAsync().Wait();
+            }
+        }
 
         [Required(ErrorMessage = "Не выбрано разрешение")]
         [DisplayName("Разрешение*")]
@@ -50,23 +59,30 @@ namespace EasyBilling.Models.Pocos
         public string ActionsRightsJson
         {
             get => _actionsRightsJson;
-            set { _actionsRightsJson = value ?? ""; /*DeserializeRights();*/ }
+            set
+            {
+                _actionsRightsJson = value;
+                if (!string.IsNullOrWhiteSpace(_actionsRightsJson))
+                {
+                    DeserializeRights();
+                }
+            }
         }
 
         [DisplayName("Действия")]
         [NoShowInTable]
         [NotMapped]
-        public ObservableCollection<ActionRight> Rights
+        public List<ActionRight> Rights
         {
             get
             {
-                if (_rights.Count() == 0)
+                if (_rights.Count() == 0 &&
+                    !string.IsNullOrWhiteSpace(_actionsRightsJson))
                 {
                     DeserializeRights();
                 }
                 return _rights;
             }
-            set => _rights = value ?? _rights;
         }
 
         [DisplayName("Разрешенные действия")]
@@ -87,35 +103,30 @@ namespace EasyBilling.Models.Pocos
             }
         }
 
-        public AccessRight()
+        private async Task InitActionRightsAsync()
         {
-            DeserializeRights();
-
-            Rights.CollectionChanged +=
-                new NotifyCollectionChangedEventHandler((o, e) =>
+            if (!string.IsNullOrWhiteSpace(_controller.Name) &&
+                string.IsNullOrWhiteSpace(_actionsRightsJson))
+            {
+                var rights = await ControllerHelper.GetActionsRightsAsync(_controller.Name);
+                if (rights != null)
                 {
-                    SerializeRights();
-                });
-        }
-
-        public AccessRight(
-            Role role = null,
-            ControllerName controller = null,
-            ObservableCollection<ActionRight> rights = null,
-            bool isAvailable = false):this()
-        {
-            Role = role;
-            Controller = controller;
-            IsAvailable = isAvailable;
-
-            AddRangeRights(rights);
+                    _rights = rights;
+                }
+                else throw new NullReferenceException();
+                SerializeRights();
+            }
+            else
+            {
+                DeserializeRights();
+            }
         }
 
         private void SerializeRights()
         {
             try
             {
-                _actionsRightsJson = JsonConvert.SerializeObject(Rights);
+                _actionsRightsJson = JsonConvert.SerializeObject(_rights);
             }
             catch (JsonException ex)
             { Console.WriteLine(ex.StackTrace); }
@@ -126,53 +137,53 @@ namespace EasyBilling.Models.Pocos
             try
             {
                 var rights = JsonConvert.DeserializeObject
-                    <ObservableCollection<ActionRight>>(_actionsRightsJson);
+                    <List<ActionRight>>(_actionsRightsJson);
 
                 if (rights != null)
                 {
-                    AddRangeRights(rights);
+                    _rights = rights;
                 }
             }
             catch (Exception ex)
             { Console.WriteLine(ex.StackTrace); }
         }
 
-        public void AddRangeRights(IList<ActionRight> rights)
+        private ActionRight GetActionRight(string actionName)
         {
-            if (rights != null)
+            if (!string.IsNullOrWhiteSpace(actionName))
             {
-                foreach (var item in rights)
-                {
-                    _rights.Add(item);
-                }
-                SerializeRights();
-                return;
+                return _rights.FirstOrDefault(r => r.Name.Equals(actionName));
             }
             throw new ArgumentNullException();
         }
 
-        //public ActionRight GetRight(string actionName)
-        //{
-        //    if (!string.IsNullOrWhiteSpace(actionName))
-        //    {
-        //        return Rights.FirstOrDefault(r => r.Name.Equals(actionName));
-        //    }
-        //    throw new ArgumentNullException();
-        //}
+        public void UpdateActionRight(string actionName, bool isAvailable)
+        {
+            if (!string.IsNullOrWhiteSpace(actionName))
+            {
+                var right = GetActionRight(actionName);
+                right.IsAvailable = isAvailable;
+                SerializeRights();
+            }
+            else throw new ArgumentNullException();
+        }
 
-        //public void SetRight(string actionName)
-        //{
-        //    if (right != null)
-        //    {
-        //        var oldRight = GetRight(actionName);
-        //        int index = Rights.IndexOf(oldRight);
-        //        if (index != -1)
-        //        {
-        //            Rights.Insert(index, actionName);
-        //            return;
-        //        }
-        //    }
-        //    throw new ArgumentNullException();
-        //}
+        public void UpdateActionsRights(List<bool> listAvailables)
+        {
+            if (listAvailables != null)
+            {
+                for (int i = 0; i < Rights.Count(); i++)
+                {
+                    try
+                    {
+                        Rights[i].IsAvailable = listAvailables[i];
+                    }
+                    catch (Exception)
+                    { }
+                }
+                SerializeRights();
+            }
+            else throw new ArgumentNullException();
+        }
     }
 }

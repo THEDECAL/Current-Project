@@ -39,7 +39,7 @@ namespace EasyBilling.Controllers
             });
         }
 
-        [DisplayName(("Добавить-Изменить"))]
+        [DisplayName(("Форма добавить/изменить"))]
         [HttpGet]
         public async Task<IActionResult> AddUpdateForm(int? id = null)
         {

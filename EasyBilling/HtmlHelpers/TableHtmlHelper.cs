@@ -21,11 +21,13 @@ namespace EasyBilling.HtmlHelpers
         const int PAGE_COUNT = 3; //Кол-во страниц на секцию
         private Type _type;
         private DataViewModel<T> _data;
+
         public TableHtmlHelper(DataViewModel<T> data)
         {
             _type = typeof(T);
             _data = data;
         }
+
         /// <summary>
         /// Получить Html код заголовоки столбцов таблицы
         /// </summary>
@@ -36,7 +38,7 @@ namespace EasyBilling.HtmlHelpers
             {
                 TagBuilder thead = new TagBuilder("thead");
                 TagBuilder tr = new TagBuilder("tr");
-                tr.AddCssClass("table-dark");
+                tr.AddCssClass("table-dark text-center");
                 thead.InnerHtml.AppendHtml(tr);
 
                 var props = _type.GetProperties();
@@ -55,7 +57,7 @@ namespace EasyBilling.HtmlHelpers
                         aFieldLink.AddCssClass("text-white btn btn-link btn-sm sort-field");
                         aFieldLink.Attributes.Add("href", _data.UrlPath);
                         aFieldLink.Attributes.Add("value", item.Name);
-                        aFieldLink.InnerHtml.Append((dnAtt != null) ? dnAtt.DisplayName : item.Name);
+                        aFieldLink.InnerHtml.Append((dnAtt != null) ? dnAtt.DisplayName.Replace("*", "") : item.Name);
                         th.InnerHtml.AppendHtml(aFieldLink);
                         tr.InnerHtml.AppendHtml(th);
                     }
@@ -76,6 +78,7 @@ namespace EasyBilling.HtmlHelpers
                 return await GetHtmlStringAsync(thead);
             });
         }
+
         /// <summary>
         /// Получить Html код панели постраничной навигации
         /// </summary>
@@ -169,6 +172,7 @@ namespace EasyBilling.HtmlHelpers
                 return await GetHtmlStringAsync(nav);
             });
         }
+
         /// <summary>
         /// Получить Html код панели поиска, добавления...
         /// </summary>
@@ -218,11 +222,16 @@ namespace EasyBilling.HtmlHelpers
                 return await GetHtmlStringAsync(div);
             });
         }
+
+        /// <summary>
+        /// Получение HTML кода
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
         private async Task<HtmlString> GetHtmlStringAsync(TagBuilder builder)
         {
             return await Task.Run(() =>
             {
-                //builder.InnerHtml.AppendFormat(@"<script src='/js/cpanel_settings.js' type='text/javascript'></script>");
                 var writer = new StringWriter();
                 builder.WriteTo(writer, HtmlEncoder.Default);
                 return new HtmlString(writer.ToString());

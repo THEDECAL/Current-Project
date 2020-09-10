@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System;
 using EasyBilling.Models;
+using EasyBilling.Services;
 
 namespace EasyBilling.Controllers
 {
@@ -18,8 +19,14 @@ namespace EasyBilling.Controllers
     [DisplayName("Клиент")]
     public class ClientController : CustomController
     {
-        public ClientController(BillingDbContext dbContext, RoleManager<Role> roleManager, UserManager<IdentityUser> userManager, IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
+        private TariffRegulator _tariffRegulator;
+        public ClientController(BillingDbContext dbContext,
+            RoleManager<Role> roleManager,
+            UserManager<IdentityUser> userManager,
+            TariffRegulator tariffRegulator,
+            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
         {
+            _tariffRegulator = tariffRegulator;
         }
 
         [DisplayName("Абонетский кабинет")]
@@ -104,6 +111,7 @@ namespace EasyBilling.Controllers
 
                     _dbContext.Update(profile);
                     _dbContext.SaveChanges();
+                    _tariffRegulator.StartToUseOfTariffAsync(profile.Id).Wait();
                 }
 
                 return Redirect("Index");

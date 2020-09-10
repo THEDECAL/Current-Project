@@ -1,4 +1,5 @@
-﻿using EasyBilling.Data;
+﻿using EasyBilling.Controllers;
+using EasyBilling.Data;
 using EasyBilling.Helpers;
 using EasyBilling.Models.Pocos;
 using Microsoft.AspNetCore.Identity;
@@ -178,36 +179,50 @@ namespace EasyBilling.Services
                     var rights = await ControllerHelper
                         .GetActionsRightsAsync(item.Name);
 
-                    if (item.Name.Equals("UsersController"))
+                    if (item.Name.Equals(nameof(UsersController)))
                     {
                         await _dbContext.AccessRights
-                            .AddAsync(new AccessRight(operatorRole, item, rights, true));
+                            .AddAsync(new AccessRight()
+                            {
+                                Controller = item,
+                                Role = operatorRole,
+                                IsAvailable = true
+                            });
                     }
-                    else if (item.Name.Equals("CassaController"))
+                    else if (item.Name.Equals(nameof(CassaController)))
                     {
                         await _dbContext.AccessRights
-                            .AddAsync(new AccessRight(casherRole, item, rights, true));
+                            .AddAsync(new AccessRight()
+                            {
+                                Controller = item,
+                                Role = casherRole,
+                                IsAvailable = true
+                            });
                     }
-                    else if (item.Name.Equals("ClientController"))
+                    else if (item.Name.Equals(nameof(ClientController)))
                     {
                         var cRights = await ControllerHelper
                             .GetActionsRightsAsync(item.Name);
-                        var accr = new AccessRight(clientRole, item, cRights, true);
-
-                        var actGet = accr.Rights.FirstOrDefault(a => a.Name.Equals("Get"));
-                        var actGetIdx = accr.Rights.IndexOf(actGet);
-                        actGet.IsAvailable = false;
-                        accr.Rights[actGetIdx] = actGet;
-
-                        await _dbContext.AccessRights.AddAsync(accr);
+                        var accr = new AccessRight()
+                        {
+                            Controller = item,
+                            Role = clientRole,
+                            IsAvailable = true
+                        };
+                        accr.UpdateActionRight(nameof(ClientController.Get), false);
+                         await _dbContext.AccessRights.AddAsync(accr);
                     }
 
-                    var ar = new AccessRight(adminRole, item, rights, true);
+                    var ar = new AccessRight()
+                    {
+                        Controller = item,
+                        Role = adminRole,
+                        IsAvailable = true
+                    };
 
                     await _dbContext.AccessRights.AddAsync(ar);
                     await _dbContext.SaveChangesAsync();
                 }
-
             }
         }
 

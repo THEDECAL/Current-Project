@@ -3,6 +3,7 @@ using EasyBilling.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 
 namespace EasyBilling.Attributes
 {
@@ -19,15 +20,24 @@ namespace EasyBilling.Attributes
             var ad = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)
                 context.ActionDescriptor;
             var controllerName = ad.ControllerName + "Controller";
+            var actionName = ad.ActionName;
 
             AccessRight accessRights = _arm.GetRights(context.HttpContext.User.Identity.Name,
                 controllerName).Result;
+            var actionAvailable = accessRights.Rights.Any(r => r.Name.Equals(actionName) && r.IsAvailable);
             //При каких условиях давать доступ
             if (controllerName.Equals("HomeController") ||
-                (accessRights != null && accessRights.IsAvailable))
+                (accessRights != null && accessRights.IsAvailable && actionAvailable))
                 return;
 
-            context.HttpContext.Response.Redirect($"/Home/ErrorAccess");
+            if (context.HttpContext.Request.Method == "GET")
+            {
+                context.HttpContext.Response.Redirect($"/Home/ErrorAccess");
+            }
+            else
+            {
+                context.HttpContext.Abort();
+            }
         }
     }
 }

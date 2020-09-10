@@ -13,15 +13,16 @@ namespace EasyBilling.Models
     {
         public string Name { get; }
         public string LocalizedName { get; }
-        public bool IsAvailable { get; set;  } = true;
+        public bool IsAvailable { get; set; }
 
         public ActionRight(
-            [NotNull] string name = "",
-            [NotNull] string localizedName = "",
-            bool isAvailable = true)
+            [NotNull] string name,
+            [NotNull] string localizedName,
+            bool isAvailable)
         {
             LocalizedName = localizedName;
             Name = name;
+            IsAvailable = isAvailable;
         }
 
         public override string ToString()

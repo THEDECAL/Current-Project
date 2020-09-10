@@ -9,6 +9,9 @@ namespace EasyBilling.Providers
         public static void AddAccessRightsManager(this IServiceCollection services) =>
             services.AddTransient<AccessRightsManager>();
 
+        public static void AddTariffRegulator(this IServiceCollection services) =>
+            services.AddScoped<TariffRegulator>();
+
         public static void AddDbInitializer(this IServiceCollection services) => 
             services.AddSingleton<DbInitializer>();
     }

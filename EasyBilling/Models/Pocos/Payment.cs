@@ -21,7 +21,7 @@ namespace EasyBilling.Models.Pocos
         [DisplayName("Получатель")]
         public Profile DestinationProfile { get; set; }
 
-        [DisplayName("Роль")]
+        [DisplayName("Роль отправителя")]
         public Role Role { get; set; }
 
         [DisplayName("Сумма*")]

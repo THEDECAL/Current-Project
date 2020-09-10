@@ -1,12 +1,14 @@
 ﻿using EasyBilling.Attributes;
 using EasyBilling.Data;
 using EasyBilling.Models;
+using EasyBilling.Services;
 using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -42,6 +44,8 @@ namespace Microsoft.AspNetCore.Mvc
             _roleManager = roleManager;
             _userManager = userManager;
             _scopeFactory = scopeFactory;
+            var scope = _scopeFactory.CreateScope();
+            scope.ServiceProvider.GetService<ILoggerFactory>().AddProvider(new DatabaseLoggerProvider());
         }
 
         [HttpGet]

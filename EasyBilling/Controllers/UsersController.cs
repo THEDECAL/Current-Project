@@ -8,6 +8,7 @@ using EasyBilling.Attributes;
 using EasyBilling.Data;
 using EasyBilling.Models;
 using EasyBilling.Models.Pocos;
+using EasyBilling.Services;
 using EasyBilling.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -21,8 +22,15 @@ namespace EasyBilling.Controllers
     [DisplayName("Пользователи")]
     public class UsersController : CustomController
     {
-        public UsersController(BillingDbContext dbContext, RoleManager<Role> roleManager, UserManager<IdentityUser> userManager, IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
+        private TariffRegulator _tariffRegulator;
+
+        public UsersController(BillingDbContext dbContext,
+            RoleManager<Role> roleManager,
+            UserManager<IdentityUser> userManager,
+            TariffRegulator tariffRegulator,
+            IServiceScopeFactory scopeFactory) : base(dbContext, roleManager, userManager, scopeFactory)
         {
+            _tariffRegulator = tariffRegulator;
         }
 
         [HttpGet]
@@ -58,7 +66,7 @@ namespace EasyBilling.Controllers
             });
         }
 
-        [DisplayName(("Добавить-Изменить"))]
+        [DisplayName(("Форма добавить/изменить"))]
         [HttpGet]
         public async Task<IActionResult> AddUpdateForm(int? id = null)
         {
@@ -118,6 +126,8 @@ namespace EasyBilling.Controllers
             {
                 var accountExisting = await _dbContext.Users
                     .FirstOrDefaultAsync(u => u.Id.Equals(obj.Account.Id));
+                var profileExisting = await _dbContext.Profiles
+                    .FirstOrDefaultAsync(p => p.Id.Equals(obj.Id));
                 accountExisting.UserName = obj.Account.UserName;
                 accountExisting.Email = obj.Account.Email;
                 obj.Account = accountExisting;
@@ -132,6 +142,10 @@ namespace EasyBilling.Controllers
                 {
                     _dbContext.Update(obj);
                     _dbContext.SaveChanges();
+                    if (profileExisting.IsEnabled != obj.IsEnabled)
+                    {
+                        _tariffRegulator.StartToUseOfTariffAsync(obj.Id).Wait();
+                    }
                 });
 
                 return RedirectToAction("Index");
@@ -166,7 +180,6 @@ namespace EasyBilling.Controllers
             TryValidateModel(obj);
             ModelState.Remove("Tariff.Name");
 
-
             var isUserNameExist = await _dbContext.Users
                 .AnyAsync(u => u.UserName.Equals(obj.Account.UserName));
             var isEmailExist = await _dbContext.Users
@@ -180,13 +193,13 @@ namespace EasyBilling.Controllers
             }
             else
             {
-                var accExisting = await _dbContext.Users
+                var oldAccount = await _dbContext.Users
                     .FirstOrDefaultAsync(u => u.Id.Equals(obj.Account.Id));
-                if (accExisting != null)
+                if (oldAccount != null)
                 {
-                    if (!accExisting.UserName.Equals(obj.Account.UserName) && isUserNameExist)
+                    if (!oldAccount.UserName.Equals(obj.Account.UserName) && isUserNameExist)
                     { ModelState.AddModelError("Account.UserName", "Введённый логин уже существует, выберите другой"); }
-                    if (!accExisting.Email.Equals(obj.Account.Email) && isEmailExist)
+                    if (!oldAccount.Email.Equals(obj.Account.Email) && isEmailExist)
                     { ModelState.AddModelError("Account.Email", "Введённый почтовый адрес уже сущесвует, выберите другой"); }
                 }
                 else

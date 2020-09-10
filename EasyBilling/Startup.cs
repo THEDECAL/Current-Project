@@ -22,6 +22,7 @@ namespace EasyBilling
             //���������� ����������� ��������
             services.AddAccessRightsManager();
             services.AddDbInitializer();
+            services.AddTariffRegulator();
 
             //������� ����������� ��� ������ ������
             services.AddDistributedMemoryCache();

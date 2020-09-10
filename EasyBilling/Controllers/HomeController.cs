@@ -42,6 +42,8 @@ namespace EasyBilling.Controllers
                 });
         }
 
+        [HttpPost]
+        [HttpGet]
         public IActionResult ErrorAccess()
         {
             ViewData["Title"] = "Отказано в доступе";

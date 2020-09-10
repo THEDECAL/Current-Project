@@ -43,7 +43,7 @@ namespace EasyBilling.Controllers
             });
         }
 
-        [DisplayName(("Добавить-Изменить"))]
+        [DisplayName(("Форма добавить/изменить"))]
         [HttpGet]
         public async Task<IActionResult> AddUpdateForm(int? id = null)
         {
@@ -70,7 +70,7 @@ namespace EasyBilling.Controllers
 
         [DisplayName(("Создать"))]
         [HttpPost]
-        public async Task<IActionResult> Create(AccessRight obj)
+        public async Task<IActionResult> Create(AccessRight obj, List<bool> rights)
         {
             await ServerSideValidation(obj);
             if (ModelState.IsValid)
@@ -78,6 +78,7 @@ namespace EasyBilling.Controllers
                 obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
                 obj.Controller = await _dbContext.ControllersNames
                     .FirstOrDefaultAsync(c => c.Name.Equals(obj.Controller.Name));
+                obj.UpdateActionsRights(rights);
                 await _dbContext.AccessRights.AddAsync(obj);
                 await _dbContext.SaveChangesAsync();
 
@@ -89,7 +90,7 @@ namespace EasyBilling.Controllers
 
         [DisplayName(("Изменить"))]
         [HttpPost]
-        public async Task<IActionResult> Update(AccessRight obj)
+        public async Task<IActionResult> Update(AccessRight obj, List<bool> rights)
         {
             await ServerSideValidation(obj);
             if (ModelState.IsValid)
@@ -97,6 +98,7 @@ namespace EasyBilling.Controllers
                 obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
                 obj.Controller = await _dbContext.ControllersNames
                     .FirstOrDefaultAsync(c => c.Name.Equals(obj.Controller.Name));
+                obj.UpdateActionsRights(rights);
                 await Task.Run(() =>
                 {
                     _dbContext.AccessRights.Update(obj);
@@ -142,7 +144,7 @@ namespace EasyBilling.Controllers
                     .FirstOrDefault(ar => ar.Role.Name.Equals(obj.Role.Name) &&
                     ar.Controller.Name.Equals(obj.Controller.Name));
                 if (accessRightExisting != null)
-                { ModelState.AddModelError("", "Правило для это роли и страницы уже есть, измените его"); }
+                { ModelState.AddModelError("", "Правило для этой роли и страницы уже есть, измените его"); }
             }
         }
 

@@ -35,7 +35,7 @@ namespace EasyBilling.Helpers
         /// </summary>
         /// <param name="cntrlName"></param>
         /// <returns></returns>
-        static public async Task<ObservableCollection<ActionRight>> GetActionsRightsAsync(string cntrlName)
+        static public async Task<List<ActionRight>> GetActionsRightsAsync(string cntrlName)
             => await Task.Run(() =>
             {
                 var className = $"EasyBilling.Controllers.{cntrlName}";
@@ -51,7 +51,7 @@ namespace EasyBilling.Helpers
                     return new ActionRight(a.Name, dNameAttr ?? "", true);
                 }).ToList();
 
-                return new ObservableCollection<ActionRight>(actRghts);
+                return actRghts;
             });
     }
 }

@@ -3,7 +3,6 @@
 @inject Microsoft.AspNetCore.Identity.RoleManager<EasyBilling.Models.Pocos.Role> roleManager
 @inject EasyBilling.Data.BillingDbContext dbContext
 
-
 @{
     var cntrlsNames = dbContext.ControllersNames.ToArray();
 }
@@ -36,28 +35,32 @@
     <span asp-validation-for="Controller.Name" class="text-danger"></span>
 </div>
 
-
 <div class="mb-0 form-group">
     <label asp-for="Rights" class="text-info"></label>
-    @{ var i = 0; }
+    @{
+        var i = 0;
+        var slctCntrl = cntrlsNames.FirstOrDefault(c => c.Name.Equals(Model.Controller.Name));
+        var slctIdx = (slctCntrl == null)
+            ? 0
+            : Array.IndexOf(cntrlsNames, slctCntrl);
+    }
     @foreach (var cntrl in cntrlsNames)
     {
-        int slctIdx = 0;
         bool isSelectedController = Model.Controller.Name.Equals(cntrl.Name);
-        if (isSelectedController) slctIdx = i;
-        var actionsrights = isSelectedController ? Model.Rights
+        var actionsRights = isSelectedController ? Model.Rights
             : await ControllerHelper.GetActionsRightsAsync(cntrl.Name);
-        var displayStyle = (i == slctIdx) ? "block" : "none";
+        var displayStyle = (slctIdx == i) ? "block" : "none";
+        var chboxTag = (slctIdx == i) ? "rights" : "hidden-rights";
 
-        <div class="mt-2" id="#@cntrl.Name" style="display: @displayStyle">
-            @{var j = 0;}
-            @foreach (var action in actionsrights)
+        <div class="mt-2" id="_@cntrl.Name" style="display: @displayStyle">
+            @{  
+                var j = 0;
+            }
+            @foreach (var action in actionsRights)
             {
                 <div class="checkbox">
                     <label>
-                        <input type="hidden" name="Rights.Name" value="@action.Name" />
-                        <input type="hidden" name="Rights.LocalizedName" value="@action.LocalizedName" />
-                        <input type="checkbox" name="Rights.IsAvailable" checked="@(action.IsAvailable)" />
+                        @Html.CheckBox(chboxTag + $"[{j}]", action.IsAvailable)
                         @action.LocalizedName
                     </label>
                 </div>
@@ -69,18 +72,18 @@
     <span asp-validation-for="Rights" class="text-danger"></span>
 </div>
 
-    <div class="m-0 py-3 form-group">
-        <div class="switch">
-            <label class="form-check-label">
-                Запрещено
-            </label>
-            <label class="form-check-label">
-                @{
-                    string chk = (Model.IsAvailable) ? "checked" : "";
-                    <input class="form-control" type="checkbox" asp-for="IsAvailable" chk />
-                }
-                Разрешено
-            </label>
-            <span asp-validation-for="IsAvailable" class="text-danger"></span>
-        </div>
+<div class="m-0 py-3 form-group">
+    <div class="switch">
+        <label class="form-check-label">
+            Запрещено
+        </label>
+        <label class="form-check-label">
+            @{
+                string chk = (Model.IsAvailable) ? "checked" : "";
+                <input class="form-control" type="checkbox" asp-for="IsAvailable" chk />
+            }
+            Разрешено
+        </label>
+        <span asp-validation-for="IsAvailable" class="text-danger"></span>
     </div>
+</div>
