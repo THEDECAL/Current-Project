@@ -126,7 +126,7 @@ namespace EasyBilling.Controllers
             {
                 var accountExisting = await _dbContext.Users
                     .FirstOrDefaultAsync(u => u.Id.Equals(obj.Account.Id));
-                var profileExisting = await _dbContext.Profiles
+                var profileExisting = await _dbContext.Profiles.AsNoTracking()
                     .FirstOrDefaultAsync(p => p.Id.Equals(obj.Id));
                 accountExisting.UserName = obj.Account.UserName;
                 accountExisting.Email = obj.Account.Email;
@@ -142,6 +142,7 @@ namespace EasyBilling.Controllers
                 {
                     _dbContext.Update(obj);
                     _dbContext.SaveChanges();
+
                     if (profileExisting.IsEnabled != obj.IsEnabled)
                     {
                         _tariffRegulator.StartToUseOfTariffAsync(obj.Id).Wait();
