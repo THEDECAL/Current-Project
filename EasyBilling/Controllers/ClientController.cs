@@ -36,6 +36,7 @@ namespace EasyBilling.Controllers
             var profile = await _dbContext.Profiles
                 .Include(p => p.Account)
                 .Include(p => p.Tariff)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Account.UserName.Equals(User.Identity.Name));
             var filter = new Func<Payment, bool>((o)
                 => o.DestinationProfile.Id.Equals(profile.Id));
@@ -49,11 +50,15 @@ namespace EasyBilling.Controllers
                     includeFields: new string[]
                     {
                         nameof(Payment.SourceProfile),
-                        nameof(Payment.DestinationProfile)
+                        nameof(Payment.DestinationProfile),
+                        nameof(Payment.Role),
                     },
                     excludeFields: new string[]
                     {
-                        nameof(Payment.DestinationProfile)
+                        nameof(Payment.DestinationProfile),
+                        nameof(Payment.DestinationProfileId),
+                        nameof(Payment.SourceProfileId),
+                        nameof(Payment.RoleId)
                     }
                 );
 
@@ -69,6 +74,7 @@ namespace EasyBilling.Controllers
             var profile = await _dbContext.Profiles
                 .Include(p => p.Account)
                 .Include(p => p.Tariff)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id.Equals(id));
 
             if (profile == null)
@@ -84,11 +90,15 @@ namespace EasyBilling.Controllers
                     includeFields: new string[]
                     {
                         nameof(Payment.SourceProfile),
-                        nameof(Payment.DestinationProfile)
+                        nameof(Payment.DestinationProfile),
+                        nameof(Payment.Role),
                     },
                     excludeFields: new string[]
                     {
-                        nameof(Payment.DestinationProfile)
+                        nameof(Payment.DestinationProfile),
+                        nameof(Payment.DestinationProfileId),
+                        nameof(Payment.SourceProfileId),
+                        nameof(Payment.RoleId)
                     }
                 );
 
@@ -97,21 +107,23 @@ namespace EasyBilling.Controllers
 
         [DisplayName("Смена состояния заморозки")]
         [HttpPost]
-        public async Task<IActionResult> ChnageHoldState()
+        public async Task<IActionResult> ChnageHoldState(int? profileId = null)
         {
             var profile = await _dbContext.Profiles
                 .Include(p => p.Account)
-                .FirstOrDefaultAsync(p => p.Account.UserName.Equals(User.Identity.Name));
+                .Include(p => p.Tariff)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id.Equals(profileId));
 
             return await Task.Run(() =>
             {
                 if (profile != null)
                 {
                     profile.IsHolded = !profile.IsHolded;
+                    _tariffRegulator.StartToUseOfTariff(profile);
 
                     _dbContext.Update(profile);
                     _dbContext.SaveChanges();
-                    _tariffRegulator.StartToUseOfTariffAsync(profile.Id).Wait();
                 }
 
                 return Redirect("Index");
@@ -120,20 +132,23 @@ namespace EasyBilling.Controllers
 
         [DisplayName("Смена тарифа")]
         [HttpPost]
-        public async Task<IActionResult> ChangeTariff(int? tariffId = null)
+        public async Task<IActionResult> ChangeTariff(int? tariffId = null, int? profileId = null)
         {
             return await Task.Run(async () =>
             {
                 var tariff = await _dbContext.Tariffs
                     .FirstOrDefaultAsync(t => t.Id.Equals(tariffId));
 
-                if (tariff != null)
+                if (tariff != null && profileId != null)
                 {
                     var profile = await _dbContext.Profiles
                         .Include(p => p.Account)
-                        .FirstOrDefaultAsync(p => p.Account.UserName.Equals(User.Identity.Name));
+                        .FirstOrDefaultAsync(p => p.Id.Equals(profileId));
 
                     profile.Tariff = tariff;
+                    profile.DateBeginOfUseOfTarrif = null;
+
+                    _tariffRegulator.StartToUseOfTariff(profile);
 
                     _dbContext.Update(profile);
                     await _dbContext.SaveChangesAsync();

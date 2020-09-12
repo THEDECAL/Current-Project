@@ -15,12 +15,15 @@ namespace EasyBilling.Models.Pocos
         [DisplayName("Дата")]
         public DateTime Date { get; set; } = DateTime.Now;
 
+        public int? SourceProfileId { get; set; }
         [DisplayName("Отправитель")]
         public Profile SourceProfile { get; set; }
 
+        public int? DestinationProfileId { get; set; }
         [DisplayName("Получатель")]
         public Profile DestinationProfile { get; set; }
 
+        public string RoleId { get; set; }
         [DisplayName("Роль отправителя")]
         public Role Role { get; set; }
 

@@ -17,11 +17,11 @@ namespace EasyBilling.Data
 {
     public class BillingDbContext : IdentityDbContext<IdentityUser>
     {
-        public static readonly ILoggerFactory loggerFactory
-            = LoggerFactory.Create(b => b.AddFilter((category, level) =>
-                                            category == DbLoggerCategory.Database.Command.Name
-                                            && level == LogLevel.Information)
-                                        .AddConsole());
+        //public static readonly ILoggerFactory loggerFactory
+        //    = LoggerFactory.Create(b => b.AddFilter((category, level) =>
+        //                                    category == DbLoggerCategory.Database.Command.Name
+        //                                    && level == LogLevel.Information)
+        //                                .AddConsole());
 
         public DbSet<ControllerName> ControllersNames { get; set; }
         public DbSet<DeviceState> DeviceStates { get; set; }
@@ -39,13 +39,13 @@ namespace EasyBilling.Data
             this.Database.EnsureCreated();
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder
-                .UseLoggerFactory(loggerFactory)
-                .UseSqlServer("Data Source=GEEK-NB;Initial Catalog=EasyBillingDb;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
-            //base.OnConfiguring(optionsBuilder);
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    optionsBuilder
+        //        .UseLoggerFactory(loggerFactory)
+        //        .UseSqlServer("Data Source=GEEK-NB;Initial Catalog=EasyBillingDb;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
+        //    //base.OnConfiguring(optionsBuilder);
+        //}
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyBilling.Controllers
 {
+    [NoShowInMenu]
     [DisplayName("Журнал событий")]
     public class EventController : CustomController
     {

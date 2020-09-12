@@ -140,13 +140,14 @@ namespace EasyBilling.Controllers
 
                 await Task.Run(() =>
                 {
-                    _dbContext.Update(obj);
-                    _dbContext.SaveChanges();
-
                     if (profileExisting.IsEnabled != obj.IsEnabled)
                     {
-                        _tariffRegulator.StartToUseOfTariffAsync(obj.Id).Wait();
+                        _tariffRegulator.StartToUseOfTariff(obj);
                     }
+
+                    obj.DateOfUpdate = DateTime.Now;
+                    _dbContext.Update(obj);
+                    _dbContext.SaveChanges();
                 });
 
                 return RedirectToAction("Index");

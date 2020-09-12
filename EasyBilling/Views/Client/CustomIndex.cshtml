@@ -6,8 +6,8 @@
     var trafficConvert = new Func<int, string>((n) => (n >= 1024) ? n / 1024 + " Мбайт" : " Кбайт");
 }
 
-<div class="my-3 row justify-content-between">
-    <div class="card p-2 m-2" style="max-height: 380px">
+<div class="row justify-content-around" style="width: 100%;">
+    <div class="card p-3 m-2" style="max-height: 380px">
         <div>
             <div class="form-row">
                 <div class="col">
@@ -68,6 +68,7 @@
 
         <div class="row justify-content-center">
             <form class="mb-0" method="post" asp-action="ChnageHoldState" id="hold-state">
+                <input name="profileId" type="hidden" value="@Model.profile.Id" />
                 <button class="btn btn-raised @(Model.profile.IsHolded ? "btn-success" : "btn-info")" form="hold-state" type="submit">
                     @(Model.profile.IsHolded ? "Разморозить" : "Заморозить")
                 </button>
@@ -75,7 +76,7 @@
         </div>
     </div>
 
-    <div id="accordion" class="m-2">
+    <div id="accordion" class="p-3 m-2">
         @foreach (var item in dbContext.Tariffs.Where(t => t.IsPublish).ToArray())
         {
             bool isCurrTariff = Model.profile.Tariff.Id.Equals(item.Id);
@@ -92,6 +93,7 @@
                             @if (!isCurrTariff)
                             {
                                 <input type="hidden" name="tariffId" value="@item.Id" />
+                                <input name="profileId" type="hidden" value="@Model.profile.Id" />
                                 <button type="submit" class="btn btn-sm btn-info btn-raised" form="tariff">Сменить тариф</button>
                             }
                         </h5>
@@ -144,11 +146,8 @@
     </div>
 </div>
 
-<div class="card">
+<div class="card p-3 m-2">
     @await Model.dvm.TableHelper.GetControlPanelAsync(false)
-</div>
-
-<div class="card">
     @if (Model.dvm.Data.Count > 0)
     {
         <table class="table table-striped table-sm">
@@ -156,9 +155,10 @@
             <tbody>
                 @{
                     int counter = 1;
-                    @foreach (Dictionary<string, string> row in await Model.dvm.GetDataDicAsync())
+                    var list = await Model.dvm.GetDataDicAsync();
+                    @foreach (Dictionary<string, string> row in list)
                     {
-                        <tr>
+                        <tr class="text-center">
                             <td class="align-middle">@counter</td>
                             @foreach (var field in row)
                             {

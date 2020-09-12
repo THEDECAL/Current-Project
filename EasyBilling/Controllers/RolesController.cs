@@ -152,8 +152,8 @@ namespace EasyBilling.Controllers
             else
             {
                 var oldRole = await _dbContext
-                    .Roles.AnyAsync(r => r.Name.Equals(obj.Name));
-                if (oldRole == null && isRoleExist)
+                    .Roles.FirstOrDefaultAsync(r => r.Name.Equals(obj.Id));
+                if (oldRole.Name.Equals(obj.Name))
                 {
                     ModelState.AddModelError("Name", "Такая роль уже существует");
                 }

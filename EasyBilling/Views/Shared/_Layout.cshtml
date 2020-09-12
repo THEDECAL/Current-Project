@@ -14,11 +14,9 @@
     <div class="container">
         <partial name="_NavBar" />
 
-        <main role="main" class="position-absolute main-settings">
-            <div class="card px-3 pt-3 mb-3">
-                <a class="p-2 btn btn-lg btn-info btn-block" role="button" href="/@ViewData["ControllerName"]">@ViewData["Title"]</a>
-                @RenderBody()
-            </div>
+        <main role="main" class="row justify-content-center">
+            <a class="p-2 btn btn-lg btn-info btn-block" role="button" href="/@ViewData["ControllerName"]">@ViewData["Title"]</a>
+            @RenderBody()
         </main>
     </div>
 

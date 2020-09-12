@@ -69,58 +69,64 @@ namespace EasyBilling.Controllers
         [HttpGet]
         public async Task<IActionResult> AddUpdateForm(int? id = null)
         {
-            return await Task.Run(async () =>
+            using (_dbContext)
             {
-                var model = new Payment();
-                if (id != null)
+                return await Task.Run(async () =>
                 {
-                    model.DestinationProfile = await _dbContext.Profiles
-                    .FirstOrDefaultAsync(p => p.Id.Equals(id.Value));
-                }
+                    var model = new Payment();
+                    if (id != null)
+                    {
+                        model.DestinationProfile = await _dbContext.Profiles
+                        .FirstOrDefaultAsync(p => p.Id.Equals(id.Value));
+                    }
 
-                return View(nameof(AddUpdateForm), model: model);
-            });
+                    return View(nameof(AddUpdateForm), model: model);
+                });
+            }
         }
 
         [DisplayName("Создать")]
         [HttpPost]
         public async Task<IActionResult> Create(Payment obj, int? dstId, string sum)
         {
-            try
+            using (_dbContext)
             {
-               obj.Amount = Double.Parse(sum.Replace('.', ','));
-            }
-            catch (Exception)
-            { }
-
-            obj.DestinationProfile = await _dbContext.Profiles
-                .FirstOrDefaultAsync(p => p.Id.Equals(dstId));
-            obj.SourceProfile = await _dbContext.Profiles
-                .Include(p => p.Account)
-                .FirstOrDefaultAsync(p => p.Account.UserName.Equals(User.Identity.Name));
-            obj.Role = await _rightsManager.GetRoleAsync(User.Identity.Name);
-
-            await ServerSideValidation(obj);
-            if (ModelState.IsValid)
-            {
-                await Task.Run(() =>
+                try
                 {
-                    using (var transaction = _dbContext.Database.BeginTransaction())
+                    obj.Amount = Double.Parse(sum.Replace('.', ','));
+                }
+                catch (Exception)
+                { }
+
+                obj.DestinationProfile = await _dbContext.Profiles
+                    .FirstOrDefaultAsync(p => p.Id.Equals(dstId));
+                obj.SourceProfileId = (await _dbContext.Profiles
+                    .Include(p => p.Account)
+                    .FirstOrDefaultAsync(p => p.Account.UserName.Equals(User.Identity.Name))).Id;
+                obj.RoleId = (await _rightsManager.GetRoleAsync(User.Identity.Name)).Id;
+
+                await ServerSideValidation(obj);
+                if (ModelState.IsValid)
+                {
+                    await Task.Run(() =>
                     {
-                        obj.DestinationProfile.AmountOfCash += obj.Amount;
+                        using (var transaction = _dbContext.Database.BeginTransaction())
+                        {
+                            obj.DestinationProfile.AmountOfCash += obj.Amount;
 
-                        _dbContext.Update(obj.DestinationProfile);
-                        _dbContext.Add(obj);
-                        _dbContext.SaveChanges();
+                            _dbContext.Profiles.Update(obj.DestinationProfile);
+                            _dbContext.Payments.Add(obj);
+                            _dbContext.SaveChanges();
 
-                        transaction.Commit();
-                    }
-                });
+                            transaction.Commit();
+                        }
+                    });
 
-                return RedirectToAction("Index");
+                    return RedirectToAction("Index");
+                }
+
+                return await AddUpdateForm();
             }
-
-            return await AddUpdateForm();
         }
 
         public async Task ServerSideValidation(Payment obj)
@@ -129,10 +135,10 @@ namespace EasyBilling.Controllers
                 if (obj.Amount <= 0)
                 { ModelState.AddModelError("", "Сумма должна быть больше 0"); }
 
-                if (obj.DestinationProfile == null || obj.SourceProfile == null)
+                if (obj.DestinationProfile == null || obj.SourceProfileId == 0)
                 { ModelState.AddModelError("", "Получатель или отправитель оплаты отсутствует"); }
 
-                if (obj.Role == null)
+                if (string.IsNullOrWhiteSpace(obj.RoleId))
                 { ModelState.AddModelError("", "Не известна ваша роль"); }
             });
     }

@@ -6,11 +6,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using EasyBilling.Models.Pocos;
+using System.Threading;
+using Microsoft.Extensions.Configuration;
+using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace EasyBilling.Services
 {
     public class TariffRegulator
     {
+        const string FILE_CONFIG_NAME = "Settings\\tariffRegulator.json";
         private BillingDbContext _dbContext;
 
         public TariffRegulator(IServiceScopeFactory scopeFactory)
@@ -26,28 +31,40 @@ namespace EasyBilling.Services
         /// </summary>
         /// <param name="profile">Принимает экземпляр профиля</param>
         /// <returns></returns>
-        private async Task PutOfCashAsync(Profile profile)
+        private async Task CheckTariffStatehAsync(Profile profile)
         {
             if (profile != null && profile.Tariff != null)
             {
-                if (profile.AmountOfCash < profile.Tariff.Price)
+                var currDate = DateTime.Now;
+                DateTime? expiryDate = null;
+
+                if (profile.DateBeginOfUseOfTarrif != null)
                 {
-                    profile.IsHolded = true;
+                    expiryDate = profile.DateBeginOfUseOfTarrif.Value
+                        .AddDays(profile.Tariff.AmounfOfDays);
                 }
-                else
+
+                if (expiryDate == null || //Если тариф ни разу не использовался
+                    (profile.Tariff.AmountOfTraffic != 0 &&
+                    profile.UsedTraffic >= profile.Tariff.AmountOfTraffic &&
+                    currDate < expiryDate) || //Если тариф ограниченный объёмом трафика и срок действия не подошел к концу
+                    currDate >= expiryDate) //Если тариф уже окончил свой строк действия
                 {
-                    using (var transaction = _dbContext.Database.BeginTransaction())
+                    if (profile.AmountOfCash < profile.Tariff.Price)
                     {
+                        profile.DateBeginOfUseOfTarrif = null;
+                        profile.IsHolded = true;
+                    }
+                    else
+                    {
+                        profile.DateBeginOfUseOfTarrif = currDate;
                         profile.AmountOfCash -= profile.Tariff.Price;
-                        await _dbContext.Payments.AddAsync(new Models.Pocos.Payment()
+                        await _dbContext.Payments.AddAsync(new Payment()
                         {
-                            DestinationProfile = profile,
+                            DestinationProfileId = profile.Id,
                             Comment = "Автоматический вычет тарифа",
                             Amount = -profile.Tariff.Price
                         });
-                        profile.DateBeginOfUseOfTarrif = DateTime.Now;
-
-                        transaction.Commit();
                     }
                 }
             }
@@ -56,35 +73,38 @@ namespace EasyBilling.Services
         /// <summary>
         /// Проверка срока действия тарифа
         /// </summary>
-        /// <returns></returns>
-        public async Task CheckProfilesForTariffExpiringAsync()
+        /// <param name="isTimer">Признак запуска таймера</param>
+        public void CheckProfilesForTariffExpiring(object isTimer = null)
         {
             using (_dbContext)
             {
                 var iQuery = _dbContext.Profiles
                     .Include(p => p.Tariff)
                     .Where(p => p.Tariff.AmounfOfDays != 0 &&
-                        !p.IsHolded && !p.IsEnabled);
+                        !p.IsHolded && p.IsEnabled);
 
                 var currDate = DateTime.Now;
-                await iQuery.ForEachAsync(p =>
+                iQuery.ForEachAsync(async p => 
                 {
                     try
                     {
-                        var expiryDate = p.DateBeginOfUseOfTarrif
-                            .AddDays(p.Tariff.AmounfOfDays);
-                        if (currDate >= expiryDate)
-                        {
-                            PutOfCashAsync(p).Wait();
-                        }
+                        await CheckTariffStatehAsync(p);
                         _dbContext.Update(p);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     { }
-                });
+                }).Wait();
 
-                await _dbContext.SaveChangesAsync();
+                try
+                {
+                    _dbContext.SaveChanges();
+                }
+                catch(Exception ex)
+                { }
             }
+
+            if (isTimer != null)
+                Console.WriteLine($"Tariff regulator by timer is success run. ({DateTime.Now})");
         }
 
         /// <summary>
@@ -92,33 +112,60 @@ namespace EasyBilling.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task StartToUseOfTariffAsync(int id)
+        public void StartToUseOfTariff(Profile profile)
         {
             using (_dbContext)
             {
-                var profile = await _dbContext.Profiles
-                    .FirstOrDefaultAsync(p => p.Id.Equals(id));
-
                 if (profile != null &&
-                    !profile.IsHolded && !profile.IsEnabled &&
+                    !profile.IsHolded && profile.IsEnabled &&
                     profile.Tariff.AmounfOfDays != 0)
                 {
-                    var currDate = DateTime.Now;
-                    var expiryDate = profile.DateBeginOfUseOfTarrif
-                        .AddDays(profile.Tariff.AmounfOfDays);
-
-                    if (currDate >= expiryDate)
-                    {
-                        using (_dbContext)
-                        {
-                            await PutOfCashAsync(profile);
-                            _dbContext.Update(profile);
-                            await _dbContext.SaveChangesAsync();
-                        }
-                    }
+                    CheckTariffStatehAsync(profile).Wait();
+                    _dbContext.SaveChanges();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Запуск таймера проверки срока действия тарифа
+        /// </summary>
+        public void Run()
+        {
+            try
+            {
+                var hours = 2; var minutes = 2;
+                try
+                {
+                    var config = new ConfigurationBuilder().AddJsonFile(FILE_CONFIG_NAME).Build();
+                    var hrs = config["RunningTimeHours"];
+                    var mnts = config["RunningTimeMintutes"];
+
+                    hours = int.Parse(hrs);
+                    minutes = int.Parse(mnts);
+                }
+                catch (Exception ex)
+                { Console.WriteLine(ex.StackTrace); }
+
+                var currDate = DateTime.Now;
+                var nextDay = currDate.AddDays(1);
+                var firstRunDate = new DateTime(nextDay.Year, nextDay.Month, nextDay.Day, hours, minutes, 0, 0);
+                var firstRunMls = firstRunDate.ToUniversalTime()
+                    .Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
+                var currMls = currDate.ToUniversalTime()
+                    .Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
+                var runThrough = (int)(firstRunMls - currMls) * 1000;
+
+                int oneDay = 24 * 60 * 60 * 1000;
+                TimerCallback tm = new TimerCallback(CheckProfilesForTariffExpiring);
+                Timer timer = new Timer(tm, new object(), runThrough, oneDay);
+
+                Console.WriteLine("Tariff regulator is success run.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error. Tariff regulator timer is not run!");
+                Console.WriteLine(ex.Message);
             }
         }
     }
 }
- 

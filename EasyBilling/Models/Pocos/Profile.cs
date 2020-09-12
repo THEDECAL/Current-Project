@@ -43,8 +43,7 @@ namespace EasyBilling.Models.Pocos
         public Tariff Tariff { get => _tariff ?? new Tariff(); set => _tariff = value; }
 
         [DisplayName("Дата начала использования тарифа")]
-        [Required]
-        public DateTime DateBeginOfUseOfTarrif { get; set; }
+        public DateTime? DateBeginOfUseOfTarrif { get; set; }
 
         [DisplayName("Использованный трафик")]
         public int UsedTraffic { get; set; } = 0;
@@ -74,6 +73,6 @@ namespace EasyBilling.Models.Pocos
         public string Comment { get; set; }
 
         public override string ToString()
-            => $"{this.FirstName} {this.SecondName} {this.Patronymic} ({Account.UserName})";
+            => $"{this.FirstName} {this.SecondName} {this.Patronymic} {(!string.IsNullOrWhiteSpace(Account?.UserName) ? "(" + Account.UserName + ")" : "")}";
     }
 }

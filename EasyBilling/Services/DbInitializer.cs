@@ -33,16 +33,19 @@ namespace EasyBilling.Services
         }
         public async Task InitializeAsync()
         {
-            await ControllersNamesInitAsync();
-            await DeviceStatesInitAsync();
-            await DeviceTypesInitAsync();
-            await TariffsInitAsync();
-            await RolesInitAsync();
-            await AccessRightsInitAsync();
-            await DevicesInitAsync();
-            await UsersInitAsync();
-            await ClientsInitAsync();
-            await PaymentsInitAsync();
+            using (_dbContext)
+            {
+                await ControllersNamesInitAsync();
+                await DeviceStatesInitAsync();
+                await DeviceTypesInitAsync();
+                await TariffsInitAsync();
+                await RolesInitAsync();
+                await AccessRightsInitAsync();
+                await DevicesInitAsync();
+                await UsersInitAsync();
+                await ClientsInitAsync();
+                await PaymentsInitAsync();
+            }
         }
 
         /// <summary>

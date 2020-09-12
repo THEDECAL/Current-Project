@@ -39,6 +39,12 @@ namespace EasyBilling.Controllers
                         nameof(Payment.Role),
                         "SourceProfile.Account",
                         "DestinationProfile.Account"
+                    },
+                    excludeFields: new string[]
+                    {
+                        nameof(Payment.SourceProfileId),
+                        nameof(Payment.DestinationProfileId),
+                        nameof(Payment.RoleId)
                     }
                 );
 

@@ -16,7 +16,14 @@ namespace EasyBilling
             {
                 var scope = host.Services.CreateScope();
                 var dbInit = scope.ServiceProvider.GetRequiredService<DbInitializer>();
+                var tariffRegulator = scope.ServiceProvider.GetRequiredService<TariffRegulator>();
+
+                //Инициализация БД
                 dbInit.InitializeAsync().Wait();
+
+                //Запуск таймера проверки
+                tariffRegulator.CheckProfilesForTariffExpiring(null);
+                tariffRegulator.Run();
             }
             catch (Exception ex)
             {
