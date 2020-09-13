@@ -8,7 +8,17 @@
             {
                 @if (!field.Key.Equals("Id"))
                 {
-                    <td class="align-middle">@field.Value</td>
+                    <td class="align-middle">
+                        @if (field.Value.Equals("False") || field.Value.Equals("True"))
+                        {
+                            var color = (field.Value.Equals("True") ? "badge-success" : "badge-danger");
+                            <a href="#" class="badge @color p-2 m-1">@field.Value</a>
+                        }
+                        else
+                        {
+                            @field.Value
+                        }
+                    </td>
                 }
             }
 

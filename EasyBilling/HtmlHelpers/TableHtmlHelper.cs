@@ -58,6 +58,10 @@ namespace EasyBilling.HtmlHelpers
                         aFieldLink.Attributes.Add("href", _data.UrlPath);
                         aFieldLink.Attributes.Add("value", item.Name);
                         aFieldLink.InnerHtml.Append((dnAtt != null) ? dnAtt.DisplayName.Replace("*", "") : item.Name);
+                        if (_data.Settings.SortField.Equals(item.Name))
+                        {
+                            aFieldLink.InnerHtml.AppendFormat($"<span class='m-1 badge badge-info'>{(_data.Settings.SortType == SortType.DESC ? "˄" : "˅")}</span>");
+                        }
                         th.InnerHtml.AppendHtml(aFieldLink);
                         tr.InnerHtml.AppendHtml(th);
                     }
@@ -88,10 +92,20 @@ namespace EasyBilling.HtmlHelpers
             return await Task.Run(async () =>
             {
                 TagBuilder nav = new TagBuilder("nav");
+                TagBuilder a = new TagBuilder("a");
                 TagBuilder ul = new TagBuilder("ul");
 
                 ul.AddCssClass("pagination form-inline row justify-content-center");
                 nav.InnerHtml.AppendHtml(ul);
+
+                TagBuilder liAllRows = new TagBuilder("li");
+                liAllRows.AddCssClass("page-item active");
+                TagBuilder spanRows = new TagBuilder("span");
+                spanRows.AddCssClass("page-link bg-warning p-1");
+                spanRows.Attributes.Add("style", "font-size: 0.7rem;");
+                spanRows.InnerHtml.Append($"{_data.RowsCount} строк");
+                liAllRows.InnerHtml.AppendHtml(spanRows);
+                ul.InnerHtml.AppendHtml(liAllRows);
 
                 TagBuilder liPrev = new TagBuilder("li");
                 liPrev.Attributes.Add("class", $"page-item {(_data.IsHavePreviousPage ? "" : "disabled")}");
@@ -169,6 +183,15 @@ namespace EasyBilling.HtmlHelpers
 
                 ul.InnerHtml.AppendHtml(liNext);
 
+                TagBuilder liAllPages = new TagBuilder("li");
+                liAllPages.AddCssClass("page-item active");
+                TagBuilder spanAll = new TagBuilder("span");
+                spanAll.Attributes.Add("style", "font-size: 0.7rem;");
+                spanAll.AddCssClass("page-link bg-warning p-1");
+                spanAll.InnerHtml.Append($"{_data.AmountPage} страниц");
+                liAllPages.InnerHtml.AppendHtml(spanAll);
+                ul.InnerHtml.AppendHtml(liAllPages);
+
                 return await GetHtmlStringAsync(nav);
             });
         }
@@ -198,6 +221,15 @@ namespace EasyBilling.HtmlHelpers
                 TagBuilder fgrp = new TagBuilder("div");
                 fgrp.AddCssClass("form-group");
                 div.InnerHtml.AppendHtml(fgrp);
+
+                //TagBuilder rowsCountInput = new TagBuilder("input");
+                //input.AddCssClass("form-control");
+                //input.Attributes.Add("type", "text");
+                //input.Attributes.Add("id", nameof(ControlPanelSettings.SearchText));
+                //input.Attributes.Add("placeholder", "Поиск по всем полям");
+                //input.Attributes.Add("style", "width: 500px");
+                //input.Attributes.Add("value", _data.Settings.SearchText);
+                //fgrp.InnerHtml.AppendHtml(rowsCountInput);
 
                 TagBuilder input = new TagBuilder("input");
                 input.AddCssClass("form-control");

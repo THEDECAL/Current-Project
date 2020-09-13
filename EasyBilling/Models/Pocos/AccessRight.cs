@@ -32,6 +32,7 @@ namespace EasyBilling.Models.Pocos
         [DisplayName("#")]
         public int Id { get; set; }
 
+        public string RoleId { get; set; }
         [Required(ErrorMessage = "Не выбрана роль")]
         [DisplayName("Роль*")]
         [Remote(action: "CheckRoleExist", controller: "AccessRights", ErrorMessage = "Выбранная роль не существует")]

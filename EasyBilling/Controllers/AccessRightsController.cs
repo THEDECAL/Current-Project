@@ -36,7 +36,8 @@ namespace EasyBilling.Controllers
                 var dvm = new DataViewModel<AccessRight>(_scopeFactory,
                     settings: Settings,
                     urlPath: HttpContext.Request.Path,
-                    includeFields: new string[] { nameof(AccessRight.Role), nameof(AccessRight.Controller) }
+                    includeFields: new string[] { nameof(AccessRight.Role), nameof(AccessRight.Controller) },
+                    excludeFields: new string[] { nameof(AccessRight.RoleId) }
                 );
 
                 return View("CustomIndex", model: dvm);
@@ -75,7 +76,8 @@ namespace EasyBilling.Controllers
             await ServerSideValidation(obj);
             if (ModelState.IsValid)
             {
-                obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
+                obj.RoleId = (await _roleManager.FindByNameAsync(obj.Role.Name)).Id;
+                obj.Role = null;
                 obj.Controller = await _dbContext.ControllersNames
                     .FirstOrDefaultAsync(c => c.Name.Equals(obj.Controller.Name));
                 obj.UpdateActionsRights(rights);
@@ -95,7 +97,8 @@ namespace EasyBilling.Controllers
             await ServerSideValidation(obj);
             if (ModelState.IsValid)
             {
-                obj.Role = await _roleManager.FindByNameAsync(obj.Role.Name);
+                obj.RoleId = (await _roleManager.FindByNameAsync(obj.Role.Name)).Id;
+                obj.Role = null;
                 obj.Controller = await _dbContext.ControllersNames
                     .FirstOrDefaultAsync(c => c.Name.Equals(obj.Controller.Name));
                 obj.UpdateActionsRights(rights);
@@ -131,6 +134,8 @@ namespace EasyBilling.Controllers
         public async Task ServerSideValidation(AccessRight obj)
         {
             TryValidateModel(obj);
+            ModelState.Remove("Role.LocalizedName");
+            ModelState.Remove("Role.DefaultControllerName.Name");
             var cntrlExist = await _dbContext.ControllersNames
                 .AnyAsync(c => c.Name.Equals(obj.Controller.Name));
             if (!cntrlExist)

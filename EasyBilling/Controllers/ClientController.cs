@@ -71,36 +71,36 @@ namespace EasyBilling.Controllers
         public async Task<IActionResult> Get(int id)
             => await Task.Run(async () => 
             {
-            var profile = await _dbContext.Profiles
-                .Include(p => p.Account)
-                .Include(p => p.Tariff)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id.Equals(id));
+                var profile = await _dbContext.Profiles
+                    .Include(p => p.Account)
+                    .Include(p => p.Tariff)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.Id.Equals(id));
 
-            if (profile == null)
-                return View("Index");
+                if (profile == null)
+                    return View("CustomIndex");
 
-            var filter = new Func<Payment, bool>((o)
-                => o.DestinationProfile.Id.Equals(profile.Id));
+                var filter = new Func<Payment, bool>((o)
+                    => o.DestinationProfile.Id.Equals(profile.Id));
 
-                var dvm = new DataViewModel<Payment>(_scopeFactory,
-                    settings: Settings,
-                    urlPath: HttpContext.Request.Path,
-                    filter: filter,
-                    includeFields: new string[]
-                    {
-                        nameof(Payment.SourceProfile),
-                        nameof(Payment.DestinationProfile),
-                        nameof(Payment.Role),
-                    },
-                    excludeFields: new string[]
-                    {
-                        nameof(Payment.DestinationProfile),
-                        nameof(Payment.DestinationProfileId),
-                        nameof(Payment.SourceProfileId),
-                        nameof(Payment.RoleId)
-                    }
-                );
+                    var dvm = new DataViewModel<Payment>(_scopeFactory,
+                        settings: Settings,
+                        urlPath: HttpContext.Request.Path,
+                        filter: filter,
+                        includeFields: new string[]
+                        {
+                            nameof(Payment.SourceProfile),
+                            nameof(Payment.DestinationProfile),
+                            nameof(Payment.Role),
+                        },
+                        excludeFields: new string[]
+                        {
+                            nameof(Payment.DestinationProfile),
+                            nameof(Payment.DestinationProfileId),
+                            nameof(Payment.SourceProfileId),
+                            nameof(Payment.RoleId)
+                        }
+                    );
 
                 return View("CustomIndex", model: (dvm, profile));
             });

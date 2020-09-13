@@ -82,6 +82,8 @@ function sortFieldBindEventOnClick(){
         el.onclick = function(event){
             var sortField = event.target.attributes.value.value;
             CurrentSettings.SortField = sortField;
+            if (CurrentSettings.SortType === 0) { CurrentSettings.SortType = 1; }
+            else { CurrentSettings.SortType = 0; }
             serializeSettings();
         };
     };

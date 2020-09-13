@@ -56,7 +56,8 @@ namespace EasyBilling.Controllers
                         nameof(Profile.UsedTraffic),
                         nameof(Profile.CustomProfileField1),
                         nameof(Profile.CustomProfileField2),
-                        nameof(Profile.CustomProfileField3)
+                        nameof(Profile.CustomProfileField3),
+                        nameof(Profile.DateOfCreation)
                     }
                 );
 

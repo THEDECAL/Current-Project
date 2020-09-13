@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             ViewData["Title"] = $"{DisplayName}{actionDisplayName}";
             ViewData["ControllerName"] = ControllerName;
+            ViewData["ActionName"] = ActionName;
 
             var settingsKey = ControllerName + "Settings";
             string settingsJson = null;

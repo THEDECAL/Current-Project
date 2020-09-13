@@ -10,7 +10,7 @@ namespace EasyBilling.Helpers
 {
     public static class CustomFieldsHelper
     {
-        const string CSTM_FIELDS_CFG_FILE = "Settings\\customFields.json";
+        const string CFG_FILE_NAME = "Settings\\customFields.json";
         static public async Task<string> GetCustomFieldNameAsync([NotNull] string defaultFieldName)
         {
             string customFieldName = defaultFieldName;
@@ -19,7 +19,7 @@ namespace EasyBilling.Helpers
             {
                 try
                 {
-                    var config = new ConfigurationBuilder().AddJsonFile(CSTM_FIELDS_CFG_FILE).Build();
+                    var config = new ConfigurationBuilder().AddJsonFile(CFG_FILE_NAME).Build();
                     var val = config[defaultFieldName];
                     var bytes = Encoding.Default.GetBytes(val);
                     customFieldName = Encoding.UTF8.GetString(bytes);

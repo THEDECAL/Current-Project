@@ -43,6 +43,8 @@ namespace EasyBilling.Controllers
                         nameof(Device.CustomDeviceField1),
                         nameof(Device.CustomDeviceField2),
                         nameof(Device.CustomDeviceField3),
+                        nameof(Device.DateOfCreation),
+                        nameof(Device.DateOfUpdate),
                     }
                 );
 

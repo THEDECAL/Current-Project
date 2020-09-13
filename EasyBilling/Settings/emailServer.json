@@ -1,5 +1,6 @@
 {
-  "login": "", //www@www.www
-  "password":  "",
-  "port": ""
+  "login": "fortestingfortesting@outlook.com",
+  "password": "5u#[qo8>",
+  "smtp-server": "SMTP.Office365.com",
+  "smtp-port": "587"
 }

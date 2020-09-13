@@ -13,12 +13,12 @@
     <input type="hidden" value="@ViewData["ControllerName"]" id="ControllerName" />
     <div class="container">
         <partial name="_NavBar" />
-
-        <main role="main" class="row justify-content-center">
-            <a class="p-2 btn btn-lg btn-info btn-block" role="button" href="/@ViewData["ControllerName"]">@ViewData["Title"]</a>
-            @RenderBody()
-        </main>
+        <a class="p-2 btn btn-lg btn-info btn-block" role="button" href="/@ViewData["ControllerName"]">@ViewData["Title"]</a>
     </div>
+
+    <main role="main" class="row justify-content-center">
+        @RenderBody()
+    </main>
 
     <script src="~/lib/bootstrap-material-design/assets/js/vendor/split.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

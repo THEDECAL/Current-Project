@@ -46,10 +46,10 @@ namespace EasyBilling.Models.Pocos
         [DisplayName("Дата изменения")]
         public DateTime? DateOfUpdate { get; set; }
 
-        [DisplayName("Отображать у клиента")]
+        [DisplayName("Отображать у клиента?")]
         public bool IsPublish { get; set; } = true;
 
-        [DisplayName("Активность")]
+        [DisplayName("Включен?")]
         public bool IsEnabled { get; set; } = true;
 
         public override string ToString() => this.Name;

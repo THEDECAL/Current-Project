@@ -12,6 +12,9 @@ namespace EasyBilling.Providers
         public static void AddTariffRegulator(this IServiceCollection services) =>
             services.AddScoped<TariffRegulator>();
 
+        public static void AddEmailSender(this IServiceCollection services) =>
+            services.AddScoped<EmailSender>();
+
         public static void AddDbInitializer(this IServiceCollection services) => 
             services.AddSingleton<DbInitializer>();
     }

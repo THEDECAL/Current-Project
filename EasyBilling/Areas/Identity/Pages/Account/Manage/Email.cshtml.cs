@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using EasyBilling.Services;
 
 namespace EasyBilling.Areas.Identity.Pages.Account.Manage
 {
@@ -18,19 +19,19 @@ namespace EasyBilling.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly EmailSender _emailSender;
 
         public EmailModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            IEmailSender emailSender)
+            EmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
         }
 
-        public string Username { get; set; }
+        //public string Username { get; set; }
 
         public string Email { get; set; }
 
@@ -46,8 +47,13 @@ namespace EasyBilling.Areas.Identity.Pages.Account.Manage
         {
             [Required]
             [EmailAddress]
-            [Display(Name = "New email")]
+            [Display(Name = "Новый адрес электронной почты")]
             public string NewEmail { get; set; }
+
+            [Compare("NewEmail", ErrorMessage = "Адреса не совпадают")]
+            [EmailAddress]
+            [Display(Name = "Новый адрес электронной почты")]
+            public string ConfirmNewEmail { get; set; }
         }
 
         private async Task LoadAsync(IdentityUser user)
@@ -57,7 +63,7 @@ namespace EasyBilling.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                NewEmail = email,
+                //NewEmail = email,
             };
 
             IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
@@ -68,7 +74,7 @@ namespace EasyBilling.Areas.Identity.Pages.Account.Manage
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Не могу загрузить аккаунт с ID '{_userManager.GetUserId(User)}'.");
             }
 
             await LoadAsync(user);
@@ -80,7 +86,7 @@ namespace EasyBilling.Areas.Identity.Pages.Account.Manage
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Не могу загрузить аккаунт с ID '{_userManager.GetUserId(User)}'.");
             }
 
             if (!ModelState.IsValid)
@@ -101,14 +107,14 @@ namespace EasyBilling.Areas.Identity.Pages.Account.Manage
                     protocol: Request.Scheme);
                 await _emailSender.SendEmailAsync(
                     Input.NewEmail,
-                    "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    "EasyBilling Подтверждение электронной почты",
+                    $"Пожалуйста подтвердите ваш адрес электронной почты <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>перейдя по этой ссылке</a>.");
 
-                StatusMessage = "Confirmation link to change email sent. Please check your email.";
+                StatusMessage = "Подтверждающее письмо отправлено. Проверьте почту.";
                 return RedirectToPage();
             }
 
-            StatusMessage = "Your email is unchanged.";
+            StatusMessage = "Ваш адрес электронной почты не изменился.";
             return RedirectToPage();
         }
 
@@ -117,7 +123,7 @@ namespace EasyBilling.Areas.Identity.Pages.Account.Manage
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Не могу загрузить аккаунт с ID '{_userManager.GetUserId(User)}'.");
             }
 
             if (!ModelState.IsValid)
@@ -137,10 +143,10 @@ namespace EasyBilling.Areas.Identity.Pages.Account.Manage
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
                 email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                "EasyBilling Подтверждение электронной почты",
+                $"Пожалуйста подтвердите ваш адрес электронной почты <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>перейдя по этой ссылке</a>.");
 
-            StatusMessage = "Verification email sent. Please check your email.";
+            StatusMessage = "Подтверждающее письмо отправлено. Проверьте почту.";
             return RedirectToPage();
         }
     }

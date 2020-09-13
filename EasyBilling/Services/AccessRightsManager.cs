@@ -158,5 +158,11 @@ namespace EasyBilling.Services
             }
             else throw new ArgumentNullException();
         }
+
+        public async Task<bool> GetExistRight(string userName, string controllerName, string actionName)
+        {
+            var rights = await GetRights(userName, controllerName + "Controller");
+            return rights.Rights.Any(r => r.Name.ToLower().Equals(actionName.ToLower()) && r.IsAvailable);
+        }
     }
 }

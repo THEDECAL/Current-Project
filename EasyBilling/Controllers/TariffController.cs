@@ -32,7 +32,12 @@ namespace EasyBilling.Controllers
             {
                 var dvm = new DataViewModel<Tariff>(_scopeFactory,
                     urlPath: HttpContext.Request.Path,
-                    settings: Settings
+                    settings: Settings,
+                    excludeFields: new string[]
+                    {
+                        nameof(Tariff.DateOfCreation),
+                        nameof(Tariff.DateOfUpdate)
+                    }
                 );
 
                 return View("CustomIndex", model: dvm);

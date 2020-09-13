@@ -33,6 +33,11 @@ namespace EasyBilling.Helpers
             return sb.ToString();
         }
 
+        //public static string GetPassword()
+        //{
+
+        //}
+
         public static async Task<string> GetStringAsync(int length, bool lLetters = true, bool bLetters = false, bool numbers = false, bool symbols = false)
             => await Task.Run(() => GetString(length, lLetters, bLetters, numbers, symbols));
     }
