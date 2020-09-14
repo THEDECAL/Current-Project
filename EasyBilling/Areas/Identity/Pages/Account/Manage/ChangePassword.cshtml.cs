@@ -54,7 +54,8 @@ namespace EasyBilling.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var user = await _userManager.GetUserAsync(User);
+            //var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
             if (user == null)
             {
                 return NotFound($"Не могу загрузить аккаунт с ID '{_userManager.GetUserId(User)}'.");

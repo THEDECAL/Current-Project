@@ -83,7 +83,7 @@
 
             <div class="card">
                 <div id="heading@(item.Id)" class="card-header">
-                    <form method="post" asp-action="ChangeTariff" id="tariff">
+                    <form method="post" asp-action="ChangeTariff">
                         <h5 class="m-0 row justify-content-between">
                             <button type="button" data-toggle="collapse" data-target="#collapse@(item.Id)" aria-expanded="@isCurrTariff.ToString().ToLower()" aria-controls="collapseOne" class="btn collapsed">
                                 @item.Name&nbsp;
@@ -93,8 +93,8 @@
                             @if (!isCurrTariff)
                             {
                                 <input type="hidden" name="tariffId" value="@item.Id" />
-                                <input name="profileId" type="hidden" value="@Model.profile.Id" />
-                                <button type="submit" class="btn btn-sm btn-info btn-raised" form="tariff">Сменить тариф</button>
+                                <input type="hidden" name="profileId" value="@Model.profile.Id" />
+                                <button type="submit" class="btn btn-sm btn-info btn-raised">Сменить тариф</button>
                             }
                         </h5>
                     </form>

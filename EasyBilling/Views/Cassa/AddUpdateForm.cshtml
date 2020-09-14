@@ -3,7 +3,7 @@
 @{
     var isAvailable = await arManager.GetExistRight(Context.User.Identity.Name, ViewData["ControllerName"] as string, ViewData["ActionName"] as string);
 }
-<div class="row justify-content-around mx-4">
+<div class="card p-3 m-2">
     <form asp-antiforgery="true" asp-action="Create" method="post">
         <div asp-validation-summary="All" class="text-danger"></div>
 
@@ -20,7 +20,7 @@
             <span asp-validation-for="Comment" class="text-danger"></span>
         </div>
 
-        <div class="form-group row justify-content-between mt-5 mb-0">
+        <div class="form-group row justify-content-between m-2 mt-5 mb-0">
             @if (isAvailable)
             {
                 <input type="submit" value="Внести оплату" class="btn btn-raised btn-success" />

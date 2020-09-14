@@ -92,10 +92,12 @@ namespace EasyBilling.ViewModels
                     //Выбераем поисковый запрос и фильтруем
                     try
                     {
-                        if (_filter == null)
-                            queryE = queryQ.Where(searchFunc);
-                        else
-                            queryE = queryQ.Where(_filter).Where(searchFunc);
+                        queryE = queryQ.Where(searchFunc);
+
+                        if (_filter != null)
+                        {
+                            queryE = queryE.Where(_filter);
+                        }
 
                         RowsCount = queryE.Count();
                         AmountPage = (int)Math.Ceiling(queryE.Count() / (double)Settings.PageRowsCount);
@@ -111,9 +113,11 @@ namespace EasyBilling.ViewModels
                             .Equals(Settings.SortField.ToLower()));
 
                         if (Settings.SortType == SortType.DESC)
-                            queryE = queryE.OrderByDescending(p => prop.GetValue(p, null).ToString()).ToList();
+                            queryE = queryE.OrderByDescending(p =>
+                                prop.GetValue(p, null)?.ToString() ?? "").ToList();
                         else
-                            queryE = queryE.OrderBy(p => prop.GetValue(p, null).ToString()).ToList();
+                            queryE = queryE.OrderBy(p =>
+                                prop.GetValue(p, null)?.ToString() ?? "").ToList();
                     }
                     catch (Exception ex)
                     { Console.WriteLine(ex.StackTrace); }
